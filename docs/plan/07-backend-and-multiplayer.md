@@ -128,10 +128,11 @@ Gravestones are derived from `turns` + `profiles.username` (no separate table ne
 
 `SKIP LOCKED` + the single-row update guarantees **only one player per world**.
 
-### `heartbeat(world_id)` (optional)
+### `heartbeat(world_id)`
 
-Extends the lock by a small amount while the client is in the journal/summary phase. It is capped so
-a player can't hold a world forever. Needed only if the journal-writing time isn't fixed.
+Needed, because reading the journal stops the clock (012). The client calls it about once a minute
+while the clock is stopped. Each call extends the lock to `now + lock_grace_seconds`, never past
+`locked_at + TTL + heartbeat_cap_seconds`. Returns null once the turn is voided ([019](../decisions/019-claim-and-lock-rules.md)).
 
 ### `commit-turn` (Edge Function, recommended; see `02` Authority)
 
@@ -159,7 +160,7 @@ nothing was ever written.
 - `src/api/` wraps `supabase-js`: `signUp`, `signIn`, `claimWorld`, `commitTurn`, `listCompletedWorlds`, `getReplay(worldId)`, admin calls.
   The admin calls on the `Backend` contract are `listWorlds`, `getSettings`, `setSettings`, `configureWorld`, `forceAssign`, `markComplete`
   (sets `generation_count` to the generations played, completes the world, clears lock and `forced_for`) and `clearLock`; each must refuse
-  non-admins. `currentUser` returns `isAdmin` from `profiles.is_admin`. `LocalBackend` implements them all.
+  non-admins. `currentUser` returns `isAdmin` from `profiles.is_admin`. Both backends implement them all (`SupabaseBackend` via the `admin_*` RPCs, migrations `20261024200000` and `20261024220000`), plus `heartbeat` and `createSeededWorld` ([019](../decisions/019-claim-and-lock-rules.md)).
   `listCompletedWorlds` also returns each world's `preset` and `finalState` (the last snapshot's state), both optional, for the gallery thumbnails (`06`).
 - Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the anon key is safe in a static bundle when RLS is on).
 - **Offline/hot-seat mode** (build first, and keep as a demo fallback): the same interface, backed by `localStorage`, so the game can be developed before the backend exists.
@@ -170,15 +171,15 @@ nothing was ever written.
 - [x] **[A]** SQL migrations for the schema above (`supabase/migrations/`) *(C. Additions to the sketch: `worlds.preset`, `actions.eat`, and `settings.journal_allowance_seconds` + `lock_grace_seconds` for the lock TTL.)*
 - [x] **[A]** RLS policies (read-public for completed worlds, no update/delete) *(C. History is readable when the world is complete, by the current lock holder, or by an admin. There are no write policies at all.)*
 - [x] **[A]** Username signup/login with synthetic emails + `profiles` insert trigger *(C. Tested live: `.local` emails are accepted. Also adds the `username_available(name)` RPC. The `supabase-js` wrapper goes in `SupabaseBackend` once A's `Backend` interface exists.)*
-- [ ] **[A]** `claim_world` RPC with weighted assignment, `SKIP LOCKED`, stale-lock expiry, force-assign
-- [ ] **[A]** `commit-turn` Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed)
-- [ ] **[A]** `heartbeat` RPC (if needed)
-- [ ] **[A]** Admin RPCs: set `settings`, set a world's `turn_seconds`/`generation_count`, force-assign, mark complete (skip to replay)
-- [ ] **[A]** Gallery + replay read queries
-- [ ] **[A]** `LocalBackend` implementation of the same interface (hot-seat)
-- [ ] **[A]** Concurrency test: 2 clients call `claim_world` at once → different worlds
-- [ ] **[A]** Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone
-- [ ] **[A]** Seed script for the demo world (`10`)
+- [x] **[A]** `claim_world` RPC with weighted assignment, `SKIP LOCKED`, stale-lock expiry, force-assign *(`supabase/migrations/20261024200000_claim_commit_admin.sql`. Takes an `avoid` hint ([019](../decisions/019-claim-and-lock-rules.md)).)*
+- [x] **[A]** `commit-turn` Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed) *(Deno can't resolve the engine's extensionless imports, so `npm run functions:bundle` bundles `src/api/runTurn.ts` with esbuild into `supabase/functions/_shared/engine.js` (gitignored). `npm run functions:deploy` bundles and deploys. The write is `commit_turn_write`, callable by the service role only.)*
+- [x] **[A]** `heartbeat` RPC (if needed) *(Needed: the journal stops the clock (012). Capped by `settings.heartbeat_cap_seconds`, [019](../decisions/019-claim-and-lock-rules.md).)*
+- [x] **[A]** Admin RPCs: set `settings`, set a world's `turn_seconds`/`generation_count`, force-assign, mark complete (skip to replay) *(Also `admin_list_worlds` and `admin_create_world` (a world from a chosen seed, for the demo).)*
+- [x] **[A]** Gallery + replay read queries *(`list_completed_worlds()` and `get_replay(world)`, security invoker so RLS decides.)*
+- [x] **[A]** `LocalBackend` implementation of the same interface (hot-seat) *(Same claim order, TTL, heartbeat cap and void rules; scenario tests in `src/api/__tests__/LocalBackend.test.ts`.)*
+- [x] **[A]** Concurrency test: 2 clients call `claim_world` at once → different worlds *(`scripts/test-backend.ts`, passed live 2026-10-24 along with commit → successor, gallery/replay and RLS checks.)*
+- [x] **[A]** Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone *(`scripts/test-backend.ts` shortens the TTL for the run; also covered on LocalBackend.)*
+- [x] **[A]** Seed script for the demo world (`10`) *(`scripts/seed-demo.ts`, see `10`.)*
 
 ## Acceptance
 
@@ -190,7 +191,7 @@ nothing was ever written.
 
 1. ~~Edge Function (authoritative) vs RPC (trust client) for commit?~~ **Decided: Edge Function** re-runs the turn through the engine ([013](../decisions/013-engine-rule-details.md) item 10). The RPC is the fallback only if Deno can't import the engine.
 2. Journal writing time allowance → lock TTL.
-3. Can a player be assigned the world they just played (repeat play is allowed, but straight away)?
-4. Should players be able to *choose* to start a new world, or is assignment always random?
+3. ~~Can a player be assigned the world they just played?~~ **Decided:** the device passes its last world as a hint to avoid; no server check ([019](../decisions/019-claim-and-lock-rules.md)).
+4. ~~Should players be able to *choose* to start a new world?~~ **Decided:** no, always random ([019](../decisions/019-claim-and-lock-rules.md)).
 5. Hide open-world state from non-holders, or don't bother?
-6. How are world names generated (word lists from the seed)?
+6. ~~How are world names generated?~~ **Decided:** `worldName(seed, biome)` from seeded word lists, computed on the client ([019](../decisions/019-claim-and-lock-rules.md)).

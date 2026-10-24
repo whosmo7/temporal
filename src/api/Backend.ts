@@ -27,6 +27,8 @@ export interface Gravestone {
 
 export interface ClaimedWorld {
   worldId: string;
+  /** From the seed, `worldName` (decision 019). */
+  name: string;
   seed: number;
   biome: Biome;
   preset: PresetName;
@@ -47,6 +49,7 @@ export interface CommitInput {
 
 export interface CompletedWorld {
   worldId: string;
+  name: string;
   seed: number;
   biome: Biome;
   generationCount: number;
@@ -59,6 +62,7 @@ export interface CompletedWorld {
 
 export interface Replay {
   worldId: string;
+  name: string;
   seed: number;
   biome: Biome;
   snapshots: WorldState[]; // one per committed turn, in order
@@ -78,6 +82,8 @@ export interface Settings {
 /** A world as the admin panel lists it. Usernames, not ids. */
 export interface AdminWorld {
   worldId: string;
+  /** From the seed, `worldName` (decision 019). */
+  name: string;
   seed: number;
   biome: Biome;
   status: 'open' | 'complete';
@@ -92,13 +98,28 @@ export interface AdminWorld {
   createdAt: string | null;
 }
 
+export interface SeededWorld {
+  seed: number;
+  biome: Biome;
+  preset?: PresetName;
+  /** Defaults to settings. */
+  turnSeconds?: number;
+  generationCount?: number;
+}
+
 export interface Backend {
   signUp(username: string, password: string): Promise<Profile>;
   signIn(username: string, password: string): Promise<Profile>;
   signOut(): Promise<void>;
   currentUser(): Promise<Profile | null>;
 
+  /** Random weighted assignment; resumes a world the player already holds. */
   claimWorld(): Promise<ClaimedWorld>;
+  /**
+   * Call about once a minute while the clock is stopped (journal open, end-of-turn flow).
+   * Returns the new lock expiry, or null if the turn was voided and the world is gone.
+   */
+  heartbeat(worldId: string): Promise<string | null>;
   commitTurn(input: CommitInput): Promise<TurnSummary>;
 
   listCompletedWorlds(): Promise<CompletedWorld[]>;
@@ -118,4 +139,6 @@ export interface Backend {
    */
   markComplete(worldId: string): Promise<void>;
   clearLock(worldId: string): Promise<void>;
+  /** A world from a chosen seed (the demo world, 10). Returns its id. */
+  createSeededWorld(world: SeededWorld): Promise<string>;
 }

@@ -40,17 +40,17 @@ describe('LocalBackend admin', () => {
   });
 
   it('skips a world to its replay with the generations played so far', async () => {
-    const worldId = await playOne(api, 'al');
+    const worldId = await playOne(api, 'alba');
     await api.signUp('admin', 'secret1');
     expect(await api.listCompletedWorlds()).toEqual([]);
     await api.markComplete(worldId);
     const [done] = await api.listCompletedWorlds();
-    expect(done).toMatchObject({ worldId, generationCount: 1, players: ['al'] });
+    expect(done).toMatchObject({ worldId, generationCount: 1, players: ['alba'] });
     expect((await api.getReplay(worldId)).journal).toHaveLength(1);
   });
 
   it('force-assigns a world to a player, who gets it on their next Play', async () => {
-    const worldId = await playOne(api, 'al');
+    const worldId = await playOne(api, 'alba');
     await api.signUp('judge', 'secret1');
     await api.signUp('admin', 'secret1');
     await api.forceAssign(worldId, 'Judge');
@@ -60,7 +60,7 @@ describe('LocalBackend admin', () => {
   });
 
   it('configures worlds and defaults, within limits', async () => {
-    const worldId = await playOne(api, 'al');
+    const worldId = await playOne(api, 'alba');
     await api.signUp('admin', 'secret1');
     await api.configureWorld(worldId, { turnSeconds: 120, generationCount: 3 });
     expect((await api.listWorlds())[0]).toMatchObject({ turnSeconds: 120, generationCount: 3 });

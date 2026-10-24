@@ -13,3 +13,4 @@ export { tileIndex } from './types';
 export type { Biome, BoundaryTile, DecoTile, Plot, PlotId, PlotKind, Point, TerrainTile, TileMap } from './types';
 export { entranceOf, HOUSE_SIZE, houseAt, spawnOf } from './house';
 export type { Furniture, FurnitureKind, House } from './types';
+export { worldName } from './names';

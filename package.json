@@ -8,7 +8,7 @@
     "dev:worldgen": "vite --open '/temporal/#/dev/worldgen'",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && tsc -p supabase/functions/tsconfig.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -16,7 +16,9 @@
     "worldgen": "tsx scripts/worldgen-preview.ts",
     "simulate": "tsx scripts/simulate.ts",
     "atlas": "tsx scripts/build-atlas.ts",
-    "audio": "tsx scripts/build-audio.ts"
+    "audio": "tsx scripts/build-audio.ts",
+    "functions:bundle": "tsx scripts/bundle-engine.ts",
+    "functions:deploy": "npm run functions:bundle && supabase functions deploy commit-turn --use-api"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
