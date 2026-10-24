@@ -7,7 +7,7 @@ Art direction: [`docs/art/art-direction.md`](docs/art/art-direction.md).
 
 | File(s) | Source URL | Author | Licence | Credit required? | Modified? |
 |---|---|---|---|---|---|
-| — | — | — | — | — | — |
+| `public/assets/fonts/PatrickHand-Regular.ttf` (+ `PatrickHand-OFL.txt`) | https://github.com/google/fonts/tree/main/ofl/patrickhand | Patrick Wagesreiter | SIL OFL 1.1 | No (licence file ships with the font) | No |
 
 ## Chosen sources (not yet added)
 

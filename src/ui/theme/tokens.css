@@ -1,0 +1,172 @@
+/*
+ * Design tokens from docs/art/art-direction.md. The palette names match the art direction exactly,
+ * so a sprite, a Pixi tint and a CSS rule can all say `plum` and mean the same colour.
+ * palette.ts holds the same values for canvas and Pixi code.
+ */
+
+@font-face {
+  font-family: 'Patrick Hand';
+  src: url('/assets/fonts/PatrickHand-Regular.ttf') format('truetype');
+  font-display: block;
+}
+
+:root {
+  /* World / day */
+  --grass-light: #a4ed93;
+  --grass: #91de89;
+  --grass-shade: #61aa81;
+  --tree: #3a6757;
+  --shadow: #3c5461;
+  --path: #e7d7a1;
+  --path-shade: #cebb99;
+  --dirt: #bea479;
+  --ledge: #956d42;
+
+  /* Sky / title */
+  --cloud: #fefadb;
+  --cloud-shade: #e0eddc;
+  --mist: #b9dcca;
+  --sky: #5fbfc7;
+  --sky-mid: #4596ae;
+  --sky-deep: #36779b;
+  --rock: #62606c;
+
+  /* Dusk / journal / replay */
+  --peach-light: #fccca7;
+  --peach: #ffc19d;
+  --rose: #ecaa8e;
+  --clay: #b48471;
+  --bark: #6f4e4c;
+  --plum: #404363;
+  --sea: #53c2db;
+  --sea-deep: #4191a8;
+
+  /* UI */
+  --ink: #1f2027;
+  --panel-edge: #563749;
+  --muted: #87786b;
+  --highlight: #bcc9a1;
+  --paper: #fefadb;
+
+  /* Resource accents: HUD numbers and bars only */
+  --food: #d95763;
+  --water: #53c2db;
+  --stamina: #f2b84b;
+
+  /*
+   * One art pixel. The world draws 16 px tiles at 3x, so UI chrome uses the same 3 px step and the
+   * panels sit on the same grid as the sprites.
+   */
+  --px: 3px;
+
+  /*
+   * UI type. The pack's pixel font replaces the fallback once art/source/ lands (09); everything
+   * reads --font-ui, so that's a one-line change. Patrick Hand is for words players write.
+   */
+  --font-ui: 'Ninja Adventure', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-hand: 'Patrick Hand', 'Comic Sans MS', cursive;
+
+  --text-xs: 12px;
+  --text-sm: 15px;
+  --text-md: 18px;
+  --text-lg: 24px;
+  --text-xl: 36px;
+  --text-wordmark: 54px;
+
+  /* Focus ring colour; surfaces that are pale (paper) override it. */
+  --focus: var(--peach);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-ui: 160ms;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  line-height: 1.35;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  text-rendering: optimizeSpeed;
+  caret-color: var(--peach);
+}
+
+img,
+canvas {
+  image-rendering: pixelated;
+}
+
+::selection {
+  background: var(--peach);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: var(--px) solid var(--focus);
+  outline-offset: var(--px);
+}
+
+/* Pale surfaces: the journal paper, primary buttons. */
+.on-paper {
+  --focus: var(--plum);
+  color: var(--ink);
+  caret-color: var(--bark);
+}
+
+.on-paper ::selection {
+  background: var(--peach-light);
+  color: var(--ink);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-edge) transparent;
+}
+
+::-webkit-scrollbar {
+  width: calc(var(--px) * 3);
+  height: calc(var(--px) * 3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--panel-edge);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
