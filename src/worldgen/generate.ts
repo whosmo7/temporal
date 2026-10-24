@@ -1,3 +1,4 @@
+import { buildCollision, walkDistance } from './collision';
 import { scatterDeco } from './deco';
 import { bfsDistance, rectTiles } from './grid';
 import { entranceOf, placeHouse, spawnOf } from './house';
@@ -24,30 +25,47 @@ export function generateMap(seed: number, biome: Biome, preset: WorldgenPreset |
 
   const pinned = pinnedPlots(site, o);
   const rng = deriveRng(seed, 'plots');
-  let plots: Plot[] | null = null;
-  let path: Uint8Array | null = null;
-  for (let attempt = 0; attempt < o.maxAttempts && !path; attempt++) {
-    plots = placePlots(site, o, pinned, rng);
-    path = plots && carvePaths(seed, site, plots, o);
+  for (let attempt = 0; attempt < o.maxAttempts; attempt++) {
+    const plots = placePlots(site, o, pinned, rng);
+    const path = plots && carvePaths(seed, site, plots, o);
+    if (!plots || !path) continue;
+    const deco = scatterDeco(site, plots, path, o, deriveRng(seed, 'deco'));
+    const map: TileMap = {
+      width: o.width,
+      height: o.height,
+      biome,
+      seed,
+      layers: { ...paintTerrain(seed, biome, site, plots, path, o), deco },
+      plots,
+      house,
+      spawn: house ? spawnOf(house) : site.entrance,
+    };
+    if (treesReachable(map)) return map;
   }
-  if (!plots || !path) {
-    throw new WorldgenError(
-      `seed ${seed} (${biome}): couldn't place every plot reachably in ${o.maxAttempts} attempts; ` +
-        'try a bigger map, fewer fields or smaller plotSpacing',
-    );
-  }
+  throw new WorldgenError(
+    `seed ${seed} (${biome}): couldn't place every plot reachably in ${o.maxAttempts} attempts; ` +
+      'try a bigger map, fewer fields or smaller plotSpacing',
+  );
+}
 
-  const deco = scatterDeco(site, plots, path, o, deriveRng(seed, 'deco'));
-  return {
-    width: o.width,
-    height: o.height,
-    biome,
-    seed,
-    layers: { ...paintTerrain(seed, biome, site, plots, path, o), deco },
-    plots,
-    house,
-    spawn: house ? spawnOf(house) : site.entrance,
-  };
+/**
+ * Every orchard tile has a side the player can walk to from spawn, so each tree can be planted
+ * and picked on its own (decision 019).
+ */
+function treesReachable(map: TileMap): boolean {
+  const walk = walkDistance(map, buildCollision(map));
+  const reached = (x: number, y: number) =>
+    x >= 0 && y >= 0 && x < map.width && y < map.height && walk[y * map.width + x]! >= 0;
+  return map.plots
+    .filter((p) => p.kind === 'orchard')
+    .every((p) => {
+      for (let y = p.y; y < p.y + p.h; y++) {
+        for (let x = p.x; x < p.x + p.w; x++) {
+          if (![[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].some(([sx, sy]) => reached(sx!, sy!))) return false;
+        }
+      }
+      return true;
+    });
 }
 
 /** Seed-derived biome, for callers that don't choose one (open question 03.1). */

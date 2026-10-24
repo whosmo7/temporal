@@ -150,7 +150,7 @@ const harvest: Handler = (ctx) => {
 const plantCrops: Handler = (ctx) => {
   const { state, rec, cause, plot, input, at } = ctx;
   if (!plot || plot.kind !== 'field') return 'Crops can only go in a field';
-  if (plot.stage !== 'empty' && plot.stage !== 'rotten') return 'This field is already planted';
+  if (plot.stage !== 'empty' && plot.stage !== 'rotten') return 'Already sown';
   const blocked = cannotAfford(state, CONFIG.plantCropsCost, CONFIG.plantCropsWater);
   if (blocked) return blocked;
 

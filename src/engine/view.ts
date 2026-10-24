@@ -18,9 +18,10 @@ export function visibleView(state: WorldState, t = 0): VisibleWorld {
   const plots: Record<string, VisiblePlot> = {};
   for (const plot of Object.values(state.plots)) {
     const stage = visibleStage(state, plot, time);
-    plots[plot.id] = stage
-      ? { id: plot.id, kind: plot.kind, stage }
-      : { id: plot.id, kind: plot.kind };
+    const visible: VisiblePlot = { id: plot.id, kind: plot.kind };
+    if (plot.tile) visible.tile = { ...plot.tile };
+    if (stage) visible.stage = stage;
+    plots[plot.id] = visible;
   }
 
   const fastTrackable: FastTrackOption[] = state.pending

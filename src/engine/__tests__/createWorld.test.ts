@@ -43,8 +43,8 @@ describe('createWorld', () => {
 
   it('sets the founder stage on each plot, with no wear', () => {
     const { plots } = createWorld(7, opts).state;
-    expect(plots['field-1']?.stage).toBe('empty');
-    expect(plots['orchard-1']?.stage).toBe('empty');
+    expect(plots['field-1:0,0']?.stage).toBe('empty');
+    expect(plots['orchard-1:1,1']?.stage).toBe('empty');
     expect(plots['reservoir']?.stage).toBe('cracked');
     expect(plots['well']?.stage).toBe('none');
     for (const plot of Object.values(plots)) {

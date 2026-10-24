@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
-import type { FastTrackOption, VisibleWorld } from '../../engine';
+import type { FastTrackOption, PlotId, VisibleWorld } from '../../engine';
 import { Button, Panel } from '../kit';
-import { plotName, stageName } from './copy';
+import { plotName, stageName, tileName } from './copy';
 import { Cost } from './InteractPrompt';
 
 /**
  * "Hurry something along" (04, flavour-text): every pending effect, anyone's, with who started it
- * and when, how it looks now and what hurrying costs. No due dates and no yields.
+ * and when, how it looks now and what hurrying costs. No due dates and no yields. Field and
+ * orchard tiles are one row each (decision 019).
  */
 export function FastTrackMenu({
   view,
@@ -31,6 +32,15 @@ export function FastTrackMenu({
   }, [onClose]);
 
   const rows = [...view.fastTrackable].sort((a, b) => Number(b.plotId === focusPlot) - Number(a.plotId === focusPlot));
+  const name = (id: PlotId) => {
+    const plot = view.plots[id]!;
+    if (!plot.tile) return plotName(plot.kind, view.biome);
+    const { plot: of } = plot.tile;
+    const tiles = Object.values(view.plots)
+      .filter((p) => p.tile?.plot === of)
+      .sort((a, b) => a.tile!.y - b.tile!.y || a.tile!.x - b.tile!.x);
+    return tileName(plot.kind, tiles.indexOf(plot) + 1);
+  };
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
       <Panel title="Hurry something along" style={{ minWidth: 420, padding: '10px 14px' }}>
@@ -43,7 +53,7 @@ export function FastTrackMenu({
               <Button key={o.effectId} onClick={() => onPick(o)} disabled={!!error} autoFocus={i === 0}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
                   <span>
-                    {plot ? plotName(plot.kind, view.biome) : 'Work'} — started by {o.actorId ?? 'someone'}, Generation {o.committedTurn}
+                    {plot ? name(plot.id) : 'Work'} — started by {o.actorId ?? 'someone'}, Generation {o.committedTurn}
                     {plot && ` · ${stageName(plot.kind, plot.stage, view.biome)}`}
                   </span>
                   <span style={{ marginLeft: 'auto', display: 'inline-flex', gap: 8 }}>

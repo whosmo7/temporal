@@ -41,7 +41,7 @@ function row(r: GenRow): string[] {
     r.summary.weakenedNext.toFixed(2),
     `${p['reservoir']?.stage}/${p['reservoir']?.wear}`,
     `${p['well']?.stage}/${p['well']?.wear}`,
-    `${p['orchard-1']?.stage}/${p['orchard-1']?.wear}`,
+    `${p['orchard-1:0,0']?.stage}/${p['orchard-1:0,0']?.wear}`, // the first tree (decision 019)
     String(r.end.wildStock),
   ];
 }

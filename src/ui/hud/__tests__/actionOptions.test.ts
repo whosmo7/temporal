@@ -13,25 +13,29 @@ const checker = (state: WorldState, t = 0) => (r: ActionRequest) =>
 const keys = (state: WorldState, id: string, kind: 'field' | 'orchard' | 'reservoir' | 'well' | 'wild', t = 0) =>
   plotOptions(visibleView(state, t), { id, kind }, checker(state, t)).map((o) => `${o.key} ${o.label}${o.error ? ` (${o.error})` : ''}`);
 
+// Fields and orchards are worked one tile at a time (decision 019).
+const FIELD = 'field-1:0,0';
+const TREE = 'orchard-1:0,0';
+
 describe('plot options', () => {
   it('offers what fits the plot as it looks now, default on E', () => {
     const s = fresh();
-    expect(keys(s, 'field-1', 'field')).toEqual(['E Sow crops']);
-    expect(keys(s, 'orchard-1', 'orchard')).toEqual(['E Plant an orchard']);
+    expect(keys(s, FIELD, 'field')).toEqual(['E Sow crops']);
+    expect(keys(s, TREE, 'orchard')).toEqual(['E Plant a tree']);
     expect(keys(s, 'reservoir', 'reservoir')).toEqual(['E Repair the reservoir wall']);
     expect(keys(s, 'well', 'well')).toEqual(['E Dig a well']);
     expect(keys(s, 'wild', 'wild')).toEqual(['E Hunt']);
   });
 
   it('offers harvest on E and eat on Q at a ripe field, and hurry on F while it grows', () => {
-    const sown = applyAction(fresh(), { id: 'a', actorId: 'AL', seq: 0, type: 'plantCrops', plotId: 'field-1' }, 0).state;
-    expect(keys(sown, 'field-1', 'field')).toEqual(['F Hurry this along']);
-    expect(keys(tick(sown, 200).state, 'field-1', 'field', 200)).toEqual(["E Harvest", "Q Harvest and eat (You're not hungry)"]);
+    const sown = applyAction(fresh(), { id: 'a', actorId: 'AL', seq: 0, type: 'plantCrops', plotId: FIELD }, 0).state;
+    expect(keys(sown, FIELD, 'field')).toEqual(['F Hurry this along']);
+    expect(keys(tick(sown, 200).state, FIELD, 'field', 200)).toEqual(["E Harvest", "Q Harvest and eat (You're not hungry)"]);
   });
 
   it('greys out what the player cannot afford, with the engine reason', () => {
     const s = fresh();
-    s.resources.stamina = 10;
-    expect(keys(s, 'reservoir', 'reservoir')).toEqual(['E Repair the reservoir wall (Not enough stamina)']);
+    s.resources.water = 0;
+    expect(keys(s, TREE, 'orchard')).toEqual(['E Plant a tree (Not enough water)']);
   });
 });

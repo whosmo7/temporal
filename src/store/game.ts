@@ -2,12 +2,12 @@ import { create } from 'zustand';
 import type { Gravestone } from '../api/Backend';
 import {
   applyAction,
+  CONFIG,
   endTurn,
   tick,
   visibleView,
   type ActionEntry,
   type ActionInput,
-  type ActionResult,
   type EndTurnResult,
   type Transition,
   type VisibleWorld,
@@ -20,8 +20,18 @@ export type ActionRequest = Omit<ActionInput, 'id' | 'actorId' | 'seq'>;
 
 /** How often (in-turn seconds) the game loop runs the engine's `tick` for intra-turn effects. */
 const TICK_EVERY = 0.25;
-/** Acting takes real turn time: the player stands still this long after an action (04). */
-export const ACTION_TIME = 0.5;
+
+/** How long `request` takes, in turn seconds (decision 019). Eating takes as long as harvesting. */
+export function actionSeconds(request: Pick<ActionRequest, 'type'>): number {
+  return CONFIG.actionSeconds[request.type];
+}
+
+/** What the player is doing right now: it started at `from` and lands at `until`. */
+export interface Work {
+  request: ActionRequest;
+  from: number;
+  until: number;
+}
 
 /**
  * Play session state the world and the HUD share. The game loop (src/render/world-view.ts) owns
@@ -54,10 +64,16 @@ export interface GameStore {
   transitions: Transition[];
   /** In-turn time until which the player is busy acting and can't walk. */
   busyUntil: number;
+  /** The action under way, if any. It's applied to the world when the clock reaches `until`. */
+  work: Work | null;
   /** The Fast Track menu is open, optionally on one plot's effect. */
   fastTrack: { plotId: PlotId | null } | null;
-  /** The last action tried, for the prompt and FX; `n` counts up so repeats still register. */
-  lastAction: { n: number; request: ActionRequest; error?: string } | null;
+  /**
+   * The last action tried, for the prompt and FX; `n` counts up so repeats still register. `done`
+   * is set when it landed, `error` when it was refused (at the start, or at the end if the world
+   * changed meanwhile).
+   */
+  lastAction: { n: number; request: ActionRequest; error?: string; done?: boolean } | null;
 
   /** Advances the clock unless the journal is open; stops at turnSeconds. */
   advance(dt: number): void;
@@ -68,8 +84,11 @@ export interface GameStore {
   setHoveredStone(stone: GameStore['hoveredStone']): void;
   /** Starts playing `world` (already through `beginTurn`, whose transitions it takes) as `actor`, from 6 am. */
   loadTurn(world: WorldState, actor: string, begun?: Transition[]): void;
-  /** Tries an action now. On success the world, log and view move on; on error nothing changes. */
-  act(request: ActionRequest): ActionResult;
+  /**
+   * Starts an action. It takes `actionSeconds` of turn time, with the player standing still, and
+   * the engine applies it when the clock gets there. Returns the reason if it can't start.
+   */
+  act(request: ActionRequest): { error?: string };
   /** The reason `request` would fail right now, without doing it; null if it would work. */
   check(request: ActionRequest): string | null;
   openFastTrack(plotId?: PlotId | null): void;
@@ -78,102 +97,121 @@ export interface GameStore {
   finishTurn(): EndTurnResult | null;
 }
 
-export const useGameStore = create<GameStore>((set, get) => ({
-  t: 0,
-  turnSeconds: 600,
-  journalOpen: false,
-  journalPage: null,
-  nearby: null,
-  nearbyStone: null,
-  hoveredStone: null,
-  world: null,
-  view: null,
-  actor: '',
-  log: [],
-  transitions: [],
-  busyUntil: 0,
-  fastTrack: null,
-  lastAction: null,
-
-  advance: (dt) => {
-    const { t, turnSeconds, journalOpen, world } = get();
-    if (journalOpen || t >= turnSeconds) return;
-    const next = Math.min(turnSeconds, t + dt);
-    if (!world || Math.floor(next / TICK_EVERY) === Math.floor(t / TICK_EVERY)) return set({ t: next });
-    // ~4 Hz: crops ripen, and the view catches up with the time of day.
-    const r = tick(world, next);
-    set((s) => ({
-      t: next,
-      world: r.state,
-      view: visibleView(r.state, next),
-      transitions: r.transitions.length ? [...s.transitions, ...r.transitions] : s.transitions,
-    }));
-  },
-  setJournalOpen: (open) => set(open ? { journalOpen: true } : { journalOpen: false, journalPage: null }),
-  openJournal: (page) => set({ journalOpen: true, journalPage: page ?? null, hoveredStone: null }),
-  setNearby: (id, stone = null) => {
-    const s = get();
-    if (s.nearby !== id || s.nearbyStone?.turn !== stone?.turn) set({ nearby: id, nearbyStone: stone });
-  },
-  setHoveredStone: (stone) => {
-    const h = get().hoveredStone;
-    if (h?.turn !== stone?.turn || h?.x !== stone?.x || h?.y !== stone?.y) set({ hoveredStone: stone });
-  },
-  loadTurn: (world, actor, begun = []) =>
-    set({
-      t: 0,
-      turnSeconds: world.turnSeconds,
-      journalOpen: false,
-      journalPage: null,
-      nearby: null,
-      nearbyStone: null,
-      hoveredStone: null,
-      world,
-      view: visibleView(world, 0),
-      actor,
-      log: [],
-      transitions: begun,
-      busyUntil: 0,
-      fastTrack: null,
-      lastAction: null,
-    }),
-  act: (request) => {
-    const { world, t, actor, log, lastAction } = get();
-    if (!world) throw new Error('act() before loadTurn()');
+export const useGameStore = create<GameStore>((set, get) => {
+  /** Applies finished work to the world at the time it finished. */
+  const land = (work: Work) => {
+    const { world, actor, log, lastAction } = get();
+    if (!world) return;
     const n = (lastAction?.n ?? 0) + 1;
-    const input: ActionInput = { ...request, id: `${world.turn}-${log.length}`, actorId: actor, seq: log.length };
-    const r = applyAction(world, input, t);
-    if (r.error || !r.entry) {
-      set({ lastAction: { n, request, error: r.error ?? 'Not possible' } });
-      return r;
-    }
+    const input: ActionInput = { ...work.request, id: `${world.turn}-${log.length}`, actorId: actor, seq: log.length };
+    const r = applyAction(world, input, work.until);
+    if (r.error || !r.entry) return set({ work: null, lastAction: { n, request: work.request, error: r.error ?? 'Not possible' } });
     const entry = r.entry;
     set((s) => ({
       world: r.state,
-      view: visibleView(r.state, t),
+      view: visibleView(r.state, work.until),
       log: [...s.log, entry],
       transitions: [...s.transitions, ...r.transitions],
-      busyUntil: t + ACTION_TIME,
-      lastAction: { n, request },
+      work: null,
+      lastAction: { n, request: work.request, done: true },
     }));
-    return r;
-  },
-  check: (request) => {
-    const { world, t, actor, log } = get();
-    if (!world) return 'No world';
-    const r = applyAction(world, { ...request, id: 'check', actorId: actor, seq: log.length }, t);
-    return r.error ?? null;
-  },
-  openFastTrack: (plotId = null) => set({ fastTrack: { plotId } }),
-  closeFastTrack: () => set({ fastTrack: null }),
-  finishTurn: () => {
-    const { world } = get();
-    if (!world) return null;
-    const r = endTurn(world);
-    set((s) => ({ world: r.state, transitions: [...s.transitions, ...r.transitions], fastTrack: null }));
-    return r;
-  },
-}));
+  };
+
+  return {
+    t: 0,
+    turnSeconds: 600,
+    journalOpen: false,
+    journalPage: null,
+    nearby: null,
+    nearbyStone: null,
+    hoveredStone: null,
+    world: null,
+    view: null,
+    actor: '',
+    log: [],
+    transitions: [],
+    busyUntil: 0,
+    work: null,
+    fastTrack: null,
+    lastAction: null,
+
+    advance: (dt) => {
+      const before = get();
+      if (before.journalOpen || before.t >= before.turnSeconds) return;
+      const next = Math.min(before.turnSeconds, before.t + dt);
+      // The action under way lands first, at the time it finishes.
+      if (before.work && next >= before.work.until) land(before.work);
+      const { t, world } = get();
+      if (!world || Math.floor(next / TICK_EVERY) === Math.floor(t / TICK_EVERY)) return set({ t: next });
+      // ~4 Hz: crops ripen, and the view catches up with the time of day.
+      const r = tick(world, next);
+      set((s) => ({
+        t: next,
+        world: r.state,
+        view: visibleView(r.state, next),
+        transitions: r.transitions.length ? [...s.transitions, ...r.transitions] : s.transitions,
+      }));
+    },
+    setJournalOpen: (open) => set(open ? { journalOpen: true } : { journalOpen: false, journalPage: null }),
+    openJournal: (page) => set({ journalOpen: true, journalPage: page ?? null, hoveredStone: null }),
+    setNearby: (id, stone = null) => {
+      const s = get();
+      if (s.nearby !== id || s.nearbyStone?.turn !== stone?.turn) set({ nearby: id, nearbyStone: stone });
+    },
+    setHoveredStone: (stone) => {
+      const h = get().hoveredStone;
+      if (h?.turn !== stone?.turn || h?.x !== stone?.x || h?.y !== stone?.y) set({ hoveredStone: stone });
+    },
+    loadTurn: (world, actor, begun = []) =>
+      set({
+        t: 0,
+        turnSeconds: world.turnSeconds,
+        journalOpen: false,
+        journalPage: null,
+        nearby: null,
+        nearbyStone: null,
+        hoveredStone: null,
+        world,
+        view: visibleView(world, 0),
+        actor,
+        log: [],
+        transitions: begun,
+        busyUntil: 0,
+        work: null,
+        fastTrack: null,
+        lastAction: null,
+      }),
+    act: (request) => {
+      const { world, t, turnSeconds, work, lastAction } = get();
+      if (!world) throw new Error('act() before loadTurn()');
+      const n = (lastAction?.n ?? 0) + 1;
+      const until = t + actionSeconds(request);
+      const error = work ? 'Busy' : until > turnSeconds ? 'Not enough time left today' : get().check(request);
+      if (error) {
+        set({ lastAction: { n, request, error } });
+        return { error };
+      }
+      set({ work: { request, from: t, until }, busyUntil: until, lastAction: { n, request } });
+      return {};
+    },
+    check: (request) => {
+      const { world, t, actor, log } = get();
+      if (!world) return 'No world';
+      const r = applyAction(world, { ...request, id: 'check', actorId: actor, seq: log.length }, t);
+      return r.error ?? null;
+    },
+    openFastTrack: (plotId = null) => set({ fastTrack: { plotId } }),
+    closeFastTrack: () => set({ fastTrack: null }),
+    finishTurn: () => {
+      const { world } = get();
+      if (!world) return null;
+      const r = endTurn(world);
+      // Work that hadn't finished by the end of the day never happened.
+      set((s) => ({ world: r.state, transitions: [...s.transitions, ...r.transitions], fastTrack: null, work: null }));
+      return r;
+    },
+  };
+});
 
 /** Time is up: the turn has reached 6 am the next morning. */
 export const isTimeUp = (s: Pick<GameStore, 't' | 'turnSeconds'>) => s.t >= s.turnSeconds;

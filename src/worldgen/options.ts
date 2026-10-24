@@ -164,6 +164,9 @@ function validateOptions(o: WorldgenOptions): void {
     int(s.w, 1, 16, `plotSizes.${kind}.w`);
     int(s.h, 1, 16, `plotSizes.${kind}.h`);
   }
+  // Trees are worked from beside them (decision 019), so no tree may sit inside the orchard.
+  const orchard = o.plotSizes.orchard;
+  if (Math.min(orchard.w, orchard.h) > 2) fail(`plotSizes.orchard must be at most 2 tiles in one direction, got ${orchard.w}×${orchard.h}`);
   for (const [name, v] of [
     ['dirtLevel', o.dirtLevel],
     ['decoDensity', o.decoDensity],

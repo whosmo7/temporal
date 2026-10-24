@@ -1,11 +1,16 @@
 {
-  "$comment": "The pre-seeded demo world (10). PLACEHOLDERS until C picks the seed, generation count, turn length and founder pages. Usernames must match ^[a-z0-9_]{3,20}$.",
+  "$comment": "The pre-seeded demo world (10). PLACEHOLDERS until C picks the seed, generation count, turn length and founder pages. Usernames must match ^[a-z0-9_]{3,20}$. Orchards are planted per tree, `orchard-1:<x>,<y>` (decision 019).",
   "world": { "seed": 42, "biome": "forest", "preset": "default", "turnSeconds": 60, "generationCount": 3 },
   "judge": "judge",
   "generations": [
     {
       "player": "founder_a",
-      "actions": [{ "type": "plantOrchard", "plot": "orchard-1", "t": 8 }],
+      "actions": [
+        { "type": "plantOrchard", "plot": "orchard-1:0,0", "t": 8 },
+        { "type": "plantOrchard", "plot": "orchard-1:1,0", "t": 11 },
+        { "type": "plantOrchard", "plot": "orchard-1:0,1", "t": 14 },
+        { "type": "plantOrchard", "plot": "orchard-1:1,1", "t": 17 }
+      ],
       "journal": "I planted something by the east fence. Look after it."
     },
     {

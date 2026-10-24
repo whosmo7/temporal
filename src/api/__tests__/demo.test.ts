@@ -29,6 +29,9 @@ describe('demo world', () => {
     expect(world.journal.map((p) => p.authorUsername)).toEqual(DEMO.generations.map((g) => g.player));
     expect(world.gravestones).toHaveLength(DEMO.generations.length);
     // The demo moment: the orchard founder_a planted is there for the judge.
-    expect(world.snapshot?.plots['orchard-1']?.stage).not.toBe('empty');
+    // Trees are planted one by one (decision 019): all four are growing.
+    for (const tree of ['orchard-1:0,0', 'orchard-1:1,0', 'orchard-1:0,1', 'orchard-1:1,1']) {
+      expect(world.snapshot?.plots[tree]?.stage).not.toBe('empty');
+    }
   });
 });

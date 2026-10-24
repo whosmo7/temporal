@@ -63,8 +63,8 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 
 | Plot | States (visual) | Notes |
 |---|---|---|
-| Field ×2 | empty → sown → growing → ripe → rotten | Quick crops ripen within one turn |
-| Orchard plot | empty → sapling → young → fruiting → (worn → dead) | Fruits from gen +2 (`orchardMatureGens`) |
+| Field ×2 | empty → sown → growing → ripe → rotten, **per tile** | Quick crops ripen within one turn. Each of the 9 tiles is sown and harvested on its own ([019](../decisions/019-per-tile-actions-take-time.md)) |
+| Orchard plot | empty → sapling → young → fruiting → (worn → dead), **per tree** | Four one-tile trees, each planted, picked, tended and worn on its own. Fruits from gen +2 (`orchardMatureGens`) |
 | Reservoir | cracked → low / full | Not repaired = cracked. Repaired with wear ≥ 2 = low. Repaired with wear < 2 = full. Sets water income and drought protection. |
 | Well site | none → clear → (stagnant at wear 3) | Instant + ongoing water, needs maintaining |
 | Wild spot | stock level: many / few / none | Forest → hunting ground, Island → fishing spot |
@@ -72,6 +72,12 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 | Graveyard | one stone per completed turn | Click a stone to open that player's page |
 
 ## Actions
+
+> **Changed by [019](../decisions/019-per-tile-actions-take-time.md):** fields and orchards are worked a tile at a
+> time, every stamina cost is **0 for now**, and each action takes time instead (`actionSeconds`: harvest 1 s, sow
+> 1.5 s, plant a tree 3 s, repair 8 s, dig 6 s, fish/hunt 3 s, tend 3 s, hurry 2 s). Yields are per tile: **1 food per
+> field tile, 4 per tree**. Sowing needs no water; a tree needs 1. The table below is the earlier whole-plot set, kept
+> for when stamina comes back.
 
 Values below are the first confirmed set for `src/engine/config.ts` (full block under **Config values**).
 They passed a rough scratch-model check (see **Balance pre-check**). The real check is task 4 with `scripts/simulate.ts`.
@@ -209,27 +215,30 @@ export const CONFIG = {
   hungerSlowAt: 0,
   hungrySpeedMult: 0.6,
 
-  // Actions
-  harvestCost: 5,
+  // Actions. Stamina costs are 0 for now and fields/orchards are per tile (decision 019);
+  // the earlier whole-plot costs are in the comments.
+  harvestCost: 0, // was 5
   harvestEatCost: 0, // decision 016
-  cropYield: 5,
-  orchardYield: 15, // once per generation
-  plantCropsCost: 8,
-  plantCropsWater: 1,
+  cropYield: 1, // per field tile (was 5 per field)
+  orchardYield: 4, // per tree, once per generation (was 15 per orchard)
+  plantCropsCost: 0, // was 8
+  plantCropsWater: 0, // was 1 per field
   cropRipenPct: 0.25, // fraction of turnSeconds
-  plantOrchardCost: 25,
-  plantOrchardWater: 5,
+  plantOrchardCost: 0, // was 25
+  plantOrchardWater: 1, // per tree (was 5 per orchard)
   orchardMatureGens: 2,
-  repairReservoirCost: 60,
+  repairReservoirCost: 0, // was 60
   reservoirIncomeCracked: 4,
   reservoirIncomeRepaired: 12,
-  digWellCost: 20,
+  digWellCost: 0, // was 20
   digWellWater: 8,
   wellIncome: 6,
-  fishHuntCost: 8,
+  fishHuntCost: 0, // was 8
   fishHuntYield: 4,
-  maintainCost: 10,
+  maintainCost: 0, // was 10
   fastTrackMultiplier: 2,
+  // Seconds each action takes; the player stands still meanwhile (decision 019)
+  actionSeconds: { harvest: 1, plantCrops: 1.5, plantOrchard: 3, repairReservoir: 8, digWell: 6, fishHunt: 3, maintain: 3, fastTrack: 2 },
 
   // Decay and wear
   foodRotPct: 0, // decision 011: stored food doesn't rot for now (was 0.3)

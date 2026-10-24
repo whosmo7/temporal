@@ -39,6 +39,8 @@ biomeFromSeed(seed): Biome             // for callers that want a seed-derived b
   biome defaults. The knobs are size, boundary depth, corner radius, beach width, field count, plot sizes, plot spacing,
   pond coverage, dirt amount, deco density and weights, path wiggle, lectern range, spawn clearance, spawn, `house`, `houseRange`, `pin` and `maxAttempts`.
   Default plot sizes come from the art direction: field 3×3, orchard 2×2, reservoir 3×2, well 1×1, wild 2×2, lectern 1×1 and graveyard 4×3.
+  The orchard holds one tree per tile ([019](../decisions/019-per-tile-actions-take-time.md)), so it may be at most 2 tiles
+  thick in one direction, and a layout is retried until every tree has a side the player can walk to.
   The built-in presets are `default`, `small`, `large`, `wide` and `bare`.
   Preview one with `npm run worldgen -- --seed 123 --biome island --preset small`.
 - **Pinned plots** (`pin: { reservoir: { x, y } }`) are placed exactly and skip the kind rules (lectern range, wild-on-edge).

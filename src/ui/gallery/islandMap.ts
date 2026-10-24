@@ -76,8 +76,14 @@ export function drawIslandMap(ctx: CanvasRenderingContext2D, sheet: CanvasImageS
   }
 
   const stages = input.state ? visibleView(input.state, input.state.turnSeconds).plots : {};
+  // Fields and orchards are kept per tile (decision 019); at thumbnail size each shows its commonest stage.
+  const commonest = (p: Plot) => {
+    const count = new Map<string, number>();
+    for (const v of Object.values(stages)) if (v.tile?.plot === p.id && v.stage) count.set(v.stage, (count.get(v.stage) ?? 0) + 1);
+    return [...count].sort((a, b) => b[1] - a[1])[0]?.[0];
+  };
   const plotFrame = (p: Plot) => {
-    const stage = stages[p.id]?.stage ?? FOUNDER_STAGE[p.kind] ?? (p.kind === 'wild' ? 'many' : 'default');
+    const stage = stages[p.id]?.stage ?? commonest(p) ?? FOUNDER_STAGE[p.kind] ?? (p.kind === 'wild' ? 'many' : 'default');
     return frames[`${p.kind}/${stage}-${map.biome}`] ? `${p.kind}/${stage}-${map.biome}` : `${p.kind}/${stage}`;
   };
 

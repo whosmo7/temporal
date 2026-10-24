@@ -10,6 +10,7 @@ import {
   endTurn,
   type ActionInput,
   type Biome,
+  type PlotState,
   type TurnSummary,
   type WorldState,
 } from '../../src/engine';
@@ -69,16 +70,27 @@ export function runStrategy(strategy: Strategy, opts: RunOptions): GenRow[] {
   return rows;
 }
 
-/** Two back-to-back crop cycles per field: plant, harvest once ripe, replant. */
+/** A field's or orchard's tiles, which are planted and picked one at a time (decision 019). */
+export function tilesOf(state: WorldState, plot: string): PlotState[] {
+  return Object.values(state.plots).filter((p) => p.tile?.plot === plot);
+}
+
+/**
+ * Back-to-back crop cycles on every tile of both fields: sow each tile in turn (each sowing takes
+ * its time), harvest each once ripe, replant.
+ */
 export function cropCycles(state: WorldState, cycles: number, eat = false): PlannedAction[] {
   const ripen = Math.ceil(state.turnSeconds * CONFIG.cropRipenPct);
+  const tiles = [...tilesOf(state, 'field-1'), ...tilesOf(state, 'field-2')];
+  const sow = CONFIG.actionSeconds.plantCrops;
   const out: PlannedAction[] = [];
-  for (const plotId of ['field-1', 'field-2']) {
-    for (let c = 0; c < cycles; c++) {
-      const t = c * (ripen + 1);
-      out.push({ type: 'plantCrops', plotId, t });
-      out.push({ type: 'harvest', plotId, t: t + ripen, eat });
-    }
+  for (let c = 0; c < cycles; c++) {
+    const start = c * (ripen + tiles.length * sow + 1);
+    tiles.forEach((tile, i) => {
+      const t = start + i * sow;
+      out.push({ type: 'plantCrops', plotId: tile.id, t });
+      out.push({ type: 'harvest', plotId: tile.id, t: t + ripen, eat });
+    });
   }
   return out;
 }
