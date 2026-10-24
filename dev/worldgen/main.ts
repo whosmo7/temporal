@@ -172,8 +172,14 @@ function draw({ map }: FounderState): void {
   if (ui.showGrid.checked) {
     ctx.strokeStyle = 'rgba(0,0,0,0.18)';
     ctx.beginPath();
-    for (let x = 0; x <= map.width; x++) ctx.moveTo(x * z + 0.5, 0), ctx.lineTo(x * z + 0.5, canvas.height);
-    for (let y = 0; y <= map.height; y++) ctx.moveTo(0, y * z + 0.5), ctx.lineTo(canvas.width, y * z + 0.5);
+    for (let x = 0; x <= map.width; x++) {
+      ctx.moveTo(x * z + 0.5, 0);
+      ctx.lineTo(x * z + 0.5, canvas.height);
+    }
+    for (let y = 0; y <= map.height; y++) {
+      ctx.moveTo(0, y * z + 0.5);
+      ctx.lineTo(canvas.width, y * z + 0.5);
+    }
     ctx.stroke();
   }
   if (ui.showLabels.checked && z >= 12) {
