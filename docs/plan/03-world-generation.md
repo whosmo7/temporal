@@ -47,6 +47,17 @@ biomeFromSeed(seed): Biome             // for callers that want a seed-derived b
 - **Determinism:** each stage (plots, deco) has its own PRNG stream derived from `hash(seed, stage)`, so changing the
   deco density never moves plots.
 - **Speed:** about 2–3 ms per 32×32 map, and under 10 ms for 40×40.
+- **Events** (`events.ts`): `generateEvents(seed, biome, cfg)` returns the world's whole `SeededEvent[]`, one entry per
+  event per generation, sorted by turn. A drought spanning several generations is several entries sharing a `spellId`.
+  The drought rule is in [008](../decisions/008-drought-length-and-timing.md). Good harvest and storm follow [005](../decisions/005-seeded-events.md).
+  The numbers (`droughtLengthFraction`, `droughtMaxLength`, `stormChance`) are passed in from `config.ts`.
+- **Founder state** (`founder.ts`): `founderState(seed, biome, cfg, preset)` returns `{ map, resources, wildStock, wildCap, plots, events }`,
+  where each plot starts at its `ids.md` stage (fields and orchard `empty`, reservoir `cracked`, well `none`).
+  `createWorld` (A) builds `WorldState` from it. Until `config.ts` exists, `src/worldgen/__fixtures__/founder-config.ts` holds C's numbers.
+- **Debug page:** `npm run dev:worldgen` opens `/dev/worldgen/?seed=123&biome=island&preset=small`. It's a standalone Vite page
+  that draws on a canvas, with controls for seed, biome, preset, generation count and JSON overrides. Its overlays are collision,
+  walk distance and grid. It also lists the events, the founder state and the plots, and has a "Copy preset JSON" button for
+  adding a new entry to `presets.ts`. It moves to `#/dev/worldgen` once the `11` app shell exists.
 
 ### Generation outline
 
@@ -94,10 +105,10 @@ generator places **at least one drought** so the reservoir decision always matte
 - [x] **[B]** Decoration scatter
 - [x] **[B]** Collision grid export
 - [x] **[B]** Output a `TileMap` data structure: `{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }` with no Pixi dependency
-- [ ] **[B]** Biome starter state + modifiers wired into `createWorld`
-- [ ] **[B]** Seeded event list (≥1 drought)
+- [ ] **[B]** Biome starter state + modifiers wired into `createWorld` *(`founderState()` is built; this waits on A's `createWorld` calling it)*
+- [x] **[B]** Seeded event list (≥1 drought)
 - [x] **[B]** Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps
-- [ ] **[B]** Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares (needs `04` basic renderer). Useful for picking demo seeds.
+- [x] **[B]** Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares. Useful for picking demo seeds. *(A standalone canvas page, so it doesn't need `04`.)*
 
 ## Acceptance
 

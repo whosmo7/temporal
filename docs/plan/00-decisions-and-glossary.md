@@ -47,6 +47,7 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Decay | **Resource decay + infrastructure wear** (crops rot, water stagnates, structures wear unless maintained) |
 | Delayed-effect visibility | **Partly hidden**: you can see something is growing or decaying, but not the exact numbers |
 | Random events | **Seeded** (deterministic from the world seed) |
+| Drought | **Exactly one per world**, lasting `min(5, ceil(gens / 10))` consecutive generations, starting at a random gen ≥ 2 ([008](../decisions/008-drought-length-and-timing.md)) |
 | Borrowing | **None** |
 | Scoring | **No score.** The replay is the ending. |
 

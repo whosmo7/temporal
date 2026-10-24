@@ -115,7 +115,7 @@ All numbers are **`[PLACEHOLDER]`** values for `src/engine/config.ts`.
 
 - Derived from the world seed at creation, so they're fully deterministic and replayable.
 - Hackathon set (suggested, needs confirming):
-  - **Drought** at gen `D` (e.g. second-to-last gen): reservoir income −70% unless the reservoir is repaired and wear < 2.
+  - **Drought**: exactly one per world, lasting `min(5, ceil(generationCount / 10))` consecutive generations and starting at a random gen ≥ 2 (gen 1 only in a 1-gen world). Reservoir income −70% unless the reservoir is repaired and wear < 2 ([008](../decisions/008-drought-length-and-timing.md)).
   - **Good harvest**: +50% crop yield in one gen.
   - **Storm** (Island only?): +1 wear on all structures.
 - **Events are never announced to the player.** They only show up through visuals (cracked earth, rain) and in the replay.
