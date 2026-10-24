@@ -1,6 +1,6 @@
 # 11 — Repo Setup, Workflow, Testing, Deploy
 
-**Owner:** Everyone (do this first, ideally one person in the first hour)
+**Owner:** Everyone (do this first, ideally one person in the first hour)  
 
 ## Decisions (locked)
 
@@ -36,14 +36,14 @@ temporal/
 
 ## Setup tasks
 
-- [ ] `npm create vite@latest` → React + TS. Add ESLint + Prettier.
-- [ ] Add deps: `pixi.js`, `zustand`, `@supabase/supabase-js`, `howler`; dev: `vitest`, `@vitest/coverage-v8`
-- [ ] `vite.config.ts`: `base: '/temporal/'` (or `/` if using a custom domain)
-- [ ] Hash router (`react-router` `createHashRouter`)
-- [ ] `.env.example` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Real values go in GitHub Actions secrets.
-- [ ] `Backend` interface + `LocalBackend` stub, so the frontend and engine can start before Supabase exists
-- [ ] Path alias `@engine/*` so the Edge Function and the client import the same code
-- [ ] Turn on Pages in repo settings (source: GitHub Actions)
+- [ ] **[A]** `npm create vite@latest` → React + TS. Add ESLint + Prettier.
+- [ ] **[A]** Add deps: `pixi.js`, `zustand`, `@supabase/supabase-js`, `howler`; dev: `vitest`, `@vitest/coverage-v8`
+- [ ] **[A]** `vite.config.ts`: `base: '/temporal/'` (or `/` if using a custom domain)
+- [ ] **[A]** Hash router (`react-router` `createHashRouter`)
+- [ ] **[A]** `.env.example` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Real values go in GitHub Actions secrets.
+- [ ] **[A]** `Backend` interface + `LocalBackend` stub, so the frontend and engine can start before Supabase exists
+- [ ] **[A]** Path alias `@engine/*` so the Edge Function and the client import the same code
+- [ ] **[A]** Turn on Pages in repo settings (source: GitHub Actions)
 
 ## CI / deploy
 

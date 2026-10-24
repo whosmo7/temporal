@@ -1,6 +1,6 @@
 # 09 — Art & Audio
 
-**Owner:** Design/art/audio
+**Owner:** Design/art/audio  
 **Depends on:** `03` (tile list), `04` (sprite stages), `01` (actions).
 
 ## Decisions (locked)
@@ -85,18 +85,18 @@ Sources: Kenney audio packs (CC0), Freesound (check CC-BY attribution), OpenGame
 
 ## Tasks
 
-- [ ] Evaluate 2–3 packs and pick one family. Write `ASSETS.md` with licences.
-- [ ] Build the Pixi spritesheet/atlas (TexturePacker free / `free-tex-packer`) + JSON
-- [ ] Map `03` tile types → atlas frames (agree the names with the engine dev)
-- [ ] Map `04` visual states → frames
-- [ ] Gravestone variants + graveyard layout
-- [ ] Journal book art + fonts
-- [ ] UI kit: panel, button, icons (food/water/stamina + 8 actions)
-- [ ] Blight/drought filters (with frontend)
-- [ ] Pick music tracks (day, night, reflective) + licences
-- [ ] SFX set + audio sprite
-- [ ] Title/logo
-- [ ] Favicon
+- [ ] **[C]** Evaluate 2–3 packs and pick one family. Write `ASSETS.md` with licences.
+- [ ] **[C]** Build the Pixi spritesheet/atlas (TexturePacker free / `free-tex-packer`) + JSON
+- [ ] **[C]** Map `03` tile types → atlas frames (agree the names with the engine dev)
+- [ ] **[C]** Map `04` visual states → frames
+- [ ] **[C]** Gravestone variants + graveyard layout
+- [ ] **[C]** Journal book art + fonts
+- [ ] **[C]** UI kit: panel, button, icons (food/water/stamina + 8 actions)
+- [ ] **[C]** Blight/drought filters (with frontend)
+- [ ] **[C]** Pick music tracks (day, night, reflective) + licences
+- [ ] **[C]** SFX set + audio sprite
+- [ ] **[C]** Title/logo
+- [ ] **[C]** Favicon
 
 ## Acceptance
 

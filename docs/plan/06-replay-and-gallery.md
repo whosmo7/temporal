@@ -1,6 +1,6 @@
 # 06 — Replay & Gallery
 
-**Owner:** Frontend dev + Engine dev (`replay`, `explain`)
+**Owner:** Frontend dev + Engine dev (`replay`, `explain`)  
 **Depends on:** `02` (snapshots, transitions, causes), `04` (renderer, read-only), `05` (page renderer), `07` (gallery queries).
 
 ## Decisions (locked)
@@ -57,18 +57,18 @@ For each generation g = 1..N:
 
 ## Tasks
 
-- [ ] `explain()` output → human sentences (templating with actor names + generations)
-- [ ] Replay screen layout: snapshot panel + journal panel + causes panel + timeline
-- [ ] Read-only Pixi render of a snapshot (reuse `04` layers, no avatar, no input)
-- [ ] Highlight changed plots per generation (diff vs the previous snapshot)
-- [ ] Plot history popover
-- [ ] Generation stepping (buttons + arrow keys) + optional auto-play
-- [ ] Title card + ending card
-- [ ] Gallery grid + thumbnails (render the snapshot to a small texture or a stored image)
-- [ ] Route `/#/world/:id/replay` and `/#/gallery`
-- [ ] Admin "skip to replay" hook (`08`)
-- [ ] (Stretch) Legacy view per player
-- [ ] (Stretch) Animate drawing strokes in the journal panel
+- [ ] **[C]** `explain()` output → human sentences (templating with actor names + generations)
+- [ ] **[B]** Replay screen layout: snapshot panel + journal panel + causes panel + timeline
+- [ ] **[B]** Read-only Pixi render of a snapshot (reuse `04` layers, no avatar, no input)
+- [ ] **[B]** Highlight changed plots per generation (diff vs the previous snapshot)
+- [ ] **[B]** Plot history popover
+- [ ] **[B]** Generation stepping (buttons + arrow keys) + optional auto-play
+- [ ] **[C]** Title card + ending card
+- [ ] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image)
+- [ ] **[C]** Route `/#/world/:id/replay` and `/#/gallery`
+- [ ] **[C]** Admin "skip to replay" hook (`08`)
+- [ ] **[C]** (Stretch) Legacy view per player
+- [ ] **[B]** (Stretch) Animate drawing strokes in the journal panel
 
 ## Acceptance
 

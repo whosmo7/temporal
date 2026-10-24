@@ -1,6 +1,6 @@
 # 03 — World Generation: Seeds, Biomes, Plots
 
-**Owner:** Engine dev (with Art for tile mapping)
+**Owner:** Engine dev (with Art for tile mapping)  
 **Depends on:** `02` PRNG. Consumed by `04` (rendering) and `02` (`createWorld`).
 
 ## Decisions (locked)
@@ -59,17 +59,17 @@ generator places **at least one drought** so the reservoir decision always matte
 
 ## Tasks
 
-- [ ] Seeded noise util (value noise is enough)
-- [ ] Boundary mask for Forest and Island
-- [ ] Plot placement with spacing + reachability guarantee (re-roll if unreachable)
-- [ ] Path carving (BFS/A*)
-- [ ] Decoration scatter
-- [ ] Collision grid export
-- [ ] Output a `TileMap` data structure: `{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }` with no Pixi dependency
-- [ ] Biome starter state + modifiers wired into `createWorld`
-- [ ] Seeded event list (≥1 drought)
-- [ ] Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps
-- [ ] Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares (needs `04` basic renderer). Useful for picking demo seeds.
+- [ ] **[B]** Seeded noise util (value noise is enough)
+- [ ] **[B]** Boundary mask for Forest and Island
+- [ ] **[B]** Plot placement with spacing + reachability guarantee (re-roll if unreachable)
+- [ ] **[B]** Path carving (BFS/A*)
+- [ ] **[B]** Decoration scatter
+- [ ] **[B]** Collision grid export
+- [ ] **[B]** Output a `TileMap` data structure: `{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }` with no Pixi dependency
+- [ ] **[B]** Biome starter state + modifiers wired into `createWorld`
+- [ ] **[B]** Seeded event list (≥1 drought)
+- [ ] **[B]** Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps
+- [ ] **[B]** Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares (needs `04` basic renderer). Useful for picking demo seeds.
 
 ## Acceptance
 

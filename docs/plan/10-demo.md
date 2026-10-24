@@ -1,6 +1,6 @@
 # 10 — Demo World & Demo Moment
 
-**Owner:** Game design / pitch (with the Engine/backend dev for seeding)
+**Owner:** Game design / pitch (with the Engine/backend dev for seeding)  
 **Depends on:** everything. Prepare this once `07` and `06` work.
 
 ## Decisions (locked)
@@ -47,14 +47,14 @@ the replay) next to the judge's flourishing orchard.
 
 ## Tasks
 
-- [ ] Pick the demo seed (orchard visible, nice-looking biome)
-- [ ] Decide the demo world's generation count + turn length
-- [ ] Write the founder journal pages (natural, not preachy)
-- [ ] Write `scripts/seed-demo.ts` (+ a spare world)
-- [ ] Create judge accounts (or a shared "judge" account) + admin account
-- [ ] Rehearse force-assign → play → replay flow 3+ times on the demo laptop
-- [ ] Offline fallback: the `LocalBackend` hot-seat build with the same seed + log baked in, in case the venue Wi-Fi fails
-- [ ] Decide on the "what this player saw" replay panel (open question)
+- [ ] **[C]** Pick the demo seed (orchard visible, nice-looking biome)
+- [ ] **[C]** Decide the demo world's generation count + turn length
+- [ ] **[C]** Write the founder journal pages (natural, not preachy)
+- [ ] **[A]** Write `scripts/seed-demo.ts` (+ a spare world)
+- [ ] **[C]** Create judge accounts (or a shared "judge" account) + admin account
+- [ ] **[C]** Rehearse force-assign → play → replay flow 3+ times on the demo laptop
+- [ ] **[A]** Offline fallback: the `LocalBackend` hot-seat build with the same seed + log baked in, in case the venue Wi-Fi fails
+- [ ] **[C]** Decide on the "what this player saw" replay panel (open question)
 
 ## Acceptance
 

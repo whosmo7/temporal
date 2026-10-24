@@ -1,6 +1,6 @@
 # 02 — Simulation Engine: Turn Engine, Action Log, Causality
 
-**Owner:** Engine/simulation dev
+**Owner:** Engine/simulation dev  
 **Depends on:** `11` (repo scaffold). Consumes `01` config. Consumed by `04`, `05`, `06`, `07`.
 
 This is the brief's technical core: **an authoritative turn engine and an append-only action log.
@@ -131,33 +131,33 @@ result but still only appends. Record this choice as an open question for the en
 ## Tasks
 
 **Core**
-- [ ] `src/engine/` package with no DOM dependencies; set up the path alias
-- [ ] Seeded PRNG + hash utilities
-- [ ] Types above (`types.ts`), `config.ts` loaded from `01`
-- [ ] `createWorld` (calls the worldgen from `03` for the plot layout + starter state)
-- [ ] `applyAction` for each of the 8 actions, with validation (stamina, resources, plot state, target exists)
-- [ ] Scheduler: insert, resolve, cancel and fast-track `ScheduledEffect`s
-- [ ] `tick` for intra-turn effects (quick crops ripen at `t`)
-- [ ] `endTurn`: unharvested crops rot, upkeep, weakened calculation, **realised-only summary**
-- [ ] `beginTurn`: the between-generation pipeline in the fixed order above
-- [ ] Transition + cause recording in every state change (helper: `emit(target, before, after, causes)`)
-- [ ] `visibleView`: turns pending effects into visual stages only (e.g. orchard `sapling` / `young`), no numbers or due turns
-- [ ] `replay(seed, opts, log)` → per-generation `Snapshot { state, transitions, actions }`
-- [ ] `explain()` aggregates causes per resource per turn for the replay
+- [ ] **[A]** `src/engine/` package with no DOM dependencies; set up the path alias
+- [ ] **[A]** Seeded PRNG + hash utilities
+- [ ] **[A]** Types above (`types.ts`), `config.ts` loaded from `01`
+- [ ] **[A]** `createWorld` (calls the worldgen from `03` for the plot layout + starter state)
+- [ ] **[A]** `applyAction` for each of the 8 actions, with validation (stamina, resources, plot state, target exists)
+- [ ] **[A]** Scheduler: insert, resolve, cancel and fast-track `ScheduledEffect`s
+- [ ] **[A]** `tick` for intra-turn effects (quick crops ripen at `t`)
+- [ ] **[A]** `endTurn`: unharvested crops rot, upkeep, weakened calculation, **realised-only summary**
+- [ ] **[A]** `beginTurn`: the between-generation pipeline in the fixed order above
+- [ ] **[A]** Transition + cause recording in every state change (helper: `emit(target, before, after, causes)`)
+- [ ] **[A]** `visibleView`: turns pending effects into visual stages only (e.g. orchard `sapling` / `young`), no numbers or due turns
+- [ ] **[A]** `replay(seed, opts, log)` → per-generation `Snapshot { state, transitions, actions }`
+- [ ] **[A]** `explain()` aggregates causes per resource per turn for the replay
 
 **Tests (Vitest)**
-- [ ] Determinism: same seed + log → deep-equal state (property test over random logs)
-- [ ] Each action: cost deducted, effect scheduled with the correct `dueAt`
-- [ ] Orchard planted at gen 1 fruits at gen 3; replay explains gen 3 food with a cause pointing to the gen 1 action and actor
-- [ ] Fast Track on another player's orchard: double cost, effect resolves now, original pending effect marked `fastTracked`
-- [ ] Unmaintained well stagnates after N gens; Maintain resets it
-- [ ] Drought with vs without reservoir repair
-- [ ] Upkeep shortfall → successor's stamina reduced, with transition cause `rule: weakened`
-- [ ] Every transition has ≥1 cause (invariant test)
-- [ ] Append-only: no API mutates past log entries
+- [ ] **[A]** Determinism: same seed + log → deep-equal state (property test over random logs)
+- [ ] **[A]** Each action: cost deducted, effect scheduled with the correct `dueAt`
+- [ ] **[A]** Orchard planted at gen 1 fruits at gen 3; replay explains gen 3 food with a cause pointing to the gen 1 action and actor
+- [ ] **[A]** Fast Track on another player's orchard: double cost, effect resolves now, original pending effect marked `fastTracked`
+- [ ] **[A]** Unmaintained well stagnates after N gens; Maintain resets it
+- [ ] **[A]** Drought with vs without reservoir repair
+- [ ] **[A]** Upkeep shortfall → successor's stamina reduced, with transition cause `rule: weakened`
+- [ ] **[A]** Every transition has ≥1 cause (invariant test)
+- [ ] **[A]** Append-only: no API mutates past log entries
 
 **Tooling**
-- [ ] `scripts/simulate.ts`: plays N generations with scripted strategies and prints a resource table (used by game design for balancing)
+- [ ] **[A]** `scripts/simulate.ts`: plays N generations with scripted strategies and prints a resource table (used by game design for balancing)
 
 ## Acceptance
 

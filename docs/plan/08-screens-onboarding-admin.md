@@ -1,6 +1,6 @@
 # 08 — App Shell: Screens, Auth, Onboarding, Admin
 
-**Owner:** Frontend/UI dev
+**Owner:** Frontend/UI dev  
 **Depends on:** `07` (auth, claim, admin RPCs), `04`/`05`/`06` (game, journal, replay screens).
 
 ## Decisions (locked)
@@ -59,16 +59,16 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 
 ## Tasks
 
-- [ ] Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the `09` style)
-- [ ] Landing page with a background world
-- [ ] Auth screen + session persistence + logout + username display
-- [ ] Play flow: claim → interstitial → game → end flow → back to landing / "Play another"
-- [ ] Resume: if the user refreshes while holding a lock, put them back in (or void; open question)
-- [ ] Tutorial scene
-- [ ] Gallery + replay routes (screens from `06`)
-- [ ] Admin panel + guard
-- [ ] Error states: no network, claim failed, commit failed (retry + local backup)
-- [ ] Audio toggle (mute) in the shell (`09`)
+- [ ] **[C]** Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the `09` style)
+- [ ] **[C]** Landing page with a background world
+- [ ] **[C]** Auth screen + session persistence + logout + username display
+- [ ] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another"
+- [ ] **[B]** Resume: if the user refreshes while holding a lock, put them back in (or void; open question)
+- [ ] **[C]** Tutorial scene
+- [ ] **[C]** Gallery + replay routes (screens from `06`)
+- [ ] **[C]** Admin panel + guard
+- [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup)
+- [ ] **[C]** Audio toggle (mute) in the shell (`09`)
 
 ## Acceptance
 

@@ -1,6 +1,6 @@
 # 07 — Backend & Async Multiplayer (Supabase)
 
-**Owner:** Engine/backend dev
+**Owner:** Engine/backend dev  
 **Depends on:** `02` (engine runs server-side), `11` (Supabase project).
 **Consumed by:** `05` (commit), `06` (gallery/replay), `08` (auth, admin).
 
@@ -150,19 +150,19 @@ nothing was ever written.
 
 ## Tasks
 
-- [ ] Create the Supabase project. Turn email confirmation off. Add the env vars to the repo secrets + `.env.example`.
-- [ ] SQL migrations for the schema above (`supabase/migrations/`)
-- [ ] RLS policies (read-public for completed worlds, no update/delete)
-- [ ] Username signup/login with synthetic emails + `profiles` insert trigger
-- [ ] `claim_world` RPC with weighted assignment, `SKIP LOCKED`, stale-lock expiry, force-assign
-- [ ] `commit-turn` Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed)
-- [ ] `heartbeat` RPC (if needed)
-- [ ] Admin RPCs: set `settings`, set a world's `turn_seconds`/`generation_count`, force-assign, mark complete (skip to replay)
-- [ ] Gallery + replay read queries
-- [ ] `LocalBackend` implementation of the same interface (hot-seat)
-- [ ] Concurrency test: 2 clients call `claim_world` at once → different worlds
-- [ ] Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone
-- [ ] Seed script for the demo world (`10`)
+- [ ] **[A]** Create the Supabase project. Turn email confirmation off. Add the env vars to the repo secrets + `.env.example`.
+- [ ] **[A]** SQL migrations for the schema above (`supabase/migrations/`)
+- [ ] **[A]** RLS policies (read-public for completed worlds, no update/delete)
+- [ ] **[A]** Username signup/login with synthetic emails + `profiles` insert trigger
+- [ ] **[A]** `claim_world` RPC with weighted assignment, `SKIP LOCKED`, stale-lock expiry, force-assign
+- [ ] **[A]** `commit-turn` Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed)
+- [ ] **[A]** `heartbeat` RPC (if needed)
+- [ ] **[A]** Admin RPCs: set `settings`, set a world's `turn_seconds`/`generation_count`, force-assign, mark complete (skip to replay)
+- [ ] **[A]** Gallery + replay read queries
+- [ ] **[A]** `LocalBackend` implementation of the same interface (hot-seat)
+- [ ] **[A]** Concurrency test: 2 clients call `claim_world` at once → different worlds
+- [ ] **[A]** Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone
+- [ ] **[A]** Seed script for the demo world (`10`)
 
 ## Acceptance
 

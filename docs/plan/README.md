@@ -36,6 +36,10 @@ They are not decisions.
 | 09 | [Art & audio](09-art-and-audio.md) | Design/art/audio |
 | 10 | [Demo world & demo moment](10-demo.md) | Game design / pitch |
 | 11 | [Repo setup, workflow, testing, deploy](11-workflow-testing-deploy.md) | Everyone (do first) |
+| 12 | [Team split: who does what](12-team-split.md) | Everyone |
+
+Each task in `01`–`11` is tagged **[A]**, **[B]** or **[C]**. These are the three equal workloads in
+`12`: **A** = Engine & Backend, **B** = World & Gameplay, **C** = Design, Content & App Shell.
 
 ## Suggested critical path (dependencies, not a schedule)
 

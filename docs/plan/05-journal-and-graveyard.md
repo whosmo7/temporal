@@ -1,6 +1,6 @@
 # 05 — Journal, End-of-Turn Flow, Graveyard
 
-**Owner:** Frontend/UI dev (wording from Game design)
+**Owner:** Frontend/UI dev (wording from Game design)  
 **Depends on:** `02` (`endTurn` summary), `04` (freeze, lectern, graveyard sprites), `07` (persistence).
 
 ## Decisions (locked)
@@ -64,17 +64,17 @@
 
 ## Tasks
 
-- [ ] Journal modal (book layout, page flip, prev/next)
-- [ ] Text input with limit + counter
-- [ ] Drawing canvas: pen, colours, eraser, clear; serialise strokes
-- [ ] Stroke renderer (reused by the replay `06` and gallery thumbnails)
-- [ ] "Seal page" confirmation; locks the page client-side
-- [ ] Cost summary screen from `endTurn().summary` (**realised only**)
-- [ ] Gravestone placement animation + camera pan
-- [ ] Graveyard rendering and interaction (with `04`)
-- [ ] Lectern interaction → read-only journal during play
-- [ ] Hand off to `07` commit; handle a commit failure (retry, keep the local copy)
-- [ ] Copywriting pass with Game design (tone: quiet, reflective, no moralising)
+- [ ] **[C]** Journal modal (book layout, page flip, prev/next)
+- [ ] **[C]** Text input with limit + counter
+- [ ] **[C]** Drawing canvas: pen, colours, eraser, clear; serialise strokes
+- [ ] **[C]** Stroke renderer (reused by the replay `06` and gallery thumbnails)
+- [ ] **[C]** "Seal page" confirmation; locks the page client-side
+- [ ] **[C]** Cost summary screen from `endTurn().summary` (**realised only**)
+- [ ] **[B]** Gravestone placement animation + camera pan
+- [ ] **[B]** Graveyard rendering and interaction (with `04`)
+- [ ] **[B]** Lectern interaction → read-only journal during play
+- [ ] **[B]** Hand off to `07` commit; handle a commit failure (retry, keep the local copy)
+- [ ] **[C]** Copywriting pass with Game design (tone: quiet, reflective, no moralising)
 
 ## Acceptance
 

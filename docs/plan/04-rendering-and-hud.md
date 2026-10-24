@@ -1,6 +1,6 @@
 # 04 — World Rendering & In-Game UI (PixiJS + React)
 
-**Owner:** Frontend/UI dev
+**Owner:** Frontend/UI dev  
 **Depends on:** `02` (`visibleView`, `applyAction`, `tick`), `03` (`TileMap`), `09` (assets).
 
 ## Decisions (locked)
@@ -72,23 +72,23 @@ These visuals should be enough to inherit the world without reading anything. No
 
 ## Tasks
 
-- [ ] Pixi app mount/unmount inside React. Handle resize and devicePixelRatio. Use nearest-neighbour scaling for pixel art.
-- [ ] Tilemap renderer from `03` `TileMap`, cached to a RenderTexture
-- [ ] Camera follow + clamp to map bounds
-- [ ] Player avatar: 4-direction walk animation, collision against the grid
-- [ ] Y-sorting for trees/structures vs the player
-- [ ] Plot sprites driven by `visibleView()` stages
-- [ ] Interact prompt + key handling + hotbar
-- [ ] Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason.
-- [ ] Fast Track menu (lists pending effects, with the originating player's name, no due dates)
-- [ ] Day/night lighting + timer
-- [ ] Freeze at time-up (lock input, dim world) → hand off to the `05` flow
-- [ ] Visual-state variants for all rows in the table above
-- [ ] FX: harvest pop, splash, rot flies, blight motes
-- [ ] HUD components (React) styled to match the pixel art
-- [ ] Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (`05`)
-- [ ] Lectern: interact opens the journal
-- [ ] Perf check: 60 fps on a mid laptop at 32×32
+- [ ] **[B]** Pixi app mount/unmount inside React. Handle resize and devicePixelRatio. Use nearest-neighbour scaling for pixel art.
+- [ ] **[B]** Tilemap renderer from `03` `TileMap`, cached to a RenderTexture
+- [ ] **[B]** Camera follow + clamp to map bounds
+- [ ] **[B]** Player avatar: 4-direction walk animation, collision against the grid
+- [ ] **[B]** Y-sorting for trees/structures vs the player
+- [ ] **[B]** Plot sprites driven by `visibleView()` stages
+- [ ] **[B]** Interact prompt + key handling + hotbar
+- [ ] **[B]** Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason.
+- [ ] **[B]** Fast Track menu (lists pending effects, with the originating player's name, no due dates)
+- [ ] **[B]** Day/night lighting + timer
+- [ ] **[B]** Freeze at time-up (lock input, dim world) → hand off to the `05` flow
+- [ ] **[B]** Visual-state variants for all rows in the table above
+- [ ] **[B]** FX: harvest pop, splash, rot flies, blight motes
+- [ ] **[B]** HUD components (React) styled to match the pixel art
+- [ ] **[B]** Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (`05`)
+- [ ] **[B]** Lectern: interact opens the journal
+- [ ] **[B]** Perf check: 60 fps on a mid laptop at 32×32
 
 ## Acceptance
 

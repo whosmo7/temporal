@@ -1,6 +1,6 @@
 # 01 — Game Design: Resources, Actions, Rules
 
-**Owner:** Game design (with Engine)
+**Owner:** Game design (with Engine)  
 **Depends on:** nothing. This feeds `02-engine` (as `config.ts`) and `04`/`05` (what to show).
 
 ## Decisions (locked)
@@ -134,14 +134,14 @@ All numbers are **`[PLACEHOLDER]`** values for `src/engine/config.ts`.
 
 ## Tasks
 
-- [ ] Confirm the action table (costs, yields, delays) and record it as `config.ts` values with the engine dev
-- [ ] Decide defaults for `turnSeconds` and `generationCount`
-- [ ] Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)
-- [ ] Write the **"medium world" tuning scenario** and check the dilemma holds (use the engine's simulated playthrough script from `02`)
-- [ ] Write 3 balance test scenarios as Vitest fixtures: *hoarder*, *planter*, *quick-fixer*. Check no single strategy dominates over N gens.
-- [ ] Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects)
-- [ ] Write the founder/Gen-0 starter conditions per biome (see `03`)
-- [ ] Hand `05` the cost-summary wording ("You spent… You gathered…") with no mention of future yields
+- [ ] **[C]** Confirm the action table (costs, yields, delays) and record it as `config.ts` values with the engine dev
+- [ ] **[C]** Decide defaults for `turnSeconds` and `generationCount`
+- [ ] **[C]** Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)
+- [ ] **[C]** Write the **"medium world" tuning scenario** and check the dilemma holds (use the engine's simulated playthrough script from `02`)
+- [ ] **[C]** Write 3 balance test scenarios as Vitest fixtures: *hoarder*, *planter*, *quick-fixer*. Check no single strategy dominates over N gens.
+- [ ] **[C]** Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects)
+- [ ] **[C]** Write the founder/Gen-0 starter conditions per biome (see `03`)
+- [ ] **[C]** Hand `05` the cost-summary wording ("You spent… You gathered…") with no mention of future yields
 
 ## Acceptance
 
