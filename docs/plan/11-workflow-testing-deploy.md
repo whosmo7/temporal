@@ -47,7 +47,7 @@ temporal/
 
 ## CI / deploy
 
-- `ci.yml` (on PR): install → typecheck (`tsc --noEmit`) → lint → `vitest run` → `vite build`
+- `ci.yml` (on PR): install → typecheck (`tsc --noEmit`) → lint → `check:decisions` (no two decision records share a number) → `vitest run` → `vite build`
 - `deploy.yml` (on push to `main`): build with secrets → `actions/upload-pages-artifact` → `actions/deploy-pages`
 - (Optional) deploy the Edge Function with the `supabase` CLI from CI, or by hand.
 
