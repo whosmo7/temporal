@@ -1,3 +1,4 @@
+import { applyAction, beginTurn, createWorld, endTurn } from '../engine';
 import type { Biome } from '../worldgen/types';
 import type { PresetName } from '../worldgen/presets';
 import type {
@@ -10,6 +11,7 @@ import type {
   JournalPage,
   Profile,
   Replay,
+  Transition,
   TurnSummary,
   WorldState,
 } from './Backend';
@@ -54,6 +56,7 @@ interface LocalTurn {
   turn: number;
   playerId: string;
   actions: ActionEntry[];
+  transitions: Transition[];
   snapshot: WorldState | null;
   journal: { text: string; drawing: Drawing };
   committedAt: string;
@@ -222,13 +225,38 @@ export class LocalBackend implements Backend {
       throw new Error('Your turn has expired');
     }
 
-    // TODO: re-run the engine here (beginTurn, apply actions, endTurn) and store its snapshot.
+    // Re-run the turn through the engine, as commit-turn does, so a bad log is rejected.
+    const previous = turnsOf(db, world.id).at(-1)?.snapshot;
+    let state =
+      previous ??
+      createWorld(world.seed, {
+        worldId: world.id,
+        biome: world.biome,
+        preset: world.preset,
+        generationCount: world.generationCount,
+        turnSeconds: world.turnSeconds,
+      }).state;
+    const begun = beginTurn(state);
+    state = begun.state;
+    const transitions: Transition[] = [...begun.transitions];
+    const actions: ActionEntry[] = [];
+    for (const action of [...input.actions].sort((a, b) => a.seq - b.seq)) {
+      const result = applyAction(state, action, action.committedAt.t ?? 0);
+      if (result.error || !result.entry) throw new Error(`Invalid action: ${result.error}`);
+      state = result.state;
+      transitions.push(...result.transitions);
+      actions.push(result.entry);
+    }
+    const ended = endTurn(state);
+    transitions.push(...ended.transitions);
+
     db.turns.push({
       worldId: world.id,
       turn: world.currentTurn,
       playerId: me.id,
-      actions: input.actions,
-      snapshot: null,
+      actions,
+      transitions,
+      snapshot: ended.state,
       journal: input.journal,
       committedAt: new Date().toISOString(),
     });
@@ -241,7 +269,7 @@ export class LocalBackend implements Backend {
       world.completedAt = new Date().toISOString();
     }
     save(db);
-    return null;
+    return ended.summary;
   }
 
   async listCompletedWorlds(): Promise<CompletedWorld[]> {
@@ -269,7 +297,7 @@ export class LocalBackend implements Backend {
       biome: world.biome,
       snapshots: turns.flatMap((t) => (t.snapshot ? [t.snapshot] : [])),
       actions: turns.flatMap((t) => t.actions),
-      transitions: [], // TODO: from the engine once it exists
+      transitions: turns.flatMap((t) => t.transitions),
       journal: journalOf(db, worldId),
     };
   }

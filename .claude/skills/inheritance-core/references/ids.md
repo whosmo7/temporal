@@ -70,7 +70,8 @@ World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground 
 | `event` | `eventId` | Drought in gen 3 |
 | `rule` | `rule` | one of the rules below |
 
-Rules: `foodRot`, `waterStagnate`, `wear`, `upkeep`, `regrow`, `weakened`, `income`.
+Rules: `foodRot`, `waterStagnate`, `wear`, `upkeep`, `regrow`, `weakened`, `income`, `newTurn`
+(stamina refilled at the start of a generation).
 
 ## Events (`SeededEvent.kind`)
 

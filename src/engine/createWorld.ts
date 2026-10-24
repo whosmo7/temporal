@@ -4,6 +4,7 @@ import { biomeFromSeed, founderState } from '../worldgen';
 import type { WorldgenPreset } from '../worldgen/options';
 import type { PresetName } from '../worldgen/presets';
 import { CONFIG } from './config';
+import { emptyTally } from './state';
 import type { Biome, PlotStage, PlotState, StepResult, WorldState } from './types';
 
 export interface CreateWorldOptions {
@@ -31,6 +32,8 @@ export function createWorld(seed: number, opts: CreateWorldOptions): StepResult 
       stage: plot.stage as PlotStage | undefined,
       wear: 0,
       lastMaintainedTurn: null,
+      builtBy: null,
+      harvestedTurn: null,
     };
   }
 
@@ -48,6 +51,7 @@ export function createWorld(seed: number, opts: CreateWorldOptions): StepResult 
     wildCap: founder.wildCap,
     weakened: 0,
     events: founder.events,
+    tally: emptyTally(),
   };
 
   // The founder state is where the replay starts, so nothing has changed yet.

@@ -1,10 +1,9 @@
-import type { ActionEntry, Biome, Transition, WorldState } from '../engine/types';
+import type { ActionEntry, Biome, Transition, TurnSummary, WorldState } from '../engine/types';
 import type { PresetName } from '../worldgen/presets';
 
-export type { ActionEntry, Transition, WorldState };
+export type { ActionEntry, Transition, TurnSummary, WorldState };
 
-// Placeholders until endTurn's summary (02) and the journal stroke format (05) exist.
-export type TurnSummary = unknown;
+// Placeholder until the journal stroke format (05) exists.
 export type Drawing = unknown;
 
 export interface Profile {
