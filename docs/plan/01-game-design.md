@@ -15,13 +15,23 @@
 - The **reservoir dilemma is tuned in on purpose**.
 - Biome (Forest / Island) gives **small modifiers** only.
 
+Settled game-design questions (records in `docs/decisions/`):
+
+- **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. The HUD shows "Needed by nightfall", so players know where they stand before they write.
+- **Eating** ([003](../decisions/003-eating-via-harvest.md)): yes, as an option on **Harvest** ("Harvest and eat"). It's not a ninth action.
+- **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. The 2× cost is the price.
+- **Events** ([005](../decisions/005-seeded-events.md)): drought (always), good harvest, storm (Island only).
+- **Wild spot** ([006](../decisions/006-wild-spot-per-biome.md)): Forest = hunt, Island = fish, same numbers.
+- **Defaults** ([007](../decisions/007-turn-and-generation-defaults.md)): **10-minute turns**, **6 generations**.
+- **Fields** (B's [001](../decisions/001-worldgen-map-size-and-presets.md)): configurable per map preset, default **2**. All numbers here are balanced for 2. The `small` (1 field) and `large` (3 fields) presets are untuned.
+
 ## Design goal: avoid a morality game
 
 Every action has to be something a reasonable person would choose. There is no "good" button.
 The tension comes from:
 
 1. **Your own survival vs. the future.** Upkeep is real, and failing it hurts your successor.
-2. **Cashing in vs. preserving.** Fast Track lets you take a predecessor's gift early, at double cost.
+2. **Cashing in vs. preserving.** Fast Track lets you take a predecessor's gift early, at double cost. Eating a harvest buys stamina now with food the next player won't get.
 3. **Quick fixes with a tail.** The well gives water now, but it obliges every later player to maintain it.
 4. **Commons depletion.** Fish/Hunt stock is shared across generations and recovers slowly.
 5. **Invisible protection.** Repairing the reservoir does nothing you can see in your own turn. It only matters when the seeded drought arrives.
@@ -31,117 +41,241 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 ## Core loop (one generation)
 
 1. **Inherit.** Spawn in the world. Resources, structures and graveyard are as the previous player left them, after decay, wear, due effects and events have been applied. The journal is on a lectern and openable any time.
-2. **Act.** The timer runs and day turns to night. Walk to plots and act. Each action costs stamina (and sometimes water or food).
+2. **Act.** The timer runs and day turns to night. Walk to plots and act. Each action costs stamina (and sometimes water). The HUD shows what's needed by nightfall.
 3. **Freeze.** The timer hits 0, the world freezes, and input locks.
 4. **Journal.** Write or draw your page. Earlier pages are read-only.
-5. **Cost summary.** Shows only what was **realised** this turn. Pending benefits are left out.
-6. **Upkeep check.** Food/water are deducted. A shortfall marks the successor as weakened.
+5. **Cost summary.** Shows only what was **realised** this turn, including whether upkeep was met. Pending benefits are left out.
+6. **Upkeep check.** Food/water are deducted. A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
 7. **Gravestone.** Your stone is placed in the graveyard. The turn is committed.
 8. **Between turns (engine).** Decay, wear, due effects, seeded events and wild stock regrowth are applied for the next generation.
-
-> Open: should upkeep be checked *before* the journal, so the player knows whether they've failed while writing?
-> The current order has the cost summary after the journal.
 
 ## Resources
 
 | Resource | Source | Sink | Between-generation rule |
 |---|---|---|---|
-| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, Fast Track costs | **Rots**: loses `foodRotPct` per generation |
-| **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct`; well water stagnates faster when unmaintained |
-| **Labour (stamina)** | Full pool at turn start (reduced if weakened) | Every action | Doesn't carry over |
+| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | **Rots**: loses `foodRotPct` (30%) per generation |
+| **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
+| **Labour (stamina)** | Full pool at turn start (reduced if weakened); eating a harvest | Every action | Doesn't carry over |
 
 ## Structures & plots (pre-defined sites)
 
 | Plot | States (visual) | Notes |
 |---|---|---|
-| Field(s) ×N | empty → sown → growing → ripe → rotten | Quick crops can ripen within one turn |
-| Orchard plot | empty → sapling → young → fruiting → (worn → dead) | Matures at gen +`orchardMatureGens` |
-| Reservoir | cracked → repaired → (wear) | Sets water income and drought protection |
-| Well site | none → dug → (stagnant if unmaintained) | Instant + ongoing water, needs upkeep |
-| Fishing spot / hunting ground | stock level (visual abundance) | Island → fishing, Forest → hunting (open: confirm) |
+| Field ×2 | empty → sown → growing → ripe → rotten | Quick crops ripen within one turn |
+| Orchard plot | empty → sapling → young → fruiting → (worn → dead) | Fruits from gen +2 (`orchardMatureGens`) |
+| Reservoir | cracked → low / full | Not repaired = cracked. Repaired with wear ≥ 2 = low. Repaired with wear < 2 = full. Sets water income and drought protection. |
+| Well site | none → clear → (stagnant at wear 3) | Instant + ongoing water, needs maintaining |
+| Wild spot | stock level: many / few / none | Forest → hunting ground, Island → fishing spot |
 | Lectern (journal) | — | Always available |
 | Graveyard | one stone per completed turn | Click a stone to open that player's page |
 
 ## Actions
 
-All numbers are **`[PLACEHOLDER]`** values for `src/engine/config.ts`.
+Values below are the first confirmed set for `src/engine/config.ts` (full block under **Config values**).
+They passed a rough scratch-model check (see **Balance pre-check**). The real check is task 4 with `scripts/simulate.ts`.
 
-| # | Action | Target | Immediate | Delayed / tail | Proposed cost |
+| # | Action | Target | Immediate | Delayed / tail | Cost |
 |---|---|---|---|---|---|
-| 1 | **Harvest** | ripe field or fruiting orchard | +food (crop: 6, orchard: 15) | — | 5 stamina |
-| 2 | **Plant Crops** | empty field | — | Ripens after `cropRipenSeconds` (≈25% of turn) **in the same turn**. Rots at end of turn if not harvested. | 8 stamina, 2 water |
-| 3 | **Plant Orchard** | orchard plot | — | Fruits from gen +2; yields each later gen while maintained | 25 stamina, 5 water |
-| 4 | **Repair Reservoir** | reservoir | — | From gen +1: water income rises (e.g. 4 → 12/gen) and drought penalty is cancelled | **55 stamina** (the dilemma) |
-| 5 | **Dig Well** | well site | +8 water | +4 water/gen **while maintained**; unmaintained → stagnates and gives 0, and stored water decays faster | 20 stamina |
-| 6 | **Fish/Hunt** | fishing/hunting spot | +5 food | Wild stock −1; regrows +1/gen up to a cap | 6 stamina |
-| 7 | **Maintain** | well, reservoir, orchard | Wear on that structure reset to 0 | Prevents stagnation/decline | 10 stamina |
-| 8 | **Fast Track** | any pending effect (anyone's) | That effect resolves **now** | It no longer happens later | **2× the original action's cost**, paid now |
+| 1 | **Harvest** | ripe field or fruiting orchard | +5 food (field) or +15 food (orchard, once per gen, halved at wear ≥ 2). **Harvest and eat** option: see below. | — | 5 stamina |
+| 2 | **Plant Crops** | empty field | — | Ripens after `cropRipenPct` × turn (25%, so 150 s at the default) **in the same turn**. Rots at end of turn if not harvested. | 8 stamina, 1 water |
+| 3 | **Plant Orchard** | empty or dead orchard plot | — | Fruits from gen +2. Harvestable once per later gen while it survives wear. | 25 stamina, 5 water |
+| 4 | **Repair Reservoir** | cracked or low reservoir | — | From gen +1: water income 4 → 12/gen (6 at wear 2), and drought protection while wear < 2. Wear resets to 0. | **60 stamina** (the dilemma) |
+| 5 | **Dig Well** | well site, not yet dug | +8 water | +6 water/gen while wear < 3 (3 at wear 2). At wear 3 it stagnates: 0 income and stored water stagnates at 40%. Maintain brings a stagnant well back. | 20 stamina |
+| 6 | **Fish/Hunt** | wild spot with stock > 0 | +4 food | Wild stock −1; regrows +1/gen up to the biome cap | 8 stamina |
+| 7 | **Maintain** | dug well (including stagnant), repaired reservoir, or living orchard | Wear on that structure reset to 0 | It also skips the next generation's wear tick. Once per structure per turn. | 10 stamina |
+| 8 | **Fast Track** | any pending effect (anyone's) | That effect resolves **now** | It no longer happens later | **2× the original action's cost** (stamina + water), paid now |
 
-### Why the reservoir dilemma works (with placeholder numbers)
+### Harvest and eat
 
-- Starting stamina 100. Upkeep 10 food + 10 water.
-- Repair = 55 stamina. That leaves 45, enough for about 4 Fish/Hunt (+20 food) or 2 crop cycles.
-- If the player inherits low food, repairing means risking upkeep. Skipping it means the seeded drought hits a successor.
+- Harvest has two variants on the hotbar: **Harvest** (yield goes to the store) and **Harvest and eat**.
+- Eating converts the fresh yield to stamina at `staminaPerFoodEaten` (2 per food), **up to full stamina** (`baseStamina`). Whatever can't be eaten goes to the store.
+- Only the food just harvested can be eaten. Stored food can't be eaten mid-turn, and Fish/Hunt can't be eaten.
+- A crop cycle costs 13 stamina (plant + harvest) and eating it returns 10, so crops never make stamina. Eating an inherited fruiting orchard returns up to +25 net, once per generation, at the cost of 15 food the next player won't get.
+- A weakened player can eat back up to full stamina if there's something to harvest. Weakness costs food to undo.
+- Eating is realised, so it appears in the cost summary ("You ate 15🍎").
+
+### Why the reservoir dilemma works
+
+- Starting stamina 100. Upkeep 12 food + 10 water. Repair = 60 stamina.
+- In the **medium world** (below), feeding comfortably costs about 44 stamina and repairing costs 60. Doing both needs about 104. You can repair *and* scrape by on bare upkeep, but only by letting the well and orchard wear.
+- Skipping the repair is safe until the seeded drought, which can start any time from gen 2 (decision 008).
 - **Tuning target:** a player who inherits a "medium" world can either repair *or* comfortably feed themselves, not both.
+
+### Medium world (tuning scenario, task 4)
+
+| | Value |
+|---|---|
+| Generation | 3 of 6, not weakened (100 stamina), no drought this gen |
+| Food / water | 6 / 12 |
+| Wild stock | 4 |
+| Reservoir | cracked |
+| Well | dug, wear 1 |
+| Orchard | sapling (planted gen 2), wear 1 |
+| Fields | 2, empty |
+
+**Comfortable** = upkeep met + well and orchard maintained + at least 6 food left after upkeep.
+**Pass** = "repair + comfortable" is not reachable with 100 stamina, while each alone is.
+Run it with `scripts/simulate.ts` once it exists (repair-first vs feed-first strategies).
 
 ### Fast Track details
 
 - Shows every pending effect in the world, including other players' (e.g. "Orchard planted, Gen 1").
-- Cost = 2× the original cost (stamina + resources), paid by the current player.
-- Fast-tracking an orchard brings it to fruiting now. **Open:** does a rushed orchard yield less long-term?
+- Cost = 2× the original cost (stamina + water), paid by the current player. Rushing an orchard = 50 stamina, 10 water.
+- Fast-tracking an orchard brings it to fruiting now, with **no long-term yield penalty** ([004](../decisions/004-fast-tracked-orchard-yield.md)). Its wear is unchanged.
 - It records its own action and its own cause chain, so the replay can say *"MO rushed AL's orchard"*.
 
 ## Decay & wear (between generations)
 
-| Rule | `[PLACEHOLDER]` |
+Generation 1 starts from the starter state exactly: `beginTurn` for gen 1 applies no decay, wear or income.
+
+| Rule | Value |
 |---|---|
 | Food rot | −30% of stored food |
-| Water stagnation | −20% of stored water (−40% if the well is stagnant) |
+| Water stagnation | −20% of stored water (−40% while the well is stagnant) |
 | Unharvested crops | Rot at end of turn (lost) |
-| Structure wear | +1 wear level per gen. At wear 2: output halved. At wear 3: broken (orchard dies, reservoir cracks, well stagnates). |
-| Wild stock regrowth | +1 per gen, cap 8 |
+| Structure wear | +1 per gen on built structures (repaired reservoir, dug well, planted orchard) unless maintained during the previous turn. At wear 2: output halved. At wear 3: broken (orchard dies, reservoir cracks, well stagnates). |
+| Wild stock regrowth | +1 per gen, up to the biome cap |
 
 ## Upkeep & soft fail
 
-- End of turn: deduct `upkeepFood` (10) and `upkeepWater` (10).
+- End of turn: deduct `upkeepFood` (12) and `upkeepWater` (10).
 - Shortfall ratio `s` = missing ÷ required (0–1, averaged over food and water).
-- Successor's starting stamina = `baseStamina × (1 − s × weakenFactor)`, floored at 40%. `[PLACEHOLDER]`
+- Successor's starting stamina = `baseStamina × (1 − s × weakenFactor)` with `weakenFactor` 0.6, floored at 40%.
 - The world shows **blight visuals** for that generation (see `04`).
 - The world never fully ends. The weakened player can always still act.
-
-> Open: can the player **eat** mid-turn to restore stamina (spending food)? That would be a strong extra tension: eat now vs. leave food. It isn't decided yet.
 
 ## Seeded events
 
 - Derived from the world seed at creation, so they're fully deterministic and replayable.
-- Hackathon set (suggested, needs confirming):
-  - **Drought**: exactly one per world, lasting `min(5, ceil(generationCount / 10))` consecutive generations and starting at a random gen ≥ 2 (gen 1 only in a 1-gen world). Reservoir income −70% unless the reservoir is repaired and wear < 2 ([008](../decisions/008-drought-length-and-timing.md)).
-  - **Good harvest**: +50% crop yield in one gen.
-  - **Storm** (Island only?): +1 wear on all structures.
+- Hackathon set ([005](../decisions/005-seeded-events.md), drought timing from B's [008](../decisions/008-drought-length-and-timing.md)):
+  - **Drought**: exactly one per world, lasting `min(droughtMaxLength, ceil(generationCount × droughtLengthFraction))` consecutive generations (1 gen at the default 6), starting at a random gen ≥ 2 (gen 1 only in a 1-gen world). In each drought generation, unless the reservoir is repaired with wear < 2: reservoir income ×0.3 and stored water −25%.
+  - **Good harvest**: one per world, outside the drought's generations. Crop yield ×1.5 that generation.
+  - **Storm** (Island only): 50% chance of one per world, outside the drought's generations. +1 wear on every built structure. The first thing to cut if time runs short.
 - **Events are never announced to the player.** They only show up through visuals (cracked earth, rain) and in the replay.
 
 ## Biome modifiers (small)
 
-| Biome | `[PLACEHOLDER]` modifier |
+| Biome | Modifier |
 |---|---|
-| **Forest** | Hunting ground; wild stock cap +2; water start −10% |
-| **Island** | Fishing spot; water start +10%; storm event eligible |
+| **Forest** | Hunting ground; wild stock cap 10; starting water 16 |
+| **Island** | Fishing spot; wild stock cap 8; starting water 18; storm event eligible |
+
+## Founder / Gen-1 starter conditions
+
+What the founder sees. B wires these into `createWorld` (`03`).
+
+| | Forest | Island |
+|---|---|---|
+| Food | 12 | 12 |
+| Water | 16 | 18 |
+| Wild stock | 8 (cap 10), hunting | 8 (cap 8), fishing |
+| Reservoir | cracked | cracked |
+| Fields | 2, empty | 2, empty |
+| Orchard plot | empty | empty |
+| Well | not dug | not dug |
+| Stamina | 100 | 100 |
+
+The founder can meet upkeep from the starter stores alone (12 food, 16–18 water) with no actions.
+Anything they invest comes out of the margin they leave the next player.
 
 ## Configurable per world
 
-`turnSeconds`, `generationCount`, plus the admin-set global `inheritRatio` (see `07`).
-**Default values: game designer to decide.**
+`turnSeconds` (default **600**), `generationCount` (default **6**), plus the admin-set global `inheritRatio` (see `07`).
+The demo world sets its own shorter values (`10`).
+
+## Config values
+
+For `src/engine/config.ts`. Names are a proposal for the engine dev; the numbers are the decision.
+
+```ts
+export const CONFIG = {
+  // World defaults (decision 007)
+  turnSeconds: 600,
+  generationCount: 6,
+  // fields: a worldgen preset option (src/worldgen/options.ts, default 2), not engine config
+
+  // Stamina, upkeep, soft fail
+  baseStamina: 100,
+  upkeepFood: 12,
+  upkeepWater: 10,
+  weakenFactor: 0.6,
+  minStaminaPct: 0.4,
+  staminaPerFoodEaten: 2, // Harvest and eat (decision 003)
+
+  // Actions
+  harvestCost: 5,
+  cropYield: 5,
+  orchardYield: 15, // once per generation
+  plantCropsCost: 8,
+  plantCropsWater: 1,
+  cropRipenPct: 0.25, // fraction of turnSeconds
+  plantOrchardCost: 25,
+  plantOrchardWater: 5,
+  orchardMatureGens: 2,
+  repairReservoirCost: 60,
+  reservoirIncomeCracked: 4,
+  reservoirIncomeRepaired: 12,
+  digWellCost: 20,
+  digWellWater: 8,
+  wellIncome: 6,
+  fishHuntCost: 8,
+  fishHuntYield: 4,
+  maintainCost: 10,
+  fastTrackMultiplier: 2,
+
+  // Decay and wear
+  foodRotPct: 0.3,
+  waterStagnatePct: 0.2,
+  waterStagnateStagnantWellPct: 0.4,
+  wearHalveAt: 2,
+  wearBreakAt: 3,
+  wildRegrow: 1,
+
+  // Events (decision 005; drought timing decision 008)
+  droughtLengthFraction: 0.1,
+  droughtMaxLength: 5,
+  droughtIncomeMult: 0.3,
+  droughtEvaporatePct: 0.25,
+  goodHarvestMult: 1.5,
+  stormWear: 1,
+  stormChance: 0.5,
+
+  // Biomes: founder starter state
+  biomes: {
+    forest: { food: 12, water: 16, wildStock: 8, wildCap: 10, storm: false },
+    island: { food: 12, water: 18, wildStock: 8, wildCap: 8, storm: true },
+  },
+} as const;
+```
+
+## Balance pre-check (scratch model)
+
+A rough Python model of the rules above, run before the engine exists. It isn't the engine, so treat it as a sanity check only.
+6 gens, drought gen 5, good harvest gen 3, Island storm gen 4:
+
+| Strategy | Forest: missed upkeep | Island: missed upkeep | Final world |
+|---|---|---|---|
+| Selfish (well when short, fish freely, crops) | gen 5 | gens 4–6 | reservoir cracked, no orchard, wild stock 0 |
+| Hoarder (stockpile, keep the well) | gens 5–6 | gen 5 | reservoir cracked, no orchard |
+| Quick-fixer (well + fishing, maintains well) | gen 5 | gen 5 | reservoir cracked, wild stock 0 |
+| Planter (orchard + reservoir, then eat) | none | none | everything standing, thin stores |
+| Mixed (upkeep first, invest with the rest) | none | none | everything standing, food ~50 |
+
+What it shows: short-term play holds up until the drought and then fails, which is the "invisible protection" working.
+**Known gap:** the pure-sacrifice run leaves the investing generations with almost nothing spare, but doesn't actually miss upkeep.
+The acceptance line asks for missed upkeep, so check this in task 4. The levers, in order: starter food 12 → 11, repair 60 → 65.
+The model doesn't include Harvest and eat yet.
 
 ## Tasks
 
-- [ ] **[C]** Confirm the action table (costs, yields, delays) and record it as `config.ts` values with the engine dev
-- [ ] **[C]** Decide defaults for `turnSeconds` and `generationCount`
-- [ ] **[C]** Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)
-- [ ] **[C]** Write the **"medium world" tuning scenario** and check the dilemma holds (use the engine's simulated playthrough script from `02`)
+- [x] **[C]** Confirm the action table (costs, yields, delays) and record it as `config.ts` values with the engine dev
+- [x] **[C]** Decide defaults for `turnSeconds` and `generationCount`
+- [x] **[C]** Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)
+- [ ] **[C]** Write the **"medium world" tuning scenario** and check the dilemma holds (use the engine's simulated playthrough script from `02`). *Scenario written above; the check waits on `scripts/simulate.ts`.*
 - [ ] **[C]** Write 3 balance test scenarios as Vitest fixtures: *hoarder*, *planter*, *quick-fixer*. Check no single strategy dominates over N gens.
-- [ ] **[C]** Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects)
-- [ ] **[C]** Write the founder/Gen-0 starter conditions per biome (see `03`)
-- [ ] **[C]** Hand `05` the cost-summary wording ("You spent… You gathered…") with no mention of future yields
+- [x] **[C]** Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects). See `docs/content/flavour-text.md`.
+- [x] **[C]** Write the founder/Gen-0 starter conditions per biome (see `03`)
+- [x] **[C]** Hand `05` the cost-summary wording ("You spent… You gathered…") with no mention of future yields. See `docs/content/cost-summary.md`.
 
 ## Acceptance
 
@@ -149,12 +283,8 @@ All numbers are **`[PLACEHOLDER]`** values for `src/engine/config.ts`.
 - A simulated "all-selfish" run ends in a visibly worse final world than a "mixed" run. A "pure sacrifice" run causes upkeep failures along the way, so no single strategy is obviously right.
 - All tunables live in one config file.
 
-## Open questions (recap)
+## Open questions
 
-1. Upkeep check before or after the journal?
-2. Can the player eat mid-turn to restore stamina?
-3. Does a fast-tracked orchard have reduced long-term yield?
-4. Final seeded event list and timing.
-5. Forest = hunt / Island = fish, or both available everywhere?
-6. Defaults for turn length and generation count.
-7. How many fields per map?
+1. **Idle time in 10-minute turns.** With 100 stamina, most players will spend it all well before nightfall.
+   Should there be a way to end the day early (e.g. "Sleep" at the lectern), or is spare time for reading the journal and walking around?
+   Touches `04` (HUD/timer) and `07` (lock TTL scales with `turn_seconds`).
