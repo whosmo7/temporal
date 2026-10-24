@@ -46,8 +46,17 @@
 - **Placeholder art** (`placeholder-art.ts`): code-drawn frames that already use the final frame names (`terrain/grass-1`,
   `boundary/tree-1`, `player/walk-down-0`, `<kind>/<stage>` …), so C's atlas replaces them by name. Plot frames are drawn at
   each plot's size, because presets can change plot sizes. `TILE = 16` in `constants.ts` until `09` picks a pack.
+- **House cutaway** ([010](../decisions/010-player-house.md)): stepping into the doorway or the room fades out the roof and front
+  wall over 0.35 s, dims the outside and zooms the camera onto the house (about 11×8 tiles in view, so 5× at 1280×720).
+  Leaving reverses it. Turns start inside.
+- **World look** (`WorldLook`): plot stages, the store stage (drawn by the cabinet), `weakened` and `drought`. `setLook()`
+  re-textures plots without rebuilding the world. Weakened desaturates with an ochre cast. Drought bakes cracks into the ground
+  and adds a warm tint.
+- **Placeholder art** uses the art-direction palette, with 1 px ink outlines on objects.
 - **`#/play?seed=123&biome=island&preset=small`** (`src/ui/screens/PlayScreen.tsx`) is a local hot-seat world for now. Plots
-  show their founder stages until `visibleView()` (A) exists.
+  show their founder stages until `visibleView()` (A) exists. Dev params: `look=healthy|neglected` previews the two
+  acceptance worlds, and `fps=1` shows a frame-rate readout.
+- **`#/dev/sprites`** shows every placeholder frame and plot stage at 3×, with frame names, for checking stages and atlas coverage.
 
 ## Interaction model
 
@@ -94,18 +103,18 @@ These visuals should be enough to inherit the world without reading anything. No
 - [x] **[B]** Camera follow + clamp to map bounds
 - [x] **[B]** Player avatar: 4-direction walk animation, collision against the grid
 - [x] **[B]** Y-sorting for trees/structures vs the player
-- [ ] **[B]** Plot sprites driven by `visibleView()` stages
+- [ ] **[B]** Plot sprites driven by `visibleView()` stages *(the renderer side is done: `WorldView.setLook()` takes stages per plot. It waits on A's `visibleView()`)*
 - [ ] **[B]** Interact prompt + key handling + hotbar
 - [ ] **[B]** Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason.
 - [ ] **[B]** Fast Track menu (lists pending effects, with the originating player's name, no due dates)
 - [ ] **[B]** Day/night lighting + timer
 - [ ] **[B]** Freeze at time-up (lock input, dim world) → hand off to the `05` flow
-- [ ] **[B]** Visual-state variants for all rows in the table above
+- [ ] **[B]** Visual-state variants for all rows in the table above *(placeholder frames exist for every plot, store and grave stage, plus the weakened and drought filters. Still to do: the weakened slow walk and blight motes, which come with FX)*
 - [ ] **[B]** FX: harvest pop, splash, rot flies, blight motes
 - [ ] **[B]** HUD components (React) styled to match the pixel art
 - [ ] **[B]** Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (`05`)
 - [ ] **[B]** Lectern: interact opens the journal
-- [ ] **[B]** Perf check: 60 fps on a mid laptop at 32×32
+- [x] **[B]** Perf check: 60 fps on a mid laptop at 32×32 *(held the browser's 60 fps ceiling at 32×32 and 40×40 with filters on, in headless Firefox on a dev machine. Add `&fps=1` to `#/play` to check on other laptops)*
 
 ## Acceptance
 

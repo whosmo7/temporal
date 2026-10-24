@@ -31,13 +31,23 @@ export interface WorldgenOptions {
   decoWeights: Record<DecoTile, number>;
   /** How much paths wander instead of taking the shortest route. 0 = straightest. */
   pathWiggle: number;
-  /** Max distance (tiles, Chebyshev) from spawn to the lectern. */
+  /** Max distance (tiles, Chebyshev) from the house entrance (or spawn, with no house) to the lectern. */
   lecternRange: number;
-  /** Tiles around spawn kept clear of ponds and decoration. */
+  /** Tiles around the house entrance (or spawn) kept clear of ponds and decoration. */
   spawnClearance: number;
-  /** Player start tile. `null` = map centre. */
+  /**
+   * Where the world centres on, `null` = map centre. With a house, the house goes within
+   * `houseRange` of it and the player starts inside; without one, the player starts here.
+   */
   spawn: Point | null;
-  /** Fix plots at a top-left tile instead of seeding them, e.g. `{ reservoir: { x: 20, y: 9 } }`. */
+  /** Place the player's 7×5 house (`house.ts`). The player starts inside it. */
+  house: boolean;
+  /** Max distance (tiles, Chebyshev) from `spawn` to the tile in front of the house door. */
+  houseRange: number;
+  /**
+   * Fix plots at a top-left tile instead of seeding them, e.g. `{ reservoir: { x: 20, y: 9 } }`.
+   * `house` pins the house's top-left.
+   */
   pin: Record<PlotId, Point>;
   /** Placement re-rolls before giving up with a WorldgenError. */
   maxAttempts: number;
@@ -63,9 +73,10 @@ export const BASE_OPTIONS: WorldgenOptions = {
   plotSpacing: 1,
   plotSizes: {
     field: { w: 3, h: 3 },
-    orchard: { w: 3, h: 3 },
-    reservoir: { w: 3, h: 3 },
-    well: { w: 2, h: 2 },
+    // Sizes from docs/art/art-direction.md › Plots
+    orchard: { w: 2, h: 2 },
+    reservoir: { w: 3, h: 2 },
+    well: { w: 1, h: 1 },
     wild: { w: 2, h: 2 },
     lectern: { w: 1, h: 1 },
     graveyard: { w: 4, h: 3 },
@@ -78,6 +89,8 @@ export const BASE_OPTIONS: WorldgenOptions = {
   lecternRange: 4,
   spawnClearance: 2,
   spawn: null,
+  house: true,
+  houseRange: 4,
   pin: {},
   maxAttempts: 50,
 };
@@ -146,6 +159,7 @@ function validateOptions(o: WorldgenOptions): void {
   int(o.lecternRange, 1, 64, 'lecternRange');
   int(o.spawnClearance, 0, 8, 'spawnClearance');
   int(o.maxAttempts, 1, 1000, 'maxAttempts');
+  int(o.houseRange, 0, 64, 'houseRange');
   for (const [kind, s] of Object.entries(o.plotSizes)) {
     int(s.w, 1, 16, `plotSizes.${kind}.w`);
     int(s.h, 1, 16, `plotSizes.${kind}.h`);
@@ -164,6 +178,7 @@ function validateOptions(o: WorldgenOptions): void {
     int(o.spawn.y, 0, o.height - 1, 'spawn.y');
   }
   const ids = new Set(plotSlots(o).map((s) => s.id));
+  if (o.house) ids.add('house');
   for (const [id, p] of Object.entries(o.pin)) {
     if (!ids.has(id)) fail(`pin.${id} is not a plot in this map (have: ${[...ids].join(', ')})`);
     int(p.x, 0, o.width - 1, `pin.${id}.x`);

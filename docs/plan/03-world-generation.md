@@ -33,16 +33,22 @@ buildCollision(map): Uint8Array        // 1 = blocked, indexed y * width + x
 biomeFromSeed(seed): Biome             // for callers that want a seed-derived biome (open question 1)
 ```
 
-- **`TileMap`** (`types.ts`): `{ width, height, biome, seed, layers: { terrain, boundary, deco }, plots: { id, kind, x, y, w, h }[], spawn }`.
+- **`TileMap`** (`types.ts`): `{ width, height, biome, seed, layers: { terrain, boundary, deco }, plots: { id, kind, x, y, w, h }[], house, spawn }`.
   Layers are flat row-major arrays (`y * width + x`) of tile IDs (see `ids.md` › Tiles). It is plain data with no Pixi.
 - **Presets** (`presets.ts`, `options.ts`): a preset is a partial `WorldgenOptions` merged over `BASE_OPTIONS` and then the
   biome defaults. The knobs are size, boundary depth, corner radius, beach width, field count, plot sizes, plot spacing,
-  pond coverage, dirt amount, deco density and weights, path wiggle, lectern range, spawn clearance, spawn, `pin` and `maxAttempts`.
+  pond coverage, dirt amount, deco density and weights, path wiggle, lectern range, spawn clearance, spawn, `house`, `houseRange`, `pin` and `maxAttempts`.
+  Default plot sizes come from the art direction: field 3×3, orchard 2×2, reservoir 3×2, well 1×1, wild 2×2, lectern 1×1 and graveyard 4×3.
   The built-in presets are `default`, `small`, `large`, `wide` and `bare`.
   Preview one with `npm run worldgen -- --seed 123 --biome island --preset small`.
 - **Pinned plots** (`pin: { reservoir: { x, y } }`) are placed exactly and skip the kind rules (lectern range, wild-on-edge).
   Ponds keep off them, so a pinned preset works with any seed. A pin on the boundary, on spawn or overlapping another pin throws `WorldgenError`.
+- **House** (`house.ts`, [010](../decisions/010-player-house.md)): a 7×5 house with a 5×3 room and the door in the middle of the bottom wall. Its furniture is the
+  cabinet (the food store), oven, shelf, plant, bed, table and rug. It's placed right after the boundary, within `houseRange` of the
+  map centre (or `spawn`), and before ponds, so nothing can block it. Paths start at the tile in front of the door, and the lectern
+  goes near the door. The player spawns inside, just above the door. `pin.house` fixes the house and `house: false` turns it off.
 - **Collision:** boundary, ponds, `rock`/`bush` deco and the solid plots (`orchard`, `reservoir`, `well`, `lectern`) block movement.
+  So do house walls (except the door) and furniture (except the rug).
   `field`, `wild` and `graveyard` are walkable.
 - **Determinism:** each stage (plots, deco) has its own PRNG stream derived from `hash(seed, stage)`, so changing the
   deco density never moves plots.

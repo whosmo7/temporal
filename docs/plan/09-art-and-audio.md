@@ -13,7 +13,7 @@
 
 **Art direction:** [`docs/art/art-direction.md`](../art/art-direction.md) has the pillars, palette, filters, plot stages and the floating-island title.
 
-**Chosen:** **Ninja Adventure** (CC0) as the one pack family, and **Kyrise's 16x16 icons** (CC BY 4.0) for the HUD. 16 px tiles at 3× scale. See `ASSETS.md`.
+**Chosen (open question 1, settled):** **Ninja Adventure** (CC0) as the one pack family, and **Kyrise's 16x16 icons** (CC BY 4.0) for the HUD. 16 px tiles at 3× scale. See `ASSETS.md`.
 
 ### Asset pack sourcing (check every licence before use)
 
@@ -91,8 +91,8 @@ Sources: Kenney audio packs (CC0), Freesound (check CC-BY attribution), OpenGame
 ## Tasks
 
 - [x] **[C]** Evaluate 2–3 packs and pick one family. Write `ASSETS.md` with licences.
-- [ ] **[C]** Build the Pixi spritesheet/atlas (TexturePacker free / `free-tex-packer`) + JSON
-- [ ] **[C]** Map `03` tile types → atlas frames (agree the names with the engine dev)
+- [x] **[C]** Build the Pixi spritesheet/atlas (TexturePacker free / `free-tex-packer`) + JSON *(Built by our own script instead: `npm run atlas` crops frames listed in `scripts/atlas-manifest.ts` from `art/source/`, recolours them to the palette and writes `public/assets/atlas/world.png` + `.json`. The renderer loads it in `src/render/atlas.ts`; any frame it lacks keeps B's painted placeholder.)*
+- [x] **[C]** Map `03` tile types → atlas frames (agree the names with the engine dev) *(All `terrain`, `boundary` and `deco` IDs. Wall trees are 2×2 tiles, centred on their tile. The player is Villager4, chosen by C.)*
 - [ ] **[C]** Map `04` visual states → frames
 - [ ] **[C]** Gravestone variants + graveyard layout
 - [ ] **[C]** Journal book art + fonts

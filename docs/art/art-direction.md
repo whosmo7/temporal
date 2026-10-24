@@ -96,7 +96,7 @@ Ninja Adventure covers terrain, trees, deco and the player. These are likely cus
 
 - **Panels:** `ink` fill, a 1 px `panel-edge` border and a 1 px `highlight` inner line, as a 9-slice (`ui/panel`). Buttons use the same style with a pressed state that drops 1 px.
 - **Icons:** Kyrise 16 px icons at 2× in the HUD and 3× in the hotbar, on `ink`. Food, water and stamina icons pick up the resource accent colours.
-- **Fonts:** Ninja Adventure's pixel font for UI. For the journal, a handwriting font with an OFL licence, picked in the journal-art task (candidates: Patrick Hand, Caveat).
+- **Fonts:** Ninja Adventure's pixel font for UI. For the journal, **Patrick Hand** (OFL, self-hosted in `public/assets/fonts/`), chosen by C on 2026-10-24 over Caveat for legibility at small sizes.
 - **Journal:** an open book on `paper` with `clay` page edges, under a dusk-tinted backdrop.
 
 ## Next steps (`09`)

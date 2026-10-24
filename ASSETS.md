@@ -7,7 +7,10 @@ Art direction: [`docs/art/art-direction.md`](docs/art/art-direction.md).
 
 | File(s) | Source URL | Author | Licence | Credit required? | Modified? |
 |---|---|---|---|---|---|
-| — | — | — | — | — | — |
+| `public/assets/atlas/world.png` + `world.json`: terrain, sea, wall trees, deco, gravestones (frames listed in `scripts/atlas-manifest.ts`) | https://pixel-boy.itch.io/ninja-adventure-asset-pack (`Backgrounds/Tilesets/TilesetFloor.png`, `TilesetWater.png`, `TilesetNature.png`, `TilesetElement.png`) | Pixel-Boy & AAA | CC0 1.0 | No (appreciated) | **Yes**: cropped, recoloured to the art-direction palette, one tile mirrored |
+| `public/assets/atlas/world.png`: player walk frames | https://pixel-boy.itch.io/ninja-adventure-asset-pack (`Actor/Character/Villager4/SeparateAnim/Walk.png`) | Pixel-Boy & AAA | CC0 1.0 | No (appreciated) | Cropped only |
+| `public/assets/fonts/NinjaAdventure-Normal.ttf` (from `Ui/Font/NormalFont.ttf`) | https://pixel-boy.itch.io/ninja-adventure-asset-pack | Pixel-Boy & AAA | CC0 1.0 | No (appreciated) | Renamed only |
+| `public/assets/fonts/PatrickHand-Regular.ttf` (+ `PatrickHand-OFL.txt`) | https://github.com/google/fonts/tree/main/ofl/patrickhand | Patrick Wagesreiter | SIL OFL 1.1 | No (licence file ships with the font) | No |
 
 ## Chosen sources (not yet added)
 

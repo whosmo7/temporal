@@ -53,7 +53,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 
 | Resource | Source | Sink | Between-generation rule |
 |---|---|---|---|
-| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | **Rots**: loses `foodRotPct` (30%) per generation |
+| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [009](../decisions/009-cabinet-food-store-no-rot.md)) |
 | **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
 | **Labour (stamina)** | Full pool at turn start (reduced if weakened); eating a harvest | Every action | Doesn't carry over |
 
@@ -130,7 +130,7 @@ Generation 1 starts from the starter state exactly: `beginTurn` for gen 1 applie
 
 | Rule | Value |
 |---|---|
-| Food rot | −30% of stored food |
+| Food rot | Off for now: stored food is kept in the cabinet ([009](../decisions/009-cabinet-food-store-no-rot.md)) |
 | Water stagnation | −20% of stored water (−40% while the well is stagnant) |
 | Unharvested crops | Rot at end of turn (lost) |
 | Structure wear | +1 per gen on built structures (repaired reservoir, dug well, planted orchard) unless maintained during the previous turn. At wear 2: output halved. At wear 3: broken (orchard dies, reservoir cracks, well stagnates). |
@@ -224,7 +224,7 @@ export const CONFIG = {
   fastTrackMultiplier: 2,
 
   // Decay and wear
-  foodRotPct: 0.3,
+  foodRotPct: 0, // decision 009: stored food doesn't rot for now (was 0.3)
   waterStagnatePct: 0.2,
   waterStagnateStagnantWellPct: 0.4,
   wearHalveAt: 2,
@@ -288,3 +288,6 @@ The model doesn't include Harvest and eat yet.
 1. **Idle time in 10-minute turns.** With 100 stamina, most players will spend it all well before nightfall.
    Should there be a way to end the day early (e.g. "Sleep" at the lectern), or is spare time for reading the journal and walking around?
    Touches `04` (HUD/timer) and `07` (lock TTL scales with `turn_seconds`).
+2. **What does the oven do?** The house ([010](../decisions/010-player-house.md)) has an oven that's only furniture for now.
+   Options: cook stored food for stamina (a ninth action, which changes the eight-action lock and decision 003), or make it where
+   "Harvest and eat" happens. Owner: C (design), with A (engine).

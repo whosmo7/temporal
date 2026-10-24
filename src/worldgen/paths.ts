@@ -5,7 +5,7 @@ import type { Site } from './plots';
 import type { Plot } from './types';
 
 /**
- * Carves a path network from spawn to a tile next to every plot (Dijkstra). Each new path
+ * Carves a path network from the entrance to a tile next to every plot (Dijkstra). Each new path
  * branches off the nearest point of the network so far, and noise-weighted step costs make them
  * wander a little. Returns a 1/0 path mask, or null if some plot can't be reached.
  */
@@ -22,10 +22,10 @@ export function carvePaths(seed: number, site: Site, plots: Plot[], o: WorldgenO
   }
 
   const path = new Uint8Array(size);
-  path[site.spawn.y * site.width + site.spawn.x] = 1;
+  path[site.entrance.y * site.width + site.entrance.x] = 1;
 
   const byDistance = [...plots].sort(
-    (a, b) => pointRectDistance(site.spawn, a) - pointRectDistance(site.spawn, b) || (a.id < b.id ? -1 : 1),
+    (a, b) => pointRectDistance(site.entrance, a) - pointRectDistance(site.entrance, b) || (a.id < b.id ? -1 : 1),
   );
   for (const plot of byDistance) {
     const targets = new Set(rectBorder(site, plot).filter(passable));

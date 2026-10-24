@@ -13,6 +13,7 @@
 - **Cost summary shows only realised outcomes**: costs paid and immediate gains. **Pending benefits are left out.**
 - **Gravestone**: name/initials, click to open that player's journal page.
 - No moderation for the hackathon.
+- Text is limited to **400 characters** ([009](../decisions/009-journal-character-limit.md)).
 
 ## End-of-turn flow
 
@@ -23,7 +24,7 @@
 [Journal: Write your page]
    - Read previous pages (left/back)
    - Your blank page (right): text area + drawing canvas
-   - Character limit [PLACEHOLDER 400]
+   - Character limit **400** ([009](../decisions/009-journal-character-limit.md))
    - "Seal page" button → irreversible confirm
    - (Time limit for writing: team to define; see open questions)
    ▼
@@ -65,11 +66,11 @@
 
 ## Tasks
 
-- [ ] **[C]** Journal modal (book layout, page flip, prev/next)
-- [ ] **[C]** Text input with limit + counter
-- [ ] **[C]** Drawing canvas: pen, colours, eraser, clear; serialise strokes
-- [ ] **[C]** Stroke renderer (reused by the replay `06` and gallery thumbnails)
-- [ ] **[C]** "Seal page" confirmation; locks the page client-side
+- [x] **[C]** Journal modal (book layout, page flip, prev/next) *(`src/ui/journal/JournalModal.tsx`, `mode: 'write' | 'read'`. Bench at `#/dev/journal` in dev.)*
+- [x] **[C]** Text input with limit + counter
+- [x] **[C]** Drawing canvas: pen, colours, eraser, clear; serialise strokes *(4 pens + eraser + clear, Ctrl+Z undoes a stroke. Format `{ color, width, points }[]` on 320×200; eraser strokes use `color: 'erase'`.)*
+- [x] **[C]** Stroke renderer (reused by the replay `06` and gallery thumbnails) *(`StrokeRenderer` component, or `paintStrokes(ctx, drawing, scale)` for Pixi/offscreen use.)*
+- [x] **[C]** "Seal page" confirmation; locks the page client-side *(Calls `onSeal({ text, drawing })` after the stamp; B's end flow takes it from there.)*
 - [ ] **[C]** Cost summary screen from `endTurn().summary` (**realised only**)
 - [ ] **[B]** Gravestone placement animation + camera pan
 - [ ] **[B]** Graveyard rendering and interaction (with `04`)
@@ -87,7 +88,6 @@
 
 1. Time limit for journal writing at end of turn? (You said "we will define".) Affects the lock TTL in `07`.
 2. Is reading the journal *during* play free (timer paused) or does it use time?
-3. Character limit for text?
-4. Gravestone: show the generation number as well as the name?
-5. Which step commits the turn: "Seal page" or the end of the gravestone animation?
-6. Can a player skip writing (empty page)? If so, what does their page show ("They left no words")?
+3. Gravestone: show the generation number as well as the name?
+4. Which step commits the turn: "Seal page" or the end of the gravestone animation?
+5. Can a player skip writing (empty page)? If so, what does their page show ("They left no words")?

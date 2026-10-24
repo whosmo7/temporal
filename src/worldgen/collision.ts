@@ -1,9 +1,11 @@
 import { bfsDistance, rectTiles } from './grid';
-import type { DecoTile, PlotKind, Point, TileMap } from './types';
+import type { DecoTile, FurnitureKind, PlotKind, Point, TileMap } from './types';
 
 /** Plots you walk up to rather than onto. The player interacts from an adjacent tile. */
 export const SOLID_PLOT_KINDS: ReadonlySet<PlotKind> = new Set(['orchard', 'reservoir', 'well', 'lectern']);
 export const BLOCKING_DECO: ReadonlySet<DecoTile> = new Set(['rock', 'bush']);
+/** Furniture you can walk over. Everything else blocks. */
+export const WALKABLE_FURNITURE: ReadonlySet<FurnitureKind> = new Set(['rug']);
 
 /**
  * Collision grid for WASD movement: 1 = blocked, 0 = walkable, indexed like the layers
@@ -18,6 +20,14 @@ export function buildCollision(map: TileMap): Uint8Array {
   }
   for (const plot of map.plots) {
     if (SOLID_PLOT_KINDS.has(plot.kind)) for (const i of rectTiles(map, plot)) grid[i] = 1;
+  }
+  const house = map.house;
+  if (house) {
+    // Walls block, the door and the room don't, then furniture blocks inside the room.
+    for (const i of rectTiles(map, house)) grid[i] = 1;
+    for (const i of rectTiles(map, house.interior)) grid[i] = 0;
+    grid[house.door.y * map.width + house.door.x] = 0;
+    for (const f of house.furniture) if (!WALKABLE_FURNITURE.has(f.kind)) for (const i of rectTiles(map, f)) grid[i] = 1;
   }
   return grid;
 }

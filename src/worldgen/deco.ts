@@ -8,7 +8,7 @@ const DECO_KINDS: DecoTile[] = ['rock', 'bush', 'flower'];
 
 /**
  * Scatters rocks, bushes and flowers on free ground. Keeps clear of paths, of a one-tile ring
- * around every plot (so each stays approachable from all sides) and of the area around spawn.
+ * around every plot and the house (so each stays approachable from all sides) and of the entrance.
  */
 export function scatterDeco(site: Site, plots: Plot[], path: Uint8Array, o: WorldgenOptions, rng: Rng) {
   const deco: (DecoTile | null)[] = new Array(site.width * site.height).fill(null);
@@ -16,7 +16,7 @@ export function scatterDeco(site: Site, plots: Plot[], path: Uint8Array, o: Worl
   if (total === 0 || o.decoDensity === 0) return deco;
 
   const keepClear = new Uint8Array(deco.length);
-  for (const p of plots) {
+  for (const p of [...plots, ...site.obstacles]) {
     const ring = { x: p.x - 1, y: p.y - 1, w: p.w + 2, h: p.h + 2 };
     for (const i of rectTiles(site, clip(site, ring))) keepClear[i] = 1;
   }
@@ -25,7 +25,7 @@ export function scatterDeco(site: Site, plots: Plot[], path: Uint8Array, o: Worl
     if (!site.ground[i] || path[i] || keepClear[i]) continue;
     const x = i % site.width;
     const y = (i - x) / site.width;
-    if (Math.max(Math.abs(x - site.spawn.x), Math.abs(y - site.spawn.y)) <= o.spawnClearance) continue;
+    if (Math.max(Math.abs(x - site.entrance.x), Math.abs(y - site.entrance.y)) <= o.spawnClearance) continue;
     if (!rng.chance(o.decoDensity)) continue;
     let roll = rng.next() * total;
     for (const kind of DECO_KINDS) {

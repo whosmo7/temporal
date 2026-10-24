@@ -1,0 +1,131 @@
+.shell {
+  position: relative;
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Sky -------------------------------------------------------------------------------------------- */
+
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* Banded, not smooth: the sky steps like a pixel-art backdrop. */
+  background: linear-gradient(
+    to bottom,
+    var(--sky) 0 38%,
+    #57b2c0 38% 56%,
+    #4ea4b7 56% 70%,
+    var(--sky-mid) 70% 84%,
+    var(--sky-deep) 84% 100%
+  );
+}
+
+.sky__clouds {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  image-rendering: pixelated;
+  will-change: background-position;
+}
+
+.sky__clouds--far {
+  background-size: 780px 380px;
+  opacity: 0.6;
+  animation: sky-drift-far 260s linear infinite;
+}
+
+.sky__clouds--near {
+  background-size: 1380px 690px;
+  background-position: 0 40px;
+  animation: sky-drift-near 160s linear infinite;
+}
+
+@keyframes sky-drift-far {
+  to {
+    background-position: -780px 0;
+  }
+}
+
+@keyframes sky-drift-near {
+  to {
+    background-position: -1380px 40px;
+  }
+}
+
+/* Header ----------------------------------------------------------------------------------------- */
+
+.shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: calc(var(--px) * 20);
+  padding: 0 calc(var(--px) * 8);
+}
+
+.shell__wordmark {
+  color: var(--paper);
+  font-size: var(--text-lg);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-shadow:
+    var(--px) 0 0 var(--ink),
+    calc(var(--px) * -1) 0 0 var(--ink),
+    0 var(--px) 0 var(--ink),
+    0 calc(var(--px) * -1) 0 var(--ink),
+    var(--px) var(--px) 0 var(--ink);
+}
+
+.shell__main {
+  display: grid;
+  place-items: center;
+  padding: calc(var(--px) * 4) calc(var(--px) * 8) calc(var(--px) * 12);
+}
+
+/* Stand-in landing (the landing task replaces this with the island scene) ------------------------ */
+
+.landing {
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--px) * 6);
+  text-align: center;
+}
+
+.landing__wordmark {
+  margin: 0;
+  font-size: var(--text-wordmark);
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  color: var(--paper);
+  text-shadow:
+    var(--px) 0 0 var(--ink),
+    calc(var(--px) * -1) 0 0 var(--ink),
+    0 var(--px) 0 var(--ink),
+    0 calc(var(--px) * -1) 0 var(--ink),
+    calc(var(--px) * 2) calc(var(--px) * 2) 0 var(--ink);
+}
+
+.landing__premise {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--ink);
+}
+
+.landing__actions {
+  display: flex;
+  gap: calc(var(--px) * 5);
+  margin-top: calc(var(--px) * 4);
+}
+
+/* Not found -------------------------------------------------------------------------------------- */
+
+.lost {
+  max-width: 420px;
+}
+
+.lost p {
+  margin: 0 0 calc(var(--px) * 6);
+}

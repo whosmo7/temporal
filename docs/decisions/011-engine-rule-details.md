@@ -1,4 +1,4 @@
-# 009: Engine rule details left open by 01
+# 011: Engine rule details left open by 01
 
 **Status:** proposed (A, 2026-10-24). Built this way in `src/engine/`; confirm or change before balance runs.
 
