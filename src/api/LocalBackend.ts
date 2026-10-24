@@ -3,6 +3,7 @@ import type { Biome } from '../worldgen/types';
 import type { PresetName } from '../worldgen/presets';
 import type {
   ActionEntry,
+  AdminWorld,
   Backend,
   ClaimedWorld,
   CommitInput,
@@ -11,29 +12,30 @@ import type {
   JournalPage,
   Profile,
   Replay,
+  Settings,
   Transition,
   TurnSummary,
   WorldState,
 } from './Backend';
 
 // Hot-seat backend on localStorage, for development and the offline demo.
-// Dev only: passwords are stored in plain text.
+// Dev only: passwords are stored in plain text. Signing up as `admin` makes an admin, standing in
+// for `update profiles set is_admin = true` (07); everything here is in the browser anyway.
 
 const STORAGE_KEY = 'inheritance.local';
 
-// TODO: read these from settings once LocalBackend has an admin settings call.
 // Matches the settings defaults in the schema migration (decision 007).
-const TURN_SECONDS = 600;
+const DEFAULT_SETTINGS: Settings = { defaultTurnSeconds: 600, defaultGenerationCount: 6, inheritRatio: 0.7 };
 const JOURNAL_ALLOWANCE_SECONDS = 300;
 const LOCK_GRACE_SECONDS = 120;
-const DEFAULT_GENERATIONS = 6;
-const INHERIT_RATIO = 0.7;
+const ADMIN_USERNAME = 'admin';
 const BIOMES: Biome[] = ['forest', 'island'];
 
 interface LocalUser {
   id: string;
   username: string;
   password: string;
+  isAdmin?: boolean;
 }
 
 interface LocalWorld {
@@ -48,6 +50,7 @@ interface LocalWorld {
   lockedBy: string | null;
   lockExpiresAt: number | null;
   forcedFor: string | null;
+  createdAt?: string;
   completedAt: string | null;
 }
 
@@ -67,6 +70,7 @@ interface Db {
   session: string | null;
   worlds: LocalWorld[];
   turns: LocalTurn[];
+  settings?: Settings;
 }
 
 function load(): Db {
@@ -80,13 +84,29 @@ function save(db: Db): void {
 }
 
 function toProfile(user: LocalUser): Profile {
-  return { id: user.id, username: user.username };
+  return { id: user.id, username: user.username, isAdmin: !!user.isAdmin };
 }
 
 function requireUser(db: Db): LocalUser {
   const user = db.users.find((u) => u.id === db.session);
   if (!user) throw new Error('Not signed in');
   return user;
+}
+
+function requireAdmin(db: Db): LocalUser {
+  const user = requireUser(db);
+  if (!user.isAdmin) throw new Error('Not allowed');
+  return user;
+}
+
+function worldOf(db: Db, worldId: string): LocalWorld {
+  const world = db.worlds.find((w) => w.id === worldId);
+  if (!world) throw new Error('World not found');
+  return world;
+}
+
+function settingsOf(db: Db): Settings {
+  return { ...DEFAULT_SETTINGS, ...db.settings };
 }
 
 function usernameOf(db: Db, id: string): string {
@@ -134,7 +154,7 @@ export class LocalBackend implements Backend {
     const db = load();
     const name = username.toLowerCase();
     if (db.users.some((u) => u.username === name)) throw new Error('Username taken');
-    const user = { id: crypto.randomUUID(), username: name, password };
+    const user: LocalUser = { id: crypto.randomUUID(), username: name, password, isAdmin: name === ADMIN_USERNAME };
     db.users.push(user);
     db.session = user.id;
     save(db);
@@ -186,9 +206,10 @@ export class LocalBackend implements Backend {
     if (world) world.forcedFor = null;
 
     // 4. Inherit an open world, or start a new one.
+    const settings = settingsOf(db);
     if (!world) {
       const open = db.worlds.filter((w) => w.status === 'open' && !w.lockedBy);
-      if (open.length > 0 && Math.random() < INHERIT_RATIO) {
+      if (open.length > 0 && Math.random() < settings.inheritRatio) {
         world = open[Math.floor(Math.random() * open.length)];
       }
     }
@@ -198,13 +219,14 @@ export class LocalBackend implements Backend {
         seed: Math.floor(Math.random() * 2 ** 31),
         biome: BIOMES[Math.floor(Math.random() * BIOMES.length)] ?? 'forest',
         preset: 'default',
-        generationCount: DEFAULT_GENERATIONS,
-        turnSeconds: TURN_SECONDS,
+        generationCount: settings.defaultGenerationCount,
+        turnSeconds: settings.defaultTurnSeconds,
         currentTurn: 1,
         status: 'open',
         lockedBy: null,
         lockExpiresAt: null,
         forcedFor: null,
+        createdAt: new Date().toISOString(),
         completedAt: null,
       };
       db.worlds.push(world);
@@ -304,12 +326,86 @@ export class LocalBackend implements Backend {
     };
   }
 
+  async listWorlds(): Promise<AdminWorld[]> {
+    const db = load();
+    requireAdmin(db);
+    const name = (id: string | null) => (id ? usernameOf(db, id) : null);
+    return db.worlds.map((w) => ({
+      worldId: w.id,
+      seed: w.seed,
+      biome: w.biome,
+      status: w.status,
+      currentTurn: w.currentTurn,
+      generationCount: w.generationCount,
+      turnSeconds: w.turnSeconds,
+      lockedBy: name(w.lockedBy),
+      lockExpiresAt: w.lockExpiresAt === null ? null : new Date(w.lockExpiresAt).toISOString(),
+      forcedFor: name(w.forcedFor),
+      players: turnsOf(db, w.id).map((t) => usernameOf(db, t.playerId)),
+      createdAt: w.createdAt ?? null,
+    }));
+  }
+
+  async getSettings(): Promise<Settings> {
+    return settingsOf(load());
+  }
+
+  async setSettings(settings: Partial<Settings>): Promise<void> {
+    const db = load();
+    requireAdmin(db);
+    const next = { ...settingsOf(db), ...settings };
+    if (!(next.defaultTurnSeconds > 0 && next.defaultGenerationCount > 0)) throw new Error('Must be above 0');
+    if (!(next.inheritRatio >= 0 && next.inheritRatio <= 1)) throw new Error('Inherit ratio must be between 0 and 1');
+    db.settings = next;
+    save(db);
+  }
+
+  async configureWorld(worldId: string, config: { turnSeconds?: number; generationCount?: number }): Promise<void> {
+    const db = load();
+    requireAdmin(db);
+    const world = worldOf(db, worldId);
+    if (world.status === 'complete') throw new Error('This world has ended');
+    const { turnSeconds = world.turnSeconds, generationCount = world.generationCount } = config;
+    if (!(turnSeconds > 0)) throw new Error('Turn length must be above 0');
+    if (generationCount < world.currentTurn) throw new Error(`At least ${world.currentTurn} generations: that one is being played or next`);
+    world.turnSeconds = turnSeconds;
+    world.generationCount = generationCount;
+    save(db);
+  }
+
   async forceAssign(worldId: string, username: string): Promise<void> {
     const db = load();
-    const world = db.worlds.find((w) => w.id === worldId);
-    const user = db.users.find((u) => u.username === username.toLowerCase());
-    if (!world || !user) throw new Error('World or user not found');
+    requireAdmin(db);
+    const world = worldOf(db, worldId);
+    if (world.status !== 'open') throw new Error('This world has ended');
+    const user = db.users.find((u) => u.username === username.trim().toLowerCase());
+    if (!user) throw new Error('No player by that name');
     world.forcedFor = user.id;
+    save(db);
+  }
+
+  async markComplete(worldId: string): Promise<void> {
+    const db = load();
+    requireAdmin(db);
+    const world = worldOf(db, worldId);
+    if (world.status === 'complete') return;
+    const played = turnsOf(db, worldId).length;
+    if (played === 0) throw new Error('Nobody has played this world yet');
+    world.status = 'complete';
+    world.generationCount = played;
+    world.completedAt = new Date().toISOString();
+    world.lockedBy = null;
+    world.lockExpiresAt = null;
+    world.forcedFor = null;
+    save(db);
+  }
+
+  async clearLock(worldId: string): Promise<void> {
+    const db = load();
+    requireAdmin(db);
+    const world = worldOf(db, worldId);
+    world.lockedBy = null;
+    world.lockExpiresAt = null;
     save(db);
   }
 }

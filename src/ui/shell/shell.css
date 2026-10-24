@@ -447,3 +447,93 @@
 .replay__line--earlier {
   color: var(--peach);
 }
+
+/* Admin ------------------------------------------------------------------------------------------ */
+
+.admin {
+  display: grid;
+  gap: calc(var(--px) * 8);
+  width: min(100%, 1120px);
+  align-self: start;
+}
+
+.admin .gallery__title {
+  margin: 0;
+}
+
+.admin__panel p {
+  margin: 0;
+}
+
+.admin__assign,
+.admin__defaults {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  gap: calc(var(--px) * 5);
+  align-items: end;
+}
+
+.admin__defaults {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: start;
+}
+
+.admin__defaults > .kit-button {
+  margin-top: calc(var(--text-sm) + var(--px) * 3);
+}
+
+.admin__note {
+  margin-top: calc(var(--px) * 4) !important;
+  font-size: var(--text-sm);
+  color: var(--grass-light);
+}
+
+.admin__panel .auth__error {
+  margin-top: calc(var(--px) * 4);
+}
+
+.admin__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.admin__table th,
+.admin__table td {
+  padding: calc(var(--px) * 2) calc(var(--px) * 3);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: normal;
+}
+
+.admin__table thead th {
+  color: var(--highlight);
+  border-bottom: var(--px) solid var(--panel-edge);
+}
+
+.admin__table tbody tr + tr > * {
+  border-top: 1px solid rgb(86 55 73 / 0.6);
+}
+
+.admin__id {
+  color: var(--highlight);
+}
+
+.admin__players {
+  display: block;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.admin__num {
+  width: 6.5em;
+  min-height: calc(var(--px) * 11);
+  font-size: var(--text-sm);
+}
+
+.admin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+  justify-content: flex-end;
+}

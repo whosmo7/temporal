@@ -157,6 +157,9 @@ nothing was ever written.
 ## Client data layer
 
 - `src/api/` wraps `supabase-js`: `signUp`, `signIn`, `claimWorld`, `commitTurn`, `listCompletedWorlds`, `getReplay(worldId)`, admin calls.
+  The admin calls on the `Backend` contract are `listWorlds`, `getSettings`, `setSettings`, `configureWorld`, `forceAssign`, `markComplete`
+  (sets `generation_count` to the generations played, completes the world, clears lock and `forced_for`) and `clearLock`; each must refuse
+  non-admins. `currentUser` returns `isAdmin` from `profiles.is_admin`. `LocalBackend` implements them all.
   `listCompletedWorlds` also returns each world's `preset` and `finalState` (the last snapshot's state), both optional, for the gallery thumbnails (`06`).
 - Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the anon key is safe in a static bundle when RLS is on).
 - **Offline/hot-seat mode** (build first, and keep as a demo fallback): the same interface, backed by `localStorage`, so the game can be developed before the backend exists.

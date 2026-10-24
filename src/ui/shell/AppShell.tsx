@@ -29,6 +29,11 @@ export function AppShell() {
         <div className="shell__controls">
           {user && (
             <>
+              {user.isAdmin && pathname !== '/admin' && (
+                <ButtonLink to="/admin" variant="quiet" size="sm">
+                  Admin
+                </ButtonLink>
+              )}
               <span className="shell__user">{user.username}</span>
               <Button
                 variant="quiet"
