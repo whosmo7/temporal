@@ -44,12 +44,12 @@ jobs:
 
   # Keeps the server's copy of the engine in step with the client's (commit-turn re-runs every turn,
   # so a stale bundle diverges from or rejects real play). Skipped until the SUPABASE_ACCESS_TOKEN
-  # secret is set (supabase.com → Account → Access Tokens).
+  # secret is set (supabase.com → Account → Access Tokens). No database password needed: the CLI
+  # logs in to the database with a temporary role made from the token.
   supabase:
     runs-on: ubuntu-latest
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
         if: env.SUPABASE_ACCESS_TOKEN != ''
@@ -62,7 +62,7 @@ jobs:
         run: npm ci
       - if: env.SUPABASE_ACCESS_TOKEN != ''
         run: npx supabase link --project-ref nswzjqylyuwhydyyqsmq
-      - if: env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_DB_PASSWORD != ''
+      - if: env.SUPABASE_ACCESS_TOKEN != ''
         run: npx supabase db push --linked --yes
       - if: env.SUPABASE_ACCESS_TOKEN != ''
         run: npm run functions:deploy
