@@ -24,6 +24,11 @@
 
 ## Auth: username + password on Supabase
 
+**Built** (`supabase/migrations/20261024170000_schema_rls_auth.sql`): the client calls
+`supabase.auth.signUp({ email: \`${username}@players.temporal.local\`, password, options: { data: { username } } })`.
+A trigger creates the `profiles` row. Usernames must match `^[a-z0-9_]{3,20}$`. To make someone an admin, run
+`npx supabase db query --linked "update profiles set is_admin = true where username = '<name>'"`.
+
 Supabase Auth is email-based. Use **synthetic emails**: `username@players.temporal.local`, with
 **email confirmation turned off** in the project settings. Store the display username in `profiles`.
 Usernames must be unique (lower-cased).
@@ -158,9 +163,9 @@ nothing was ever written.
 ## Tasks
 
 - [x] **[A]** Create the Supabase project. Turn email confirmation off. Add the env vars to the repo secrets + `.env.example`. *(Done by C, see **Project** above.)*
-- [ ] **[A]** SQL migrations for the schema above (`supabase/migrations/`)
-- [ ] **[A]** RLS policies (read-public for completed worlds, no update/delete)
-- [ ] **[A]** Username signup/login with synthetic emails + `profiles` insert trigger
+- [x] **[A]** SQL migrations for the schema above (`supabase/migrations/`) *(C. Additions to the sketch: `worlds.preset`, `actions.eat`, and `settings.journal_allowance_seconds` + `lock_grace_seconds` for the lock TTL.)*
+- [x] **[A]** RLS policies (read-public for completed worlds, no update/delete) *(C. History is readable when the world is complete, by the current lock holder, or by an admin. There are no write policies at all.)*
+- [x] **[A]** Username signup/login with synthetic emails + `profiles` insert trigger *(C. Tested live: `.local` emails are accepted. Also adds the `username_available(name)` RPC. The `supabase-js` wrapper goes in `SupabaseBackend` once A's `Backend` interface exists.)*
 - [ ] **[A]** `claim_world` RPC with weighted assignment, `SKIP LOCKED`, stale-lock expiry, force-assign
 - [ ] **[A]** `commit-turn` Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed)
 - [ ] **[A]** `heartbeat` RPC (if needed)
