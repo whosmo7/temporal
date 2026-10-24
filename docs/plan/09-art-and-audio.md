@@ -6,7 +6,7 @@
 ## Decisions (locked)
 
 - **Free asset packs** for art. Stardew-style ¾ top-down pixel art.
-- **Music + SFX**. Music is three Ninja Adventure loops (CC0), not original ([014](../decisions/014-music-from-the-pack.md)).
+- **Music + SFX**. Music is three Ninja Adventure loops (CC0), not original ([015](../decisions/015-music-from-the-pack.md)).
 - Strong visual states for world health (see the `04` table). The art has to make every state readable.
 
 ## Art
@@ -94,7 +94,7 @@ Sources: Kenney audio packs (CC0), Freesound (check CC-BY attribution), OpenGame
 - [x] **[C]** Build the Pixi spritesheet/atlas (TexturePacker free / `free-tex-packer`) + JSON *(Built by our own script instead: `npm run atlas` crops frames listed in `scripts/atlas-manifest.ts` from `art/source/`, recolours them to the palette and writes `public/assets/atlas/world.png` + `.json`. The renderer loads it in `src/render/atlas.ts`; any frame it lacks keeps B's painted placeholder.)*
 - [x] **[C]** Map `03` tile types → atlas frames (agree the names with the engine dev) *(All `terrain`, `boundary` and `deco` IDs. Wall trees are 2×2 tiles, centred on their tile. The player is Villager4, chosen by C.)*
 - [x] **[C]** Map `04` visual states → frames *(Composed in `scripts/art/compose.ts` from pack pieces plus drawn pixels: every field, orchard, reservoir, well and wild stage, the store, lectern, house shell and interior, furniture and `terrain/cracks-1`. Plot frames are drawn for the default plot sizes and anchored bottom-centre, so canopies can spill past the footprint; other sizes keep the painted frames. Wild spots have a frame per biome, `wild/<stage>-forest|island`.)*
-- [x] **[C]** Gravestone variants + graveyard layout *(Picket fence frame, four stone shapes (the fourth a drawn fieldstone), and `graveSlots()` in `src/render/graveyard.ts`: two rows of five inside the fence, packing tighter past ten, shapes never repeated side by side. Drawing one stone per gravestone is `04`/`05` (B).)*
+- [x] **[C]** Gravestone variants + graveyard layout *(Picket fence frame and four stone shapes, the fourth a drawn fieldstone. B's `layoutStones()` (`src/render/graveyard.ts`, decision 014) places them in rows inside the fence.)*
 - [x] **[C]** Journal book art + fonts *(Stitched leather cover with brass corners as a 9-slice and a paper grain tile, `public/assets/journal/`; Patrick Hand for the writing.)*
 - [x] **[C]** UI kit: panel, button, icons (food/water/stamina + 8 actions) *(Icons: UI atlas `ui.png` + `src/ui/kit/ui-atlas.json`, drawn by `<PixelIcon name="ui/icon-<id>">`; names use the engine's action IDs. Panels and buttons stay CSS: the same ink fill, edge, highlight line and notched corners as a 9-slice, on the 3 px grid, with no image to load.)*
 - [x] **[C]** Blight/drought filters (with frontend) *(Built with B: the colour filters, day/night light, blight motes and rot flies are B's (`world-view.ts`, `daylight.ts`, `fx.ts`), on the art direction's values; C drew the `terrain/cracks-1` overlay and the per-stage art they sit on.)*
@@ -111,5 +111,5 @@ Sources: Kenney audio packs (CC0), Freesound (check CC-BY attribution), OpenGame
 ## Open questions
 
 1. Which pack family? *(Settled: Ninja Adventure, 16 px. See Art.)*
-2. ~~Original music, or licensed free tracks only?~~ *(Settled: pack tracks, [014](../decisions/014-music-from-the-pack.md).)*
+2. ~~Original music, or licensed free tracks only?~~ *(Settled: pack tracks, [015](../decisions/015-music-from-the-pack.md).)*
 3. Should the avatar's appearance vary per player (colour tint by username hash)?

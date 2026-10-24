@@ -31,6 +31,8 @@ type Props = {
       /** From the lectern during play: read only. Esc or Close shuts it. */
       mode: 'read';
       onClose: () => void;
+      /** Generation to open at (a gravestone's page). Defaults to the latest page. */
+      openAt?: number;
     }
 );
 
@@ -115,7 +117,12 @@ export function JournalModal(props: Props) {
   const pages = useMemo(() => [...rawPages].sort((a, b) => a.turn - b.turn), [rawPages]);
 
   const dialog = useRef<HTMLDialogElement>(null);
-  const [selected, setSelected] = useState(pages.length - 1);
+  const openAt = props.mode === 'read' ? props.openAt : undefined;
+  const firstPage = () => {
+    const i = pages.findIndex((p) => p.turn === openAt);
+    return i >= 0 ? i : pages.length - 1;
+  };
+  const [selected, setSelected] = useState(firstPage);
   const [text, setText] = useState('');
   const [drawing, setDrawing] = useState<Drawing>([]);
   const [history, setHistory] = useState<Drawing[]>([]);
@@ -146,7 +153,8 @@ export function JournalModal(props: Props) {
     };
   }, []);
 
-  useEffect(() => setSelected(pages.length - 1), [pages.length]);
+  // Re-pick only when a page is added or a different stone is clicked.
+  useEffect(() => setSelected(firstPage()), [pages.length, openAt]);
 
   /** A page turn the reader asked for (not the initial jump to the latest page). */
   const turnTo = (next: number) => {

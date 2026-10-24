@@ -40,7 +40,7 @@ Plot name, then the name of each visual stage from `visibleView()`.
 | `wild` (Island) | Rocks | `many` Fish rising · `few` The odd fish · `none` Still water |
 | `store` | Store | `full` Full · `half` Half full · `empty` Bare · `rotting` Spoiling |
 | `lectern` | Journal | — (prompt: "Read the journal") |
-| `graveyard` | Graveyard | — (stone hover: the player's name) |
+| `graveyard` | Graveyard | — (stone hover: "{name} · Generation {n}"; prompt: "Read {name}'s page", [014](../decisions/014-gravestones.md)) |
 
 ## Errors (invalid action reasons)
 
@@ -71,6 +71,7 @@ Say what's missing, in a few words.
 | HUD generation badge | Generation {n} of {m} |
 | Weakened start ("You are inheriting…") | You wake up tired. |
 | Freeze | The day is over. |
+| After your stone rises (`05`) | Generation {n} is over. · button: Continue |
 
 Things deliberately **not** written: no tooltip says what anything becomes or when, nothing explains why a plot looks
 the way it does, and no event (drought, storm, good harvest) is ever named during play.

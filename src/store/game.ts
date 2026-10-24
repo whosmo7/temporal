@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Gravestone } from '../api/Backend';
 import type { PlotId } from '../worldgen';
 
 /**
@@ -12,13 +13,22 @@ export interface GameStore {
   turnSeconds: number;
   /** The journal is open: time and movement are frozen (decision 012). */
   journalOpen: boolean;
+  /** Generation the journal opens at (a gravestone's page); null = the latest page. */
+  journalPage: number | null;
   /** Plot the player is standing next to, for the interact prompt. */
   nearby: PlotId | null;
+  /** At the graveyard: the stone E reads. */
+  nearbyStone: Gravestone | null;
+  /** Stone under the mouse, with its top-centre in canvas CSS px for the label. */
+  hoveredStone: (Gravestone & { x: number; y: number }) | null;
 
   /** Advances the clock unless the journal is open; stops at turnSeconds. */
   advance(dt: number): void;
   setJournalOpen(open: boolean): void;
-  setNearby(id: PlotId | null): void;
+  /** Opens the journal, at `page`'s generation if given. */
+  openJournal(page?: number): void;
+  setNearby(id: PlotId | null, stone?: Gravestone | null): void;
+  setHoveredStone(stone: GameStore['hoveredStone']): void;
   startTurn(turnSeconds: number): void;
 }
 
@@ -26,18 +36,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
   t: 0,
   turnSeconds: 600,
   journalOpen: false,
+  journalPage: null,
   nearby: null,
+  nearbyStone: null,
+  hoveredStone: null,
 
   advance: (dt) => {
     const { t, turnSeconds, journalOpen } = get();
     if (journalOpen || t >= turnSeconds) return;
     set({ t: Math.min(turnSeconds, t + dt) });
   },
-  setJournalOpen: (open) => set({ journalOpen: open }),
-  setNearby: (id) => {
-    if (get().nearby !== id) set({ nearby: id });
+  setJournalOpen: (open) => set(open ? { journalOpen: true } : { journalOpen: false, journalPage: null }),
+  openJournal: (page) => set({ journalOpen: true, journalPage: page ?? null, hoveredStone: null }),
+  setNearby: (id, stone = null) => {
+    const s = get();
+    if (s.nearby !== id || s.nearbyStone?.turn !== stone?.turn) set({ nearby: id, nearbyStone: stone });
   },
-  startTurn: (turnSeconds) => set({ t: 0, turnSeconds, journalOpen: false, nearby: null }),
+  setHoveredStone: (stone) => {
+    const h = get().hoveredStone;
+    if (h?.turn !== stone?.turn || h?.x !== stone?.x || h?.y !== stone?.y) set({ hoveredStone: stone });
+  },
+  startTurn: (turnSeconds) =>
+    set({ t: 0, turnSeconds, journalOpen: false, journalPage: null, nearby: null, nearbyStone: null, hoveredStone: null }),
 }));
 
 /** Time is up: the turn has reached 6 am the next morning. */

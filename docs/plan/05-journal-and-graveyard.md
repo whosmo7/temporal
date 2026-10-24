@@ -11,7 +11,7 @@
 - The journal is the **only** information successors get about the past. The world never explains causes.
 - **End flow: Freeze → Journal (write) → Cost summary → Gravestone.**
 - **Cost summary shows only realised outcomes**: costs paid and immediate gains. **Pending benefits are left out.**
-- **Gravestone**: name/initials, click to open that player's journal page.
+- **Gravestone**: name/initials, click to open that player's journal page. The hover label also shows the generation, and E reads the nearest stone ([014](../decisions/014-gravestones.md)).
 - No moderation for the hackathon.
 - Text is limited to **400 characters** ([009](../decisions/009-journal-character-limit.md)).
 
@@ -60,9 +60,14 @@
 ## Graveyard
 
 - One gravestone per **committed** turn (voided turns get none).
-- Stone shows name/initials (and optionally "Gen N", open question). Hover → name. Click → opens the journal at that page.
+- Hover → "AL · Generation 2". Click → opens the journal at that page. At the graveyard, "E · Read AL's page" reads the nearest
+  stone ([014](../decisions/014-gravestones.md)). The graveyard is solid, so stones are read from outside the fence.
 - Repeat players get several stones.
-- Stones fill a fixed graveyard plot in rows. Plan for overflow if generations are configured high (smaller stones or a second row).
+- Stones fill the fixed graveyard plot in rows, oldest at the back left (`layoutStones` in `src/render/graveyard.ts`). Rows tighten
+  as it fills, and past a dozen or so the stones halve in size, so 80 generations still fit.
+- **End of turn:** after the seal, the camera pans to the graveyard (the roof goes back on if you were inside), the dim lifts,
+  and your stone pushes up out of the ground with a little earth thrown up. Then "Generation N is over." → Continue.
+  `WorldView.raiseStone(stone)` resolves when it has risen.
 
 ## Tasks
 
@@ -72,8 +77,8 @@
 - [x] **[C]** Stroke renderer (reused by the replay `06` and gallery thumbnails) *(`StrokeRenderer` component, or `paintStrokes(ctx, drawing, scale)` for Pixi/offscreen use.)*
 - [x] **[C]** "Seal page" confirmation; locks the page client-side *(Calls `onSeal({ text, drawing })` after the stamp; B's end flow takes it from there.)*
 - [ ] **[C]** Cost summary screen from `endTurn().summary` (**realised only**)
-- [ ] **[B]** Gravestone placement animation + camera pan
-- [ ] **[B]** Graveyard rendering and interaction (with `04`)
+- [x] **[B]** Gravestone placement animation + camera pan *(`WorldView.raiseStone()`. `PlayScreen` runs it after the seal; the cost summary slots in before it.)*
+- [x] **[B]** Graveyard rendering and interaction (with `04`) *(hover label, click and E open the page; `JournalModal` got an optional `openAt`. Dev: `#/play?graves=AL,MO,KE&turn=20`.)*
 - [x] **[B]** Lectern interaction → read-only journal during play *(the world's pages are passed in by the play flow, `08`; for now the list is empty)*
 - [ ] **[B]** Hand off to `07` commit; handle a commit failure (retry, keep the local copy)
 - [ ] **[C]** Copywriting pass with Game design (tone: quiet, reflective, no moralising)
@@ -87,7 +92,5 @@
 ## Open questions
 
 1. Time limit for journal writing at end of turn? (You said "we will define".) Affects the lock TTL in `07`.
-2. Is reading the journal *during* play free (timer paused) or does it use time?
-3. Gravestone: show the generation number as well as the name?
-4. Which step commits the turn: "Seal page" or the end of the gravestone animation?
-5. Can a player skip writing (empty page)? If so, what does their page show ("They left no words")?
+2. Which step commits the turn: "Seal page" or the end of the gravestone animation?
+3. Can a player skip writing (empty page)? If so, what does their page show ("They left no words")?
