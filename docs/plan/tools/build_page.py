@@ -16,7 +16,7 @@ order = [SRC / "README.md"] + docs
 def convert(path, prefix):
     out = subprocess.run(
         ["pandoc", "-f", "gfm", "-t", "html", "--no-highlight", "--wrap=none", f"--id-prefix={prefix}-", str(path)],
-        check=True, capture_output=True, text=True,
+        check=True, capture_output=True, text=True, encoding="utf-8",  # not the Windows default
     ).stdout
     return out
 
@@ -89,12 +89,13 @@ for s in sections:
                 if s["tasks"] else "")
     secs.append(f'<section id="{s["key"]}" class="doc" data-key="{s["key"]}"><header class="sec-head">{head_num}<h2 class="sec-title">{title}</h2></header>{progress}<div class="prose">{s["body"]}</div></section>')
 
-template = Path(sys.argv[3]).read_text()
+template = Path(sys.argv[3]).read_text(encoding="utf-8")
 page = template.replace("{{NAV}}", "\n".join(nav)).replace("{{SECTIONS}}", "\n".join(secs))
 head, _, body = page.partition('<div class="wrap">')
 OUT.write_text(
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-    + head + '</head>\n<body>\n<div class="wrap">' + body + '</body>\n</html>\n'
+    + head + '</head>\n<body>\n<div class="wrap">' + body + '</body>\n</html>\n',
+    encoding="utf-8",
 )
 print("sections", len(sections), "tasks", sum(s["tasks"] for s in sections))

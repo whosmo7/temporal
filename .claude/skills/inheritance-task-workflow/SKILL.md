@@ -44,7 +44,7 @@ doing, mention it in the PR or ask the user about a new task rather than widenin
 Run what CI runs, then fix anything red before calling the task done:
 
 ```bash
-npm run typecheck && npm run lint && npm test && npm run build
+npm run typecheck && npm run lint && npm run check:decisions && npm test && npm run build
 ```
 
 (If the scaffold from `11` doesn't exist yet, say so and run whatever exists.)
@@ -85,6 +85,10 @@ Each section doc ends with **Open questions**. If your task depends on one of th
 2. Once decided, record it as a short decision record in `docs/decisions/NNN-<slug>.md`
    (context, options, decision, consequences). Use the `engineering:architecture` skill to write it if
    it's available.
+   **Pick the number from the latest `main`**, not your branch: `git fetch && git ls-tree --name-only
+   origin/main docs/decisions/`, then take the next one (`npm run check:decisions` prints it). Three
+   people add decisions in parallel, and stale copies have already produced two clashes. If CI's
+   `check:decisions` fails, someone merged that number first: renumber yours and its links only.
 3. In the same PR, move the question out of the section doc's **Open questions**, write the answer
    into its **Decisions** or **Spec**, and add a row to `docs/plan/00-decisions-and-glossary.md`.
 
