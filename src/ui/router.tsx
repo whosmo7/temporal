@@ -1,8 +1,10 @@
 import { createHashRouter, type RouteObject } from 'react-router-dom';
+import { AuthScreen } from './screens/AuthScreen';
 import { LandingScreen } from './screens/LandingScreen';
 import { NotFoundScreen } from './screens/NotFoundScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import { AppShell } from './shell/AppShell';
+import { RequireUser } from './shell/RequireUser';
 
 // Component sheets for building and review. Left out of production builds.
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -34,7 +36,8 @@ const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
 
 /**
  * Hash routes (GitHub Pages). Everything but the game sits in the shell's sky; the game is
- * full-screen. Later screens slot in here: `auth`, `tutorial`, `gallery`, `world/:id/replay`, `admin`.
+ * full-screen. Play needs a signed-in player; the gallery and replays are public (decision 016).
+ * Later screens slot in here: `tutorial`, `admin`.
  */
 export const router = createHashRouter([
   {
@@ -44,10 +47,18 @@ export const router = createHashRouter([
     HydrateFallback: () => null,
     children: [
       { index: true, element: <LandingScreen /> },
+      { path: 'auth', element: <AuthScreen /> },
       ...devRoutes,
       { path: '*', element: <NotFoundScreen /> },
     ],
   },
-  { path: '/play', element: <PlayScreen /> },
+  {
+    path: '/play',
+    element: (
+      <RequireUser>
+        <PlayScreen />
+      </RequireUser>
+    ),
+  },
   ...devFullscreenRoutes,
 ]);

@@ -168,3 +168,32 @@
   color: var(--ink);
   opacity: 0.7;
 }
+
+/* Auth ------------------------------------------------------------------------------------------- */
+
+.auth {
+  width: min(100%, 420px);
+}
+
+.auth__form {
+  display: grid;
+  gap: calc(var(--px) * 5);
+}
+
+.auth__error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--peach);
+}
+
+.auth__switch {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  margin: calc(var(--px) * 6) 0 0;
+  font-size: var(--text-sm);
+}
+
+.shell__user {
+  font-size: var(--text-sm);
+}
