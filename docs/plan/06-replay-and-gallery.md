@@ -57,7 +57,7 @@ For each generation g = 1..N:
 
 ## Tasks
 
-- [ ] **[C]** `explain()` output → human sentences (templating with actor names + generations)
+- [x] **[C]** `explain()` output → human sentences (templating with actor names + generations) *(`explainGeneration(turn, { actions, transitions, nameOf, biome })` in `src/ui/replay/causeSentences.ts` gives per-resource lines that add up to the net, each flagged `earlier` when it credits an earlier generation; `sentence()` formats one. Wording: `docs/content/replay-causes.md`. Names come from the journal page author of each generation.)*
 - [ ] **[B]** Replay screen layout: snapshot panel + journal panel + causes panel + timeline
 - [ ] **[B]** Read-only Pixi render of a snapshot (reuse `04` layers, no avatar, no input)
 - [ ] **[B]** Highlight changed plots per generation (diff vs the previous snapshot)
