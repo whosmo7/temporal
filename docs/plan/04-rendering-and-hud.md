@@ -26,7 +26,7 @@
   ├─ <Hud/>                  // React DOM overlay
   ├─ <InteractPrompt/>       // "E: Plant Orchard (25⚡ 5💧)" near a plot
   ├─ <FastTrackMenu/>        // list of pending effects (anyone's), no due dates
-  └─ <JournalModal/> (05)    // opened from the lectern. The timer still runs during play (open: confirm)
+  └─ <JournalModal/> (05)    // opened from the lectern; the clock stops while it's open (decision 012)
 ```
 
 - Keep game state in a small store (e.g. **Zustand**) that holds the engine `WorldState` + local action buffer. Pixi reads from the store every frame. React subscribes to the slices it needs.
@@ -92,9 +92,13 @@ These visuals should be enough to inherit the world without reading anything. No
 
 ## Day/night
 
-- `t / turnSeconds` maps to the time of day. Dawn at 0%, noon at 40%, dusk at 80%, night at 95–100%.
-- `ColorMatrixFilter` or a tinted overlay. Night darkens around the player (soft radial light).
-- At 100%: freeze → `05` end flow.
+A turn is **one in-game day, 6 am to 6 am** ([012](../decisions/012-day-night-clock.md)): `t / turnSeconds` maps to the
+hour, so noon is at 25%, 6 pm at 50% and midnight at 75%.
+- Built in `src/render/daylight.ts` and `world-view.ts`. Light comes in four phases: rose dawn, clear day, peach dusk (5–7 pm) and plum
+  night (9 pm–4:30 am). The phase tint is a `ColorMatrixFilter` multiply, combined with the weakened and drought looks. Night is a screen-space
+  overlay with a soft light around the player (3.5 tiles), much weaker inside the house.
+- The clock (`src/store/game.ts`) is advanced by the game loop and **stops while the journal is open**.
+- At 6 am the next morning (100%): input locks and the world dims → `05` end flow (needs A's `endTurn`).
 
 ## Tasks
 
@@ -104,16 +108,16 @@ These visuals should be enough to inherit the world without reading anything. No
 - [x] **[B]** Player avatar: 4-direction walk animation, collision against the grid
 - [x] **[B]** Y-sorting for trees/structures vs the player
 - [ ] **[B]** Plot sprites driven by `visibleView()` stages *(the renderer side is done: `WorldView.setLook()` takes stages per plot. It waits on A's `visibleView()`)*
-- [ ] **[B]** Interact prompt + key handling + hotbar
+- [ ] **[B]** Interact prompt + key handling + hotbar *(the prompt component and nearby-plot detection are done, with the lectern working. Action prompts with costs and the hotbar wait on `applyAction`)*
 - [ ] **[B]** Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason.
 - [ ] **[B]** Fast Track menu (lists pending effects, with the originating player's name, no due dates)
-- [ ] **[B]** Day/night lighting + timer
-- [ ] **[B]** Freeze at time-up (lock input, dim world) → hand off to the `05` flow
-- [ ] **[B]** Visual-state variants for all rows in the table above *(placeholder frames exist for every plot, store and grave stage, plus the weakened and drought filters. Still to do: the weakened slow walk and blight motes, which come with FX)*
-- [ ] **[B]** FX: harvest pop, splash, rot flies, blight motes
+- [x] **[B]** Day/night lighting + timer *(6 am → 6 am in-game clock, decision 012)*
+- [ ] **[B]** Freeze at time-up (lock input, dim world) → hand off to the `05` flow *(lock and dim are done; the hand-off waits on A's `endTurn`)*
+- [x] **[B]** Visual-state variants for all rows in the table above *(every plot, store and grave stage; the weakened filter, slow walk and blight motes; drought cracks and tint)*
+- [ ] **[B]** FX: harvest pop, splash, rot flies, blight motes *(rot flies and blight motes are done in `fx.ts`. Harvest pop and splash need `applyAction`)*
 - [ ] **[B]** HUD components (React) styled to match the pixel art
 - [ ] **[B]** Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (`05`)
-- [ ] **[B]** Lectern: interact opens the journal
+- [x] **[B]** Lectern: interact opens the journal *(`E` next to the lectern opens C's `JournalModal` read-only)*
 - [x] **[B]** Perf check: 60 fps on a mid laptop at 32×32 *(held the browser's 60 fps ceiling at 32×32 and 40×40 with filters on, in headless Firefox on a dev machine. Add `&fps=1` to `#/play` to check on other laptops)*
 
 ## Acceptance
@@ -123,6 +127,7 @@ These visuals should be enough to inherit the world without reading anything. No
 
 ## Open questions
 
-1. Does the turn timer **keep running** while the journal is open during play? ("Openable any time" vs "time freezes only at end".)
+(Former question 1, whether the timer runs while the journal is open, is settled by [012](../decisions/012-day-night-clock.md): it stops.)
+
 2. Show numeric Food/Water counts, or only diegetic visuals (crate fill, reservoir level)? The current decision is the Stardew-like HUD with counters.
 3. Can the player sprint (more stamina, less time)?

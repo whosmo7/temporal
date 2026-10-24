@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { CONFIG } from '../../engine/config';
 import { PixiStage } from '../../render/PixiStage';
 import { founderLook, type WorldLook, type WorldView } from '../../render/world-view';
+import { useGameStore } from '../../store/game';
 import { generateMap, isPresetName, type Biome, type TileMap } from '../../worldgen';
+import { Clock } from '../hud/Clock';
+import { InteractPrompt } from '../hud/InteractPrompt';
+import { JournalModal } from '../journal';
 
 /**
  * Local hot-seat world for now: `#/play?seed=123&biome=island&preset=small`. Once the engine and
- * Backend exist (`02`, `07`, `08`), this gets its world from the claimed turn and its look from
- * `visibleView()`. Dev params: `look=healthy|neglected` previews world states, `fps=1` shows the
- * frame rate.
+ * Backend exist (`02`, `07`, `08`), this gets its world, journal pages and look from the claimed
+ * turn and `visibleView()`. Dev params: `look=healthy|neglected` previews world states,
+ * `turn=60` shortens the turn to 60 s, `fps=1` shows the frame rate.
  */
 export function PlayScreen() {
   const [params] = useSearchParams();
@@ -17,15 +22,47 @@ export function PlayScreen() {
   const presetParam = params.get('preset') ?? 'default';
   const preset = isPresetName(presetParam) ? presetParam : 'default';
   const lookParam = params.get('look');
+  const turnSeconds = Number(params.get('turn') ?? CONFIG.turnSeconds);
   const showFps = params.get('fps') === '1';
 
   const map = useMemo(() => generateMap(seed, biome, preset), [seed, biome, preset]);
   const look = useMemo(() => previewLook(map, lookParam), [map, lookParam]);
   const [view, setView] = useState<WorldView | null>(null);
 
+  const startTurn = useGameStore((s) => s.startTurn);
+  const nearby = useGameStore((s) => s.nearby);
+  const journalOpen = useGameStore((s) => s.journalOpen);
+  const setJournalOpen = useGameStore((s) => s.setJournalOpen);
+  useEffect(() => startTurn(turnSeconds), [map, turnSeconds, startTurn]);
+
+  const atLectern = nearby === 'lectern';
+  useEffect(() => {
+    if (!atLectern || journalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'KeyE' || e.code === 'Space') {
+        e.preventDefault();
+        setJournalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [atLectern, journalOpen, setJournalOpen]);
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#101418' }}>
       <PixiStage map={map} look={look} onReady={setView} />
+      <div style={{ position: 'absolute', top: 12, right: 12 }}>
+        <Clock />
+      </div>
+      {atLectern && !journalOpen && (
+        <div style={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)' }}>
+          <InteractPrompt keyLabel="E" text="Read the journal" />
+        </div>
+      )}
+      {journalOpen && (
+        // Reading the journal stops the clock (decision 012). Pages come from the claimed world (08).
+        <JournalModal mode="read" pages={[]} generation={1} author="" onClose={() => setJournalOpen(false)} />
+      )}
       {showFps && view && <FpsReadout view={view} />}
     </div>
   );
@@ -54,7 +91,7 @@ function FpsReadout({ view }: { view: WorldView }) {
     return () => clearInterval(id);
   }, [view]);
   return (
-    <div style={{ position: 'absolute', top: 8, right: 8, padding: '2px 6px', background: '#1f2027', color: '#fefadb', font: '12px monospace' }}>
+    <div style={{ position: 'absolute', top: 12, left: 12, padding: '2px 6px', background: '#1f2027', color: '#fefadb', font: '12px monospace' }}>
       {fps.toFixed(0)} fps
     </div>
   );

@@ -20,7 +20,7 @@ Entering should zoom in and lift the roof, so you see the room in place rather t
 - **Spawn:** each turn starts inside, just above the door.
 - **Rendering:** stepping into the doorway or the room fades out the roof and front wall, dims everything outside, and
   zooms the camera in onto the house (3× → about 5× at 1280×720). Leaving reverses it.
-- **Oven:** furniture only for now. The cabinet is the food store ([009](009-cabinet-food-store-no-rot.md)).
+- **Oven:** furniture only for now. The cabinet is the food store ([011](011-cabinet-food-store-no-rot.md)).
 
 ## Consequences
 
