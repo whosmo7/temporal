@@ -94,6 +94,13 @@ describe('engine invariants', () => {
     }).not.toThrow();
   });
 
+  it('replay never mutates the action log it is given', () => {
+    const live = randomGame(5);
+    const log = deepFreeze(structuredClone(live.log));
+    expect(() => replay(5, { worldId: 'w-5', generationCount: 6, turns: 6 }, log)).not.toThrow();
+    expect(log).toEqual(live.log);
+  });
+
   it('the visible view never carries due dates or pending numbers', () => {
     const game = newGame();
     game.begin();

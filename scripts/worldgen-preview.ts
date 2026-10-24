@@ -3,15 +3,7 @@
 //   npm run worldgen -- --seed 123 --biome island --preset small
 //   npm run worldgen -- --seed 7 --json '{"width":40,"fields":3,"pin":{"well":{"x":6,"y":6}}}'
 import { parseArgs } from 'node:util';
-import {
-  ASCII_LEGEND,
-  generateMap,
-  isPresetName,
-  PRESETS,
-  toAscii,
-  type Biome,
-  type WorldgenPreset,
-} from '../src/worldgen';
+import { ASCII_LEGEND, generateMap, isPresetName, PRESETS, toAscii, type Biome, type WorldgenPreset } from '../src/worldgen';
 
 const { values } = parseArgs({
   options: {
@@ -32,10 +24,7 @@ if (!isPresetName(values.preset)) {
   process.exit(1);
 }
 const biome: Biome = values.biome;
-const preset: WorldgenPreset = {
-  ...PRESETS[values.preset],
-  ...(values.json ? JSON.parse(values.json) : {}),
-};
+const preset: WorldgenPreset = { ...PRESETS[values.preset], ...(values.json ? JSON.parse(values.json) : {}) };
 const seed = Number(values.seed);
 
 const start = performance.now();

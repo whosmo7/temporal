@@ -155,7 +155,7 @@ result but still only appends. Record this choice as an open question for the en
 - [x] **[A]**** Drought with vs without reservoir repair
 - [x] **[A]**** Upkeep shortfall → successor's stamina reduced, with transition cause `rule: weakened`
 - [x] **[A]**** Every transition has ≥1 cause (invariant test)
-- [ ] **[A]** Append-only: no API mutates past log entries
+- [x] **[A]**** Append-only: no API mutates past log entries
 
 **Tooling**
 - [x] **[A]** `scripts/simulate.ts`: plays N generations with scripted strategies and prints a resource table (used by game design for balancing)
