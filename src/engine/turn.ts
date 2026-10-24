@@ -44,7 +44,7 @@ export function beginTurn(state: WorldState): StepResult {
     // 3. Structure wear +1 (unless maintained last turn)
     applyWear(next, rec);
 
-    // 4. Food rot, water stagnation
+    // 4. Food rot, water stagnation, hunger
     applyDecay(next, rec);
 
     // 5. Resource income (reservoir, well), reduced by wear and events
@@ -103,6 +103,10 @@ function applyDecay(state: WorldState, rec: Recorder): void {
   const water = state.resources.water;
   const pct = wellStagnant(state) ? CONFIG.waterStagnateStagnantWellPct : CONFIG.waterStagnatePct;
   setResource(state, rec, 'water', water - Math.round(water * pct), [rule('waterStagnate')]);
+
+  // Hunger carries from the last generation and drops at each new one (decision 016).
+  const hunger = Math.max(0, state.resources.hunger - CONFIG.hungerDropPerGen);
+  setResource(state, rec, 'hunger', hunger, [rule('hunger')]);
 }
 
 function applyIncome(state: WorldState, rec: Recorder): void {

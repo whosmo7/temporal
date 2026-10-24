@@ -45,7 +45,8 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Resources | **Food, Water, Labour** |
 | Labour | The **player's energy/stamina**. Actions spend it. |
 | Personal needs | **Player must meet food + water upkeep** at end of turn |
-| Eating | **Harvest and eat**: a Harvest option that turns the fresh yield into stamina, up to full. Not a ninth action ([003](../decisions/003-eating-via-harvest.md)) |
+| Eating | **Harvest and eat**: a free Harvest option (Q) that turns the fresh yield into hunger, up to full. Not a ninth action ([003](../decisions/003-eating-via-harvest.md), [016](../decisions/016-hunger.md)) |
+| Hunger | Inherited meter, 0..100: **−30 at each new generation**, eating refills it, at 0 the player walks slower ([016](../decisions/016-hunger.md)) |
 | Upkeep visibility | Screen order unchanged. HUD shows **"Needed by nightfall"** during play ([002](../decisions/002-upkeep-timing.md)) |
 | Failure | **Soft fail**: if upkeep isn't met, the successor gets a **weakened start** (low stamina, visibly blighted world) |
 | Decay | **Resource decay + infrastructure wear** (crops rot, water stagnates, structures wear unless maintained) |
@@ -83,6 +84,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | When the timer ends | **Time freezes**. The player reads and writes in the shared journal. |
 | End flow | **Freeze → journal → cost summary → gravestone** |
 | Fast Track on an orchard | Fruits now, **no long-term yield penalty**; the 2× cost is the price ([004](../decisions/004-fast-tracked-orchard-yield.md)) |
+| Committed at | **"Seal page"**; the cost summary and stone are for show. A failed save offers Try again, and a local copy is sent on the next Play ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) |
 | Cost summary | Shows **only what has been realised now** (costs paid, immediate gains). Pending benefits are left out on purpose, which sets up the demo moment. |
 
 ## Journal, graveyard, replay
@@ -98,6 +100,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | What successors learn | **Only the journal.** The world never explains why it is in its current state. |
 | Gravestone | **Name/initials**, **click to open that player's journal page**. Hover shows "AL · Generation 2"; E at the graveyard reads the nearest stone ([014](../decisions/014-gravestones.md)) |
 | Replay | For each generation: **a snapshot of the world plus that player's diary entry**. The replay is where causes are explained. |
+| Gallery access | **Public**: anyone can view the gallery and replays without logging in; only Play needs an account ([017](../decisions/017-public-gallery.md)) |
 | Replay audience | **Anyone**, through a public **gallery** of completed worlds |
 | Sharing/export | **No**, in-app only |
 | Moderation | **None** for the hackathon (logged as a risk) |
@@ -110,6 +113,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Assignment | **Weighted random** between inheriting an unlocked in-progress world and getting a new one; **ratio configurable** |
 | Concurrency | **Only one player can hold a world at a time** (lock) |
 | Abandon mid-turn | **Turn voided**: the lock expires, the world stays as it was before the turn, no gravestone |
+| Refresh mid-turn | **The same turn starts over** at 6 am, within the original lock ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) |
 | Identity | **Username + password** (security isn't the focus) |
 | Repeat play | **Allowed**: the same person can play several generations of one world. Straight after a turn, the device asks not to be handed the same world again (a client-side hint, [016](../decisions/016-claim-and-lock-rules.md)) |
 | Choosing a world | **No**: assignment is always the weighted random draw ([016](../decisions/016-claim-and-lock-rules.md)) |

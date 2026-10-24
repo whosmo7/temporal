@@ -55,6 +55,9 @@ export interface CompletedWorld {
   generationCount: number;
   completedAt: string;
   players: string[];
+  /** For the gallery thumbnail (06): the map preset, and the state after the last generation. */
+  preset?: PresetName;
+  finalState?: WorldState | null;
 }
 
 export interface Replay {

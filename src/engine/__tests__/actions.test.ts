@@ -26,14 +26,26 @@ describe('applyAction', () => {
     expect(game.state.plots['field-1']?.stage).toBe('empty');
   });
 
-  it('harvest and eat turns the fresh yield into stamina, up to full', () => {
+  it('harvest and eat is free and turns the fresh yield into hunger, up to full', () => {
+    const game = newGame().begin();
+    game.state.resources.hunger = 70;
+    game.act('plantCrops', { plotId: 'field-1', t: 0 });
+    const r = game.act('harvest', { plotId: 'field-1', t: 150, eat: true });
+    expect(r.error).toBeUndefined();
+    // 30 short of full: 3 food (30 hunger) is eaten and the other 2 stored. No stamina for the harvest.
+    expect(game.state.resources.hunger).toBe(CONFIG.hungerMax);
+    expect(game.state.resources.stamina).toBe(CONFIG.baseStamina - CONFIG.plantCropsCost);
+    expect(game.state.resources.food).toBe(CONFIG.biomes.forest.food + 2);
+    expect(game.state.tally.foodEaten).toBe(3);
+    const hunger = r.transitions.find((t) => 'resource' in t.target && t.target.resource === 'hunger');
+    expect(hunger?.causes).toEqual([expect.objectContaining({ kind: 'action', actorId: 'AL' })]);
+  });
+
+  it('harvest and eat is refused when the player is not hungry', () => {
     const game = newGame().begin();
     game.act('plantCrops', { plotId: 'field-1', t: 0 });
-    game.act('harvest', { plotId: 'field-1', t: 150, eat: true });
-    // 100 − 8 − 5 = 87; 13 short of full, so 5 food (10 stamina) is eaten and none stored.
-    expect(game.state.resources.stamina).toBe(97);
-    expect(game.state.resources.food).toBe(CONFIG.biomes.forest.food);
-    expect(game.state.tally.foodEaten).toBe(5);
+    expect(game.act('harvest', { plotId: 'field-1', t: 150, eat: true }).error).toBe("You're not hungry");
+    expect(game.act('harvest', { plotId: 'field-1', t: 150 }).error).toBeUndefined();
   });
 
   it('a good harvest raises crop yield and is a cause', () => {

@@ -19,6 +19,7 @@ Settled game-design questions (records in `docs/decisions/`):
 
 - **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. The HUD shows "Needed by nightfall", so players know where they stand before they write.
 - **Eating** ([003](../decisions/003-eating-via-harvest.md)): yes, as an option on **Harvest** ("Harvest and eat"). It's not a ninth action.
+- **Hunger** ([016](../decisions/016-hunger.md)): a meter the family inherits. It drops at each new generation; eating (free) refills it; empty, you walk slower.
 - **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. The 2× cost is the price.
 - **Events** ([005](../decisions/005-seeded-events.md)): drought (always), good harvest, storm (Island only).
 - **Wild spot** ([006](../decisions/006-wild-spot-per-biome.md)): Forest = hunt, Island = fish, same numbers.
@@ -55,7 +56,8 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 |---|---|---|---|
 | **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
 | **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
-| **Labour (stamina)** | Full pool at turn start (reduced if weakened); eating a harvest | Every action | Doesn't carry over |
+| **Labour (stamina)** | Full pool at turn start (reduced if weakened) | Every action | Doesn't carry over |
+| **Hunger** | Eating (Harvest and eat), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
 
 ## Structures & plots (pre-defined sites)
 
@@ -87,11 +89,10 @@ They passed a rough scratch-model check (see **Balance pre-check**). The real ch
 
 ### Harvest and eat
 
-- Harvest has two variants on the hotbar: **Harvest** (yield goes to the store) and **Harvest and eat**.
-- Eating converts the fresh yield to stamina at `staminaPerFoodEaten` (2 per food), **up to full stamina** (`baseStamina`). Whatever can't be eaten goes to the store.
+- Harvest has two variants: **Harvest** (E, yield goes to the store, 5 stamina) and **Harvest and eat** (Q, **free**).
+- Eating turns the fresh yield into **hunger** at `hungerPerFoodEaten` (10 per food), **up to full** (`hungerMax`). Whatever can't be eaten goes to the store. It's refused when hunger is already full ([016](../decisions/016-hunger.md), which replaced 003's eat-for-stamina).
 - Only the food just harvested can be eaten. Stored food can't be eaten mid-turn, and Fish/Hunt can't be eaten.
-- A crop cycle costs 13 stamina (plant + harvest) and eating it returns 10, so crops never make stamina. Eating an inherited fruiting orchard returns up to +25 net, once per generation, at the cost of 15 food the next player won't get.
-- A weakened player can eat back up to full stamina if there's something to harvest. Weakness costs food to undo.
+- Eating doesn't give stamina, so a weakened player can't eat their way back; hunger is a separate, inherited need.
 - Eating is realised, so it appears in the cost summary ("You ate 15🍎").
 
 ### Why the reservoir dilemma works
@@ -200,10 +201,17 @@ export const CONFIG = {
   upkeepWater: 10,
   weakenFactor: 0.6,
   minStaminaPct: 0.4,
-  staminaPerFoodEaten: 2, // Harvest and eat (decision 003)
+
+  // Hunger (decision 016)
+  hungerMax: 100,
+  hungerDropPerGen: 30,
+  hungerPerFoodEaten: 10, // Harvest and eat
+  hungerSlowAt: 0,
+  hungrySpeedMult: 0.6,
 
   // Actions
   harvestCost: 5,
+  harvestEatCost: 0, // decision 016
   cropYield: 5,
   orchardYield: 15, // once per generation
   plantCropsCost: 8,

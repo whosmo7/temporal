@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { beginTurn, createWorld } from '../../engine';
 import { generateMap } from '../../worldgen';
 import { useGameStore } from '../../store/game';
 import { clockLabel, gameHour, isNight, lightAt } from '../daylight';
@@ -38,7 +39,7 @@ describe('game clock', () => {
 
   it('freezes while the journal is open and stops at time-up', () => {
     const s = useGameStore.getState();
-    s.startTurn(600);
+    s.loadTurn(beginTurn(createWorld(1, { worldId: 'w', turnSeconds: 600 }).state).state, 'AL');
     s.advance(10);
     expect(useGameStore.getState().t).toBe(10);
     s.setJournalOpen(true);

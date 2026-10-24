@@ -295,6 +295,9 @@ export class LocalBackend implements Backend {
         generationCount: w.generationCount,
         completedAt: w.completedAt ?? '',
         players: this.turnsOf(db, w.id).map((t) => this.usernameOf(db, t.playerId)),
+        players: turnsOf(db, w.id).map((t) => usernameOf(db, t.playerId)),
+        preset: w.preset,
+        finalState: turnsOf(db, w.id).at(-1)?.snapshot ?? null,
       }));
   }
 

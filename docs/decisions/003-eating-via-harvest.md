@@ -1,6 +1,6 @@
 # 003 — Eating mid-turn, as an option on Harvest
 
-**Status:** decided 2026-10-24 by C (game design) · **Section:** `01` Q2
+**Status:** decided 2026-10-24 by C (game design) · **Section:** `01` Q2 · **Partly replaced by [016](016-hunger.md):** eating is now free and refills hunger instead of stamina
 
 ## Context
 `01` asked whether a player can eat mid-turn to restore stamina. The game is locked at eight actions.

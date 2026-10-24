@@ -125,13 +125,28 @@
   padding: calc(var(--px) * 4) calc(var(--px) * 8) calc(var(--px) * 12);
 }
 
-/* Stand-in landing (the landing task replaces this with the island scene) ------------------------ */
+/* Landing ---------------------------------------------------------------------------------------- */
 
 .landing {
   display: grid;
   justify-items: center;
-  gap: calc(var(--px) * 6);
+  gap: calc(var(--px) * 4);
   text-align: center;
+}
+
+/* The loop's light: multiplies over the sky and the island, under the words and buttons. */
+.landing__light {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background-color: rgb(255 255 255);
+}
+
+.landing > :not(.landing__light, .island) {
+  position: relative;
+  z-index: 2;
 }
 
 .landing__wordmark {
@@ -140,16 +155,44 @@
   font-weight: normal;
 }
 
-.landing__premise {
+/* Paper with an ink outline, like the logo, so it reads at noon and at night. */
+.landing__premise,
+.landing__credits {
   margin: 0;
+  color: var(--paper);
+  text-shadow:
+    var(--px) 0 0 var(--ink),
+    calc(var(--px) * -1) 0 0 var(--ink),
+    0 var(--px) 0 var(--ink),
+    0 calc(var(--px) * -1) 0 var(--ink);
+}
+
+.landing__premise {
   font-size: var(--text-md);
-  color: var(--ink);
 }
 
 .landing__actions {
   display: flex;
   gap: calc(var(--px) * 5);
-  margin-top: calc(var(--px) * 4);
+  margin-top: calc(var(--px) * 2);
+}
+
+.island {
+  animation: island-bob 4s steps(4, jump-none) infinite alternate;
+}
+
+.island__canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+@keyframes island-bob {
+  from {
+    transform: translateY(-2px);
+  }
+  to {
+    transform: translateY(2px);
+  }
 }
 
 /* Not found -------------------------------------------------------------------------------------- */
@@ -163,8 +206,244 @@
 }
 
 .landing__credits {
-  margin: calc(var(--px) * 10) 0 0;
+  margin-top: calc(var(--px) * 4);
   font-size: var(--text-sm);
+}
+
+/* Auth ------------------------------------------------------------------------------------------- */
+
+.auth {
+  width: min(100%, 420px);
+}
+
+.auth__form {
+  display: grid;
+  gap: calc(var(--px) * 5);
+}
+
+.auth__error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--peach);
+}
+
+.auth__switch {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  margin: calc(var(--px) * 6) 0 0;
+  font-size: var(--text-sm);
+}
+
+.shell__user {
+  font-size: var(--text-sm);
+}
+
+/* Gallery ---------------------------------------------------------------------------------------- */
+
+.gallery {
+  width: min(100%, 1040px);
+  align-self: start;
+}
+
+.gallery__title {
+  margin: 0 0 calc(var(--px) * 8);
+  font-size: var(--text-xl);
+  font-weight: normal;
   color: var(--ink);
+}
+
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: calc(var(--px) * 8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery__item {
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  gap: calc(var(--px) * 2);
+}
+
+.gallery__item > .kit-cast {
+  width: 100%;
+}
+
+.island-thumb {
+  display: block;
+  animation: island-bob 4s steps(4, jump-none) infinite alternate;
+}
+
+.gallery__item:nth-child(2n) .island-thumb {
+  animation-delay: -1.5s;
+}
+
+.gallery__item:nth-child(3n) .island-thumb {
+  animation-delay: -2.7s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .island-thumb {
+    animation: none;
+  }
+}
+
+.gallery__card p {
+  margin: 0 0 calc(var(--px) * 4);
+}
+
+.gallery__players {
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.gallery-empty {
+  max-width: 480px;
+}
+
+.gallery-empty p {
+  margin: 0 0 calc(var(--px) * 6);
+}
+
+/* Replay ----------------------------------------------------------------------------------------- */
+
+.replay {
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--px) * 5);
+  width: min(100%, 1040px);
+  text-align: center;
+}
+
+/* The replay's dusk sky over the shell's (art direction › dusk coast). */
+.replay__sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--peach-light), var(--rose) 40%, var(--clay) 65%, var(--plum));
+}
+
+/* The header stays above the replay's sky. */
+.shell:has(.replay) .shell__header {
+  position: relative;
+  z-index: 3;
+}
+
+/* The ending island's light: multiplies over the island, under the words. */
+.replay__light {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.replay > .island {
+  position: relative;
+}
+
+.replay > :not(.replay__sky, .replay__light, .island) {
+  position: relative;
+  z-index: 2;
+}
+
+.replay--card {
+  align-self: center;
+}
+
+.replay__kicker,
+.replay__headline,
+.replay__names {
+  margin: 0;
+  color: var(--paper);
+  text-shadow:
+    var(--px) 0 0 var(--ink),
+    calc(var(--px) * -1) 0 0 var(--ink),
+    0 var(--px) 0 var(--ink),
+    0 calc(var(--px) * -1) 0 var(--ink);
+}
+
+.replay__kicker {
+  font-size: var(--text-md);
+}
+
+.replay__headline {
+  font-size: var(--text-xl);
+  font-weight: normal;
+}
+
+.replay__actions {
+  display: flex;
+  gap: calc(var(--px) * 5);
+  margin-top: calc(var(--px) * 2);
+}
+
+.replay__names {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--px) * 2) calc(var(--px) * 6);
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-md);
+}
+
+.replay__gen {
   opacity: 0.7;
+}
+
+.replay__panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: calc(var(--px) * 6);
+  width: 100%;
+  text-align: left;
+}
+
+.replay__text {
+  margin: 0 0 calc(var(--px) * 4);
+  font-family: var(--font-hand);
+  font-size: 22px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.replay__text--none {
+  color: var(--muted);
+}
+
+.replay__resource h3 {
+  margin: 0 0 calc(var(--px) * 2);
+  font-size: var(--text-md);
+  font-weight: normal;
+}
+
+.replay__resource ul {
+  margin: 0 0 calc(var(--px) * 5);
+  padding: 0;
+  list-style: none;
+}
+
+.replay__line {
+  display: grid;
+  grid-template-columns: 3.5em 1fr;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.replay__amount {
+  text-align: right;
+  padding-right: calc(var(--px) * 3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A line crediting an earlier generation: the reveal. */
+.replay__line--earlier {
+  color: var(--peach);
 }

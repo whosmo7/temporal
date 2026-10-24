@@ -1,0 +1,92 @@
+import { useEffect, useState } from 'react';
+import { backend, type CompletedWorld } from '../../api';
+import { IslandThumb } from '../gallery/IslandThumb';
+import { ButtonLink, Panel } from '../kit';
+
+const BIOME_NAME: Record<CompletedWorld['biome'], string> = { forest: 'Forest', island: 'Island' };
+
+type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; worlds: CompletedWorld[] };
+
+/**
+ * Completed worlds, newest first, each as a small floating island showing its last generation
+ * with a stone for each player. Public: no login needed (decision 017).
+ */
+export function GalleryScreen() {
+  const [load, setLoad] = useState<Load>({ state: 'loading' });
+
+  useEffect(() => {
+    let live = true;
+    backend
+      .listCompletedWorlds()
+      .then((worlds) => {
+        const newest = [...worlds].sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+        if (live) setLoad({ state: 'ready', worlds: newest });
+      })
+      .catch(() => live && setLoad({ state: 'error' }));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  if (load.state === 'loading') return null;
+
+  if (load.state === 'error') {
+    return (
+      <Panel title="Gallery" className="gallery-empty">
+        <p>The gallery couldn’t be reached. Try again in a moment.</p>
+      </Panel>
+    );
+  }
+
+  if (load.worlds.length === 0) {
+    return (
+      <Panel title="Gallery" className="gallery-empty">
+        <p>No world has reached its last generation yet.</p>
+        <ButtonLink to="/play" variant="primary">
+          Play
+        </ButtonLink>
+      </Panel>
+    );
+  }
+
+  return (
+    <section className="gallery" aria-labelledby="gallery-title">
+      <h1 id="gallery-title" className="gallery__title">
+        Gallery
+      </h1>
+      <ul className="gallery__grid">
+        {load.worlds.map((w) => (
+          <li key={w.worldId} className="gallery__item">
+            <IslandThumb input={thumbOf(w)} label={`${BIOME_NAME[w.biome]} world after ${w.generationCount} generations`} />
+            <Panel tone="paper" className="gallery__card">
+              <p className="gallery__meta">
+                {BIOME_NAME[w.biome]} · {w.generationCount} generations
+              </p>
+              <p className="gallery__players">{w.players.join(', ')}</p>
+              <ButtonLink to={`/world/${w.worldId}/replay`} size="sm">
+                Watch
+              </ButtonLink>
+            </Panel>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** What the thumbnail draws. Memo-stable per world, so the canvas only redraws when the list changes. */
+const thumbs = new WeakMap<CompletedWorld, Parameters<typeof IslandThumb>[0]['input']>();
+function thumbOf(w: CompletedWorld) {
+  let input = thumbs.get(w);
+  if (!input) {
+    input = {
+      seed: w.seed,
+      biome: w.biome,
+      preset: w.preset,
+      state: w.finalState,
+      stones: w.players.map((username, i) => ({ turn: i + 1, username })),
+    };
+    thumbs.set(w, input);
+  }
+  return input;
+}

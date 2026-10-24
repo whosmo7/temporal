@@ -1,21 +1,41 @@
+import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ButtonLink } from '../kit';
+import { IslandScene } from '../shell/IslandScene';
 import { Logo } from '../shell/Logo';
 
 /**
- * Stand-in so `/` uses the shell and kit. The landing task (`08`) replaces it with the floating
- * island and the day-to-night loop from `docs/design/app-shell-brief.md`.
+ * The landing (`08`, app-shell brief): the wordmark, the floating island living through a
+ * generation, one premise line, then Play and Gallery. Enter is Play.
  */
 export function LandingScreen() {
+  const light = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // Only from the page itself, so Enter on a focused button or link keeps its own meaning.
+      if (e.key === 'Enter' && (e.target === document.body || e.target === document.documentElement)) {
+        navigate('/play');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [navigate]);
+
   return (
     <div className="landing">
+      <div ref={light} className="landing__light" aria-hidden />
       <h1 className="landing__wordmark">
         <Logo size="landing" />
       </h1>
+      <IslandScene lightRef={light} />
       <p className="landing__premise">You inherit a world. You leave it to a stranger.</p>
       <div className="landing__actions">
         <ButtonLink to="/play" variant="primary">
           Play
         </ButtonLink>
+        <ButtonLink to="/gallery">Gallery</ButtonLink>
       </div>
       {/* Kyrise's icons are CC BY 4.0, so the credit has to be visible in the game (ASSETS.md). */}
       <p className="landing__credits">

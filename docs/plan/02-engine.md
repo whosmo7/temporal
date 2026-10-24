@@ -96,7 +96,7 @@ visibleView(state): VisibleWorld                                // partly hidden
 1. Resolve pending effects due at `{turn: n}`
 2. Apply seeded events for turn `n`
 3. Structure wear +1 (unless maintained last turn)
-4. Food rot, water stagnation
+4. Food rot, water stagnation, hunger drop ([016](../decisions/016-hunger.md))
 5. Resource income (reservoir, well), reduced by wear and events
 6. Wild stock regrowth
 7. Set starting stamina, applying `weakened`
