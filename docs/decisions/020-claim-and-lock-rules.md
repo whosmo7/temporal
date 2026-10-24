@@ -1,6 +1,6 @@
-# 019: Claim and lock rules: avoid-last-world hint, random only, seeded names, heartbeat
+# 020: Claim and lock rules: avoid-last-world hint, random only, seeded names, heartbeat
 
-**Status:** accepted (A, 2026-10-24; numbered 016 in the comments of migration `20261024200000`, renumbered because `016-hunger` took that number) · **Settles:** `07` open questions 3, 4 and 6, and the `heartbeat` task · **Changes:** `07` › Server operations, `src/api/Backend.ts`
+**Status:** accepted (A, 2026-10-24; numbered 016 in the comments of migration `20261024200000`; renumbered twice because `016-hunger` and `019-per-tile-actions-take-time` took those numbers) · **Settles:** `07` open questions 3, 4 and 6, and the `heartbeat` task · **Changes:** `07` › Server operations, `src/api/Backend.ts`
 
 ## Context
 

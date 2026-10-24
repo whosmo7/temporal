@@ -1,4 +1,4 @@
-// The world this player last committed on this device (decision 019). claim_world gets it as a
+// The world this player last committed on this device (decision 020). claim_world gets it as a
 // hint to avoid, so a player isn't handed back the world they just finished. Client-side only:
 // another device, or cleared storage, forgets it, which is fine (repeat play is allowed).
 

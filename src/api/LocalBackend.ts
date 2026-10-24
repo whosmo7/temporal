@@ -27,7 +27,7 @@ import { runTurn } from './runTurn';
 
 const STORAGE_KEY = 'inheritance.local';
 
-// Matches the settings defaults in the migrations (decision 007, 019).
+// Matches the settings defaults in the migrations (decision 007, 020).
 export const DEFAULT_SETTINGS: Settings = {
   inheritRatio: 0.7,
   defaultTurnSeconds: 600,
