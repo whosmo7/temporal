@@ -5,8 +5,9 @@
 // Deploy: `npm run functions:deploy` (bundles the engine first). SUPABASE_URL, SUPABASE_ANON_KEY and
 // SUPABASE_SERVICE_ROLE_KEY are set by Supabase in every function; nothing to configure.
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
-import { InvalidTurnError, runTurn } from '../_shared/engine.js';
+// deno.json maps the bare specifier to npm:, so tsc and Deno both resolve it.
+import { createClient } from '@supabase/supabase-js';
+import { InvalidTurnError, runTurn, type ActionEntry } from '../_shared/engine.js';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -33,7 +34,7 @@ Deno.serve(async (req) => {
   const player = auth.user?.id;
   if (!player) return reply(401, { error: 'Not signed in' });
 
-  let input: { worldId?: string; actions?: unknown[]; journal?: { text?: string; drawing?: unknown } };
+  let input: { worldId?: string; actions?: ActionEntry[]; journal?: { text?: string; drawing?: unknown } };
   try {
     input = await req.json();
   } catch {

@@ -1,0 +1,15 @@
+{
+  // Type-checks the Edge Functions with plain tsc, so the editor and `npm run typecheck` understand
+  // them without the Deno extension. Deno ignores this file; deno.d.ts covers the Deno globals used.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts"]
+}
