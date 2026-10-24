@@ -38,6 +38,9 @@ They are not decisions.
 | 11 | [Repo setup, workflow, testing, deploy](11-workflow-testing-deploy.md) | Everyone (do first) |
 | 12 | [Team split: who does what](12-team-split.md) | Everyone |
 
+**Working with Claude Code:** `CLAUDE.md` and the project skills in `.claude/skills/` (`inheritance-*`)
+turn this plan into rules Claude follows in every teammate's session. Ask your Claude to "start my next [A]/[B]/[C] task".
+
 Each task in `01`–`11` is tagged **[A]**, **[B]** or **[C]**. These are the three equal workloads in
 `12`: **A** = Engine & Backend, **B** = World & Gameplay, **C** = Design, Content & App Shell.
 
