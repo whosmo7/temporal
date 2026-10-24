@@ -63,9 +63,9 @@ For each generation g = 1..N:
 - [ ] **[B]** Highlight changed plots per generation (diff vs the previous snapshot)
 - [ ] **[B]** Plot history popover
 - [ ] **[B]** Generation stepping (buttons + arrow keys) + optional auto-play
-- [ ] **[C]** Title card + ending card
+- [x] **[C]** Title card + ending card *(`ReplayScreen`: title card ("An island · 6 generations", "Everyone who lived here is gone.", Begin) → each generation → ending card (the dusk island with a stone per generation, "6 generations lived here.", the names in order, Watch again / Gallery). Arrow keys step through. Worlds have no names yet, so the title uses the biome. Until B's layout lands, each generation shows the journal page and the cause lines on a dusk sky.)*
 - [ ] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see `docs/art/art-direction.md`)
-- [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; thumbnails come with the grid task. `ReplayScreen` loads `getReplay` and shows a stand-in until B's replay layout lands.)*
+- [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; thumbnails come with the grid task. `ReplayScreen` loads `getReplay`; see the title and ending card task.)*
 - [ ] **[C]** Admin "skip to replay" hook (`08`)
 - [ ] **[C]** (Stretch) Legacy view per player
 - [ ] **[B]** (Stretch) Animate drawing strokes in the journal panel

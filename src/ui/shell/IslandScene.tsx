@@ -158,8 +158,22 @@ function drawIsland(ctx: CanvasRenderingContext2D, sheet: HTMLImageElement, fram
   }
 }
 
-export function IslandScene({ lightRef }: { lightRef: React.RefObject<HTMLDivElement | null> }) {
+/** The light at dusk, for a still island (the replay's ending card). */
+export const DUSK_LIGHT = DUSK;
+/** How many stones the island's graveyard can show. */
+export const STONE_SLOTS = SLOTS.length;
+
+export function IslandScene({
+  lightRef,
+  hold,
+}: {
+  lightRef: React.RefObject<HTMLDivElement | null>;
+  /** Hold still at this point of the loop with this many stones, instead of living through it. */
+  hold?: { light: number; stones: number };
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const holdLight = hold?.light;
+  const holdStones = hold?.stones;
 
   useEffect(() => {
     const ctx = canvas.current?.getContext('2d');
@@ -181,6 +195,11 @@ export function IslandScene({ lightRef }: { lightRef: React.RefObject<HTMLDivEle
         const setLight = (p: number) => {
           if (lightRef.current) lightRef.current.style.backgroundColor = lightAt(p);
         };
+        if (holdLight !== undefined) {
+          setLight(holdLight);
+          drawIsland(ctx, sheet, f, Math.min(SLOTS.length, holdStones ?? 0), 1);
+          return;
+        }
         if (reduced) {
           setLight(DUSK);
           drawIsland(ctx, sheet, f, FIRST_STONES + 1, 1);
@@ -212,7 +231,7 @@ export function IslandScene({ lightRef }: { lightRef: React.RefObject<HTMLDivEle
       disposed = true;
       cancelAnimationFrame(raf);
     };
-  }, [lightRef]);
+  }, [lightRef, holdLight, holdStones]);
 
   return (
     <div className="island" aria-hidden>
