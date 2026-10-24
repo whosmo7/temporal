@@ -28,13 +28,23 @@ same PR as any change.
 
 | Kind | ID pattern | Count |
 |---|---|---|
-| `field` | `field-1`, `field-2`, … | open question (1–3) |
+| `field` | `field-1`, `field-2`, … | configurable, default 2 (decision 001) |
 | `orchard` | `orchard-1` | 1 |
 | `reservoir` | `reservoir` | 1 |
 | `well` | `well` | 1 |
 | `wild` | `wild` | 1 |
 | `lectern` | `lectern` | 1 |
 | `graveyard` | `graveyard` | 1 |
+
+## Tiles (`TileMap` layers, `src/worldgen/types.ts`)
+
+The atlas needs a frame (or autotile set) for each of these.
+
+| Layer | IDs | Notes |
+|---|---|---|
+| `terrain` | `grass`, `dirt`, `sand`, `water`, `path` | `water` = pond inside the boundary (blocks). Under the Island sea it's `water`, and under Forest trees it's `grass`. Field plots are painted `dirt` |
+| `boundary` | `tree`, `sea`, or `null` | Frames the map and always blocks. `tree` is Forest, `sea` is Island |
+| `deco` | `rock`, `bush`, `flower`, or `null` | `rock` and `bush` block, `flower` doesn't |
 
 ## Visual stages (from `visibleView()`; also sprite frame names)
 
@@ -64,7 +74,10 @@ Rules: `foodRot`, `waterStagnate`, `wear`, `upkeep`, `regrow`, `weakened`, `inco
 
 ## Events (`SeededEvent.kind`)
 
-`drought`, `goodHarvest`, `storm` (Island only). The final list is an open question in `01`.
+`drought`, `goodHarvest`, `storm` (Island only), from decision 005. The drought timing comes from decision 008.
+
+`SeededEvent = { id, kind, turn, spellId? }`, with one entry per event per generation (`src/worldgen/events.ts`). The ID is `<kind>-<turn>`,
+e.g. `drought-4`. Every generation of a multi-generation drought shares the same `spellId` (`drought-<startTurn>`).
 
 ## Effect kinds (`ScheduledEffect.kind`)
 
