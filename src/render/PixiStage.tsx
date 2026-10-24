@@ -1,6 +1,7 @@
 import { Application } from 'pixi.js';
 import { useEffect, useRef } from 'react';
 import type { TileMap } from '../worldgen';
+import { loadWorldAtlas } from './atlas';
 import { BACKGROUND } from './constants';
 import { createWorldView, type WorldLook, type WorldView } from './world-view';
 
@@ -38,14 +39,15 @@ export function PixiStage({ map, look, onReady }: Props) {
         resolution: window.devicePixelRatio || 1,
         roundPixels: true,
       })
-      .then(() => {
+      .then(async () => {
+        const art = await loadWorldAtlas();
         ready = true;
         if (disposed) {
           app.destroy(true, { children: true });
           return;
         }
         el.appendChild(app.canvas);
-        view.current = createWorldView(app, map, latestLook.current);
+        view.current = createWorldView(app, map, latestLook.current, art);
         latestOnReady.current?.(view.current);
       });
 

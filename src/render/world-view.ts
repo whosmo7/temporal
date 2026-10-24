@@ -62,8 +62,14 @@ function defaultStage(p: Plot): string {
  *   │            y-sorted by their bottom edge
  *   └─ dim       darkens everything but the house while you're inside
  */
-export function createWorldView(app: Application, map: TileMap, initialLook: WorldLook = founderLook(map)): WorldView {
-  const atlas = buildAtlas();
+export function createWorldView(
+  app: Application,
+  map: TileMap,
+  initialLook: WorldLook = founderLook(map),
+  /** Frames from C's atlas (`loadWorldAtlas`); any name it lacks uses the painted placeholder. */
+  art: Record<string, Texture> = {},
+): WorldView {
+  const atlas = buildAtlas(art);
   const frame = (name: string) => atlas.get(name) ?? atlas.get('missing')!;
   const variant = (base: string, x: number, y: number) => frame(`${base}-${1 + (tileHash(x, y) % (VARIANTS[base] ?? 1))}`);
 
@@ -82,7 +88,11 @@ export function createWorldView(app: Application, map: TileMap, initialLook: Wor
     for (let x = 0; x < map.width; x++) {
       const i = y * map.width + x;
       const tall = boundary[i] === 'tree' ? variant('boundary/tree', x, y) : deco[i] && deco[i] !== 'flower' ? variant(`deco/${deco[i]}`, x, y) : null;
-      if (tall) sorted.addChild(bottomAnchored(tall, x, y + 1));
+      if (!tall) continue;
+      const s = bottomAnchored(tall, x, y + 1);
+      // Pack trees are two tiles wide: centre anything wider than a tile on its own tile.
+      s.x -= (tall.width - TILE) / 2;
+      sorted.addChild(s);
     }
   }
 
@@ -239,7 +249,7 @@ function bottomAnchored(tex: Texture, x: number, bottomY: number): Sprite {
   return s;
 }
 
-function buildAtlas() {
+function buildAtlas(art: Record<string, Texture>) {
   const painted = paintAtlas();
   const base = Texture.from(painted.canvas);
   const frames = new Map<string, Texture>();
@@ -247,7 +257,7 @@ function buildAtlas() {
     frames.set(name, new Texture({ source: base.source, frame: new Rectangle(f.x, f.y, f.w, f.h) }));
   }
   return {
-    get: (name: string) => frames.get(name),
+    get: (name: string) => art[name] ?? frames.get(name),
     destroyAll: () => {
       for (const t of frames.values()) t.destroy();
       base.destroy(true);
