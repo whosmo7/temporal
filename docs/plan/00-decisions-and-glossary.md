@@ -90,6 +90,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Topic | Decision |
 |---|---|
 | Journal | One page per player. **Free text + drawing**. **Earlier pages can't be edited.** |
+| Journal text limit | **400 characters** ([009](../decisions/009-journal-character-limit.md)) |
 | Drawing tools | **Single pen, a few colours** (+ eraser) |
 | Journal access | An **in-world object, openable any time** (reading it doesn't use game time) |
 | What successors learn | **Only the journal.** The world never explains why it is in its current state. |

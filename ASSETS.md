@@ -7,6 +7,7 @@ Art direction: [`docs/art/art-direction.md`](docs/art/art-direction.md).
 
 | File(s) | Source URL | Author | Licence | Credit required? | Modified? |
 |---|---|---|---|---|---|
+| `public/assets/fonts/NinjaAdventure-Normal.ttf` (from `Ui/Font/NormalFont.ttf`) | https://pixel-boy.itch.io/ninja-adventure-asset-pack | Pixel-Boy & AAA | CC0 1.0 | No (appreciated) | Renamed only |
 | `public/assets/fonts/PatrickHand-Regular.ttf` (+ `PatrickHand-OFL.txt`) | https://github.com/google/fonts/tree/main/ofl/patrickhand | Patrick Wagesreiter | SIL OFL 1.1 | No (licence file ships with the font) | No |
 
 ## Chosen sources (not yet added)

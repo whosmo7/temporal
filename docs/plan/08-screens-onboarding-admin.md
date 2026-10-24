@@ -59,7 +59,7 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 
 ## Tasks
 
-- [x] **[C]** Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the `09` style) *(Kit in `src/ui/kit/`: `Button`, `ButtonLink`, `Panel`, `Dialog` (the Modal), `TextInput`, `Icon`; tokens in `src/ui/theme/`; sheet at `#/dev/kit` in dev. UI font falls back to monospace until the pack's pixel font lands (`09`).)*
+- [x] **[C]** Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the `09` style) *(Kit in `src/ui/kit/`: `Button`, `ButtonLink`, `Panel`, `Dialog` (the Modal), `TextInput`, `Icon`; tokens in `src/ui/theme/`; sheet at `#/dev/kit` in dev. UI font is the pack's pixel font on a 9 px size grid.)*
 - [ ] **[C]** Landing page with a background world (a floating island over a teal sky, see `docs/art/art-direction.md`)
 - [ ] **[C]** Auth screen + session persistence + logout + username display
 - [ ] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another"

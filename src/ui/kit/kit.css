@@ -138,6 +138,11 @@
   text-decoration-color: var(--muted);
 }
 
+.kit-button--quiet:disabled {
+  box-shadow: none;
+  text-decoration: none;
+}
+
 .kit-button--quiet:hover {
   --btn-line: transparent;
   text-decoration-color: currentColor;

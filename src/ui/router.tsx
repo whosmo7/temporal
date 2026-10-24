@@ -12,6 +12,10 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
         path: 'dev/kit',
         lazy: () => import('./dev/KitScreen').then((m) => ({ Component: m.KitScreen })),
       },
+      {
+        path: 'dev/journal',
+        lazy: () => import('./dev/JournalScreen').then((m) => ({ Component: m.JournalScreen })),
+      },
     ]
   : [];
 

@@ -24,7 +24,7 @@
 - **Not here:** cost summary screen, gravestone, server commit (B's handoff in `05`).
 
 ## States
-- **Gen 1:** no previous letter. The left page is blank paper with the header "Generation 1" and nothing else. Nothing auto-written.
+- **Gen 1:** no previous letter. The left page is blank paper with no header (the right page already says "Generation 1", so a second one read as a duplicate). Nothing auto-written.
 - Previous letter that's text only, drawing only, or empty (header plus blank paper).
 - Long text at the limit, so the counter turns `food` red at the limit. Many generations: the stack compresses after ~12 slivers.
 - Sealing an empty page: allowed, with the confirm text "Your page is empty. Seal it anyway?"
@@ -34,6 +34,6 @@
 - Typing goes to the writing area by default. The pens are keyboard-reachable. Drawing is with the mouse, at pen width 2–3. All controls have visible focus states.
 
 ## Constraints and open decisions
-- The character limit is still `[PLACEHOLDER 400]` (`05`).
-- Handwriting font (OFL; Patrick Hand or Caveat), chosen in the journal-art task.
+- The character limit is 400 (decision 009).
+- Handwriting font: Patrick Hand (OFL), self-hosted.
 - Whether there's a writing time limit is `05` open question 1. Nothing is shown until it's decided.

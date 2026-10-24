@@ -5,6 +5,12 @@
  */
 
 @font-face {
+  font-family: 'Ninja Adventure';
+  src: url('/assets/fonts/NinjaAdventure-Normal.ttf') format('truetype');
+  font-display: block;
+}
+
+@font-face {
   font-family: 'Patrick Hand';
   src: url('/assets/fonts/PatrickHand-Regular.ttf') format('truetype');
   font-display: block;
@@ -59,19 +65,18 @@
    */
   --px: 3px;
 
-  /*
-   * UI type. The pack's pixel font replaces the fallback once art/source/ lands (09); everything
-   * reads --font-ui, so that's a one-line change. Patrick Hand is for words players write.
-   */
+  /* UI type: the pack's pixel font. Patrick Hand is for words players write. */
   --font-ui: 'Ninja Adventure', ui-monospace, 'SF Mono', Menlo, monospace;
   --font-hand: 'Patrick Hand', 'Comic Sans MS', cursive;
 
-  --text-xs: 12px;
-  --text-sm: 15px;
+  /* The pixel font sits on a 9 px grid: sizes off a multiple of 9 render soft. */
+  --text-sm: 18px;
   --text-md: 18px;
-  --text-lg: 24px;
+  --text-lg: 27px;
   --text-xl: 36px;
   --text-wordmark: 54px;
+  /* Its space is about 1/9 em, so words need help to stay apart. */
+  --word-gap: 0.35em;
 
   /* Focus ring colour; surfaces that are pale (paper) override it. */
   --focus: var(--peach);
@@ -101,6 +106,7 @@ body {
   font-family: var(--font-ui);
   font-size: var(--text-md);
   line-height: 1.35;
+  word-spacing: var(--word-gap);
   -webkit-font-smoothing: none;
   font-smooth: never;
   text-rendering: optimizeSpeed;
@@ -120,6 +126,20 @@ canvas {
 :focus-visible {
   outline: var(--px) solid var(--focus);
   outline-offset: var(--px);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  word-spacing: inherit;
+}
+
+/* Words players write. */
+.font-hand {
+  font-family: var(--font-hand);
+  word-spacing: normal;
 }
 
 /* Pale surfaces: the journal paper, primary buttons. */

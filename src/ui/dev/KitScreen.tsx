@@ -50,7 +50,7 @@ export function KitScreen() {
       </Panel>
 
       <Panel title="Paper" tone="paper">
-        <p style={{ margin: '0 0 18px', fontFamily: 'var(--font-hand)', fontSize: 24 }}>
+        <p className="font-hand" style={{ margin: '0 0 18px', fontSize: 23 }}>
           I put something in by the east fence. Water it if you can.
         </p>
         <div style={{ display: 'flex', gap: 15 }}>

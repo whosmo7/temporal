@@ -108,7 +108,7 @@ interface Run {
 }
 
 // Merge each row into horizontal runs of one colour, so a glyph is a dozen rects, not 144.
-function runs(rows: readonly string[]): Run[] {
+function runs(rows: readonly string[], inks: Record<string, string> = INKS): Run[] {
   const out: Run[] = [];
   rows.forEach((row, y) => {
     let x = 0;
@@ -120,7 +120,7 @@ function runs(rows: readonly string[]): Run[] {
       }
       let w = 1;
       while (row[x + w] === ch) w += 1;
-      out.push({ x, y, w, fill: INKS[ch] ?? 'currentColor' });
+      out.push({ x, y, w, fill: inks[ch] ?? 'currentColor' });
       x += w;
     }
   });
@@ -130,6 +130,38 @@ function runs(rows: readonly string[]): Run[] {
 const RUNS = Object.fromEntries(
   Object.entries(GLYPHS).map(([name, rows]) => [name, runs(rows)]),
 ) as Record<IconName, Run[]>;
+
+/**
+ * A one-off pixel drawing (the wax seal, small props) from rows of characters, with `inks`
+ * mapping each character to a colour. `.` is transparent. Decorative: hidden from screen readers.
+ */
+export function PixelBitmap({
+  rows,
+  inks,
+  scale,
+  className,
+}: {
+  rows: readonly string[];
+  inks: Record<string, string>;
+  scale: number;
+  className?: string;
+}) {
+  const h = rows.length;
+  const w = Math.max(...rows.map((r) => r.length));
+  return (
+    <svg
+      className={['kit-icon', className].filter(Boolean).join(' ')}
+      width={w * scale}
+      height={h * scale}
+      viewBox={`0 0 ${w} ${h}`}
+      aria-hidden
+    >
+      {runs(rows, inks).map((r, i) => (
+        <rect key={i} x={r.x} y={r.y} width={r.w} height={1} fill={r.fill} />
+      ))}
+    </svg>
+  );
+}
 
 export function Icon({
   name,

@@ -17,3 +17,6 @@ supabase/.branches/
 !.vscode/extensions.json
 .idea/
 *.log
+
+# Raw asset packs: only the packed atlas, fonts and audio we use are committed (see ASSETS.md)
+art/source/
