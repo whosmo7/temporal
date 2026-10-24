@@ -262,6 +262,36 @@
   list-style: none;
 }
 
+.gallery__item {
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  gap: calc(var(--px) * 2);
+}
+
+.gallery__item > .kit-cast {
+  width: 100%;
+}
+
+.island-thumb {
+  display: block;
+  animation: island-bob 4s steps(4, jump-none) infinite alternate;
+}
+
+.gallery__item:nth-child(2n) .island-thumb {
+  animation-delay: -1.5s;
+}
+
+.gallery__item:nth-child(3n) .island-thumb {
+  animation-delay: -2.7s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .island-thumb {
+    animation: none;
+  }
+}
+
 .gallery__card p {
   margin: 0 0 calc(var(--px) * 4);
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { backend, type CompletedWorld } from '../../api';
+import { IslandThumb } from '../gallery/IslandThumb';
 import { ButtonLink, Panel } from '../kit';
 
 const BIOME_NAME: Record<CompletedWorld['biome'], string> = { forest: 'Forest', island: 'Island' };
@@ -7,8 +8,8 @@ const BIOME_NAME: Record<CompletedWorld['biome'], string> = { forest: 'Forest', 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; worlds: CompletedWorld[] };
 
 /**
- * Completed worlds, newest first. Public: no login needed (decision 017). The floating-island
- * thumbnails come with the gallery grid task (`06`); until then each card is text only.
+ * Completed worlds, newest first, each as a small floating island showing its last generation
+ * with a stone for each player. Public: no login needed (decision 017).
  */
 export function GalleryScreen() {
   const [load, setLoad] = useState<Load>({ state: 'loading' });
@@ -55,7 +56,8 @@ export function GalleryScreen() {
       </h1>
       <ul className="gallery__grid">
         {load.worlds.map((w) => (
-          <li key={w.worldId}>
+          <li key={w.worldId} className="gallery__item">
+            <IslandThumb input={thumbOf(w)} label={`${BIOME_NAME[w.biome]} world after ${w.generationCount} generations`} />
             <Panel tone="paper" className="gallery__card">
               <p className="gallery__meta">
                 {BIOME_NAME[w.biome]} · {w.generationCount} generations
@@ -70,4 +72,21 @@ export function GalleryScreen() {
       </ul>
     </section>
   );
+}
+
+/** What the thumbnail draws. Memo-stable per world, so the canvas only redraws when the list changes. */
+const thumbs = new WeakMap<CompletedWorld, Parameters<typeof IslandThumb>[0]['input']>();
+function thumbOf(w: CompletedWorld) {
+  let input = thumbs.get(w);
+  if (!input) {
+    input = {
+      seed: w.seed,
+      biome: w.biome,
+      preset: w.preset,
+      state: w.finalState,
+      stones: w.players.map((username, i) => ({ turn: i + 1, username })),
+    };
+    thumbs.set(w, input);
+  }
+  return input;
 }

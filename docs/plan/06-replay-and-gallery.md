@@ -64,8 +64,8 @@ For each generation g = 1..N:
 - [ ] **[B]** Plot history popover
 - [ ] **[B]** Generation stepping (buttons + arrow keys) + optional auto-play
 - [x] **[C]** Title card + ending card *(`ReplayScreen`: title card ("An island · 6 generations", "Everyone who lived here is gone.", Begin) → each generation → ending card (the dusk island with a stone per generation, "6 generations lived here.", the names in order, Watch again / Gallery). Arrow keys step through. Worlds have no names yet, so the title uses the biome. Until B's layout lands, each generation shows the journal page and the cause lines on a dusk sky.)*
-- [ ] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see `docs/art/art-direction.md`)
-- [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; thumbnails come with the grid task. `ReplayScreen` loads `getReplay`; see the title and ending card task.)*
+- [x] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see `docs/art/art-direction.md`) *(`IslandThumb` in `src/ui/gallery/` draws the world's map from the world atlas on a 2D canvas: the area inside the boundary is the island's top, plots at their stage in the last snapshot, a stone per player, a cliff underneath. `CompletedWorld` gained optional `preset` and `finalState` for it (`07`); without them it draws the founder stages on the default preset.)*
+- [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; each card shows its world as a floating island. `ReplayScreen` loads `getReplay`; see the title and ending card task.)*
 - [ ] **[C]** Admin "skip to replay" hook (`08`)
 - [ ] **[C]** (Stretch) Legacy view per player
 - [ ] **[B]** (Stretch) Animate drawing strokes in the journal panel
