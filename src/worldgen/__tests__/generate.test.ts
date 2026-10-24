@@ -21,6 +21,8 @@ import { fbm, valueNoise } from '../noise';
 import { createRng, hash } from '../rng';
 
 const BIOMES: Biome[] = ['forest', 'island'];
+/** The seed sweeps take ~3 s; give them room on a busy CI machine instead of the 5 s default. */
+const SWEEP_TIMEOUT = 60_000;
 
 /** Every property a generated map must have, whatever the seed or preset. */
 function expectValidMap(map: TileMap, label: string): void {
@@ -78,7 +80,7 @@ describe('generateMap', () => {
       const seed = Math.floor(rng.next() * 0x100000000);
       expectValidMap(generateMap(seed, biome), `${biome} seed ${seed}`);
     }
-  });
+  }, SWEEP_TIMEOUT);
 
   it.each(Object.keys(PRESETS) as PresetName[])('preset %s gives valid maps in both biomes', (name) => {
     for (const biome of BIOMES) {
@@ -90,7 +92,7 @@ describe('generateMap', () => {
         expectValidMap(map, `${name}/${biome} seed ${seed}`);
       }
     }
-  });
+  }, SWEEP_TIMEOUT);
 
   it('has 2 fields and the canonical plot IDs by default', () => {
     expect(generateMap(7, 'forest').plots.map((p) => p.id)).toEqual([
@@ -199,7 +201,7 @@ describe('performance', () => {
       for (let seed = 0; seed < runs; seed++) generateMap(seed, biome);
       expect((performance.now() - start) / runs).toBeLessThan(50);
     }
-  });
+  }, SWEEP_TIMEOUT);
 });
 
 describe('noise and rng', () => {

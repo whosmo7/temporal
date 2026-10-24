@@ -33,6 +33,22 @@
 - Use `@pixi/react` or a manual `useEffect` mount. **Recommendation:** manual mount for control and fewer version issues.
 - Fixed-timestep game loop: movement at 60 fps, engine `tick(t)` at ~4 Hz for intra-turn effects.
 
+### Built so far (`src/render/`)
+
+- **`<PixiStage map>`** (`PixiStage.tsx`) owns one Pixi `Application`, which resizes to its container and uses `devicePixelRatio`,
+  nearest-neighbour scaling and `roundPixels`. It's safe under StrictMode's double mount. `createWorldView(app, map)`
+  (`world-view.ts`) builds the layers: **ground**, a single RenderTexture of terrain, ponds, sea and flowers; **flat**, for fields
+  and the wild spot; and **sorted**, where trees, rocks, bushes, structures and the player are y-sorted by their bottom edge.
+- **Camera** (`camera.ts`): zoom is the largest whole number of *device* pixels per art pixel that shows about 22×13 tiles,
+  so it's 3× at 1280×720. The camera follows the player, clamps at the map edge, and centres maps that are smaller than the view.
+- **Movement** (`movement.ts`, pure and tested): a fixed 60 Hz step, 4.5 tiles/s, and a hitbox at the feet against
+  `buildCollision(map)`. Diagonal moves slide along walls. Walking uses a 4-direction, 4-frame animation.
+- **Placeholder art** (`placeholder-art.ts`): code-drawn frames that already use the final frame names (`terrain/grass-1`,
+  `boundary/tree-1`, `player/walk-down-0`, `<kind>/<stage>` …), so C's atlas replaces them by name. Plot frames are drawn at
+  each plot's size, because presets can change plot sizes. `TILE = 16` in `constants.ts` until `09` picks a pack.
+- **`#/play?seed=123&biome=island&preset=small`** (`src/ui/screens/PlayScreen.tsx`) is a local hot-seat world for now. Plots
+  show their founder stages until `visibleView()` (A) exists.
+
 ## Interaction model
 
 - Walk next to a plot and an **interact prompt** appears showing the valid action(s) and costs.
@@ -72,11 +88,11 @@ These visuals should be enough to inherit the world without reading anything. No
 
 ## Tasks
 
-- [ ] **[B]** Pixi app mount/unmount inside React. Handle resize and devicePixelRatio. Use nearest-neighbour scaling for pixel art.
-- [ ] **[B]** Tilemap renderer from `03` `TileMap`, cached to a RenderTexture
-- [ ] **[B]** Camera follow + clamp to map bounds
-- [ ] **[B]** Player avatar: 4-direction walk animation, collision against the grid
-- [ ] **[B]** Y-sorting for trees/structures vs the player
+- [x] **[B]** Pixi app mount/unmount inside React. Handle resize and devicePixelRatio. Use nearest-neighbour scaling for pixel art.
+- [x] **[B]** Tilemap renderer from `03` `TileMap`, cached to a RenderTexture
+- [x] **[B]** Camera follow + clamp to map bounds
+- [x] **[B]** Player avatar: 4-direction walk animation, collision against the grid
+- [x] **[B]** Y-sorting for trees/structures vs the player
 - [ ] **[B]** Plot sprites driven by `visibleView()` stages
 - [ ] **[B]** Interact prompt + key handling + hotbar
 - [ ] **[B]** Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason.
