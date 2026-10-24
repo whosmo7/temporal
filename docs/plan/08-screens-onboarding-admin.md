@@ -8,6 +8,7 @@
 - Screens: **Landing/title**, **Sign up / Log in**, **Onboarding/tutorial**, **Game**, **Gallery** (+ Replay).
 - **Admin tools**: force-assign a world, configure turn length/generations, skip to replay.
 - Desktop only.
+- The gallery and replays are **public**: no login needed. Only Play needs an account ([016](../decisions/016-public-gallery.md)).
 - Hosted on GitHub Pages, so use **hash routing** (`/#/…`) to avoid 404s on refresh.
 
 ## Routes
@@ -65,7 +66,7 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 - [ ] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another"
 - [ ] **[B]** Resume: if the user refreshes while holding a lock, put them back in (or void; open question)
 - [ ] **[C]** Tutorial scene
-- [ ] **[C]** Gallery + replay routes (screens from `06`)
+- [x] **[C]** Gallery + replay routes (screens from `06`) *(see `06`)*
 - [ ] **[C]** Admin panel + guard
 - [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup)
 - [x] **[C]** Audio toggle (mute) in the shell (`09`) *(`MuteToggle` in the header, saved in localStorage.)*
@@ -80,4 +81,3 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 1. Is the tutorial mandatory on first play, or skippable?
 2. Is the "this will take longer than you have" hint OK, given pending effects are partly hidden?
 3. Refresh mid-turn: resume with the time remaining, or void?
-4. Can anonymous visitors view the gallery without logging in? (Recommended: yes.)

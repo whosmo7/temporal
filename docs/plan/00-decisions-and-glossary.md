@@ -99,6 +99,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | What successors learn | **Only the journal.** The world never explains why it is in its current state. |
 | Gravestone | **Name/initials**, **click to open that player's journal page**. Hover shows "AL · Generation 2"; E at the graveyard reads the nearest stone ([014](../decisions/014-gravestones.md)) |
 | Replay | For each generation: **a snapshot of the world plus that player's diary entry**. The replay is where causes are explained. |
+| Gallery access | **Public**: anyone can view the gallery and replays without logging in; only Play needs an account ([016](../decisions/016-public-gallery.md)) |
 | Replay audience | **Anyone**, through a public **gallery** of completed worlds |
 | Sharing/export | **No**, in-app only |
 | Moderation | **None** for the hackathon (logged as a risk) |

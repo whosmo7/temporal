@@ -1,8 +1,10 @@
 import { createHashRouter, type RouteObject } from 'react-router-dom';
 import { AuthScreen } from './screens/AuthScreen';
+import { GalleryScreen } from './screens/GalleryScreen';
 import { LandingScreen } from './screens/LandingScreen';
 import { NotFoundScreen } from './screens/NotFoundScreen';
 import { PlayScreen } from './screens/PlayScreen';
+import { ReplayScreen } from './screens/ReplayScreen';
 import { AppShell } from './shell/AppShell';
 import { RequireUser } from './shell/RequireUser';
 
@@ -48,6 +50,8 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <LandingScreen /> },
       { path: 'auth', element: <AuthScreen /> },
+      { path: 'gallery', element: <GalleryScreen /> },
+      { path: 'world/:id/replay', element: <ReplayScreen /> },
       ...devRoutes,
       { path: '*', element: <NotFoundScreen /> },
     ],

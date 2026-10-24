@@ -197,3 +197,45 @@
 .shell__user {
   font-size: var(--text-sm);
 }
+
+/* Gallery ---------------------------------------------------------------------------------------- */
+
+.gallery {
+  width: min(100%, 1040px);
+  align-self: start;
+}
+
+.gallery__title {
+  margin: 0 0 calc(var(--px) * 8);
+  font-size: var(--text-xl);
+  font-weight: normal;
+  color: var(--ink);
+}
+
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: calc(var(--px) * 8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery__card p {
+  margin: 0 0 calc(var(--px) * 4);
+}
+
+.gallery__players {
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.gallery-empty,
+.replay-stub {
+  max-width: 480px;
+}
+
+.gallery-empty p,
+.replay-stub p {
+  margin: 0 0 calc(var(--px) * 6);
+}
