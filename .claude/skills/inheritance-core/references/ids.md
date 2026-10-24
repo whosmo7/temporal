@@ -15,7 +15,7 @@ same PR as any change.
 
 | ID | Player-facing name | Target |
 |---|---|---|
-| `harvest` | Harvest | ripe `field` or fruiting `orchard` |
+| `harvest` | Harvest / Harvest and eat (`eat: true`, decision 003) | ripe `field` or fruiting `orchard` |
 | `plantCrops` | Plant Crops | empty `field` |
 | `plantOrchard` | Plant Orchard | empty `orchard` |
 | `repairReservoir` | Repair Reservoir | `reservoir` |

@@ -78,7 +78,8 @@ These visuals should be enough to inherit the world without reading anything. No
 - **Top-right:** clock / sun-moon dial + seconds left. Tint shifts with day/night.
 - **Bottom:** hotbar with 8 action icons + key hints.
 - **Generation badge:** "Generation 3 of 5" + world name/seed.
-- **Upkeep reminder:** a small "Needed by nightfall: 10🍎 10💧" (open: confirm it's shown).
+- **Upkeep reminder:** a small "Needed by nightfall: 12🍎 10💧", always shown ([002](../decisions/002-upkeep-timing.md)).
+- **Stamina can rise mid-turn** when the player uses Harvest and eat ([003](../decisions/003-eating-via-harvest.md)).
 
 ## Day/night
 
@@ -114,6 +115,5 @@ These visuals should be enough to inherit the world without reading anything. No
 ## Open questions
 
 1. Does the turn timer **keep running** while the journal is open during play? ("Openable any time" vs "time freezes only at end".)
-2. Show the upkeep reminder in the HUD, or let players discover it?
-3. Show numeric Food/Water counts, or only diegetic visuals (crate fill, reservoir level)? The current decision is the Stardew-like HUD with counters.
-4. Can the player sprint (more stamina, less time)?
+2. Show numeric Food/Water counts, or only diegetic visuals (crate fill, reservoir level)? The current decision is the Stardew-like HUD with counters.
+3. Can the player sprint (more stamina, less time)?

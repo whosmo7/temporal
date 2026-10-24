@@ -78,14 +78,16 @@ scatter decoration avoiding paths/plots
 
 Use a small value-noise or simplex implementation seeded by our PRNG (no global randomness).
 
-### Starter state (Gen 1), all `[PLACEHOLDER]`
+### Starter state (Gen 1), set by game design (`01` › Founder / Gen-1 starter conditions)
+
+What the founder sees: `beginTurn` for gen 1 applies no decay, wear or income.
 
 | | Forest | Island |
 |---|---|---|
-| Food | 20 | 20 |
-| Water | 18 | 22 |
-| Reservoir | cracked (wear 3) | cracked (wear 3) |
-| Wild stock | 8 (cap 10) | 8 (cap 8), fish |
+| Food | 12 | 12 |
+| Water | 16 | 18 |
+| Reservoir | cracked (not repaired) | cracked (not repaired) |
+| Wild stock | 8 (cap 10), hunt | 8 (cap 8), fish |
 | Fields | empty | empty |
 | Orchard plot | empty | empty |
 | Well | not dug | not dug |
@@ -94,7 +96,8 @@ Use a small value-noise or simplex implementation seeded by our PRNG (no global 
 ### Seeded events
 
 Generated at world creation from the seed (event list stored in state, see `02`/`01`). The
-generator places **at least one drought** so the reservoir decision always matters.
+generator places **at least one drought** so the reservoir decision always matters. Event set and timing: `01` › Seeded events
+([005](../decisions/005-seeded-events.md)).
 
 ## Tasks
 

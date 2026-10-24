@@ -31,6 +31,7 @@
    - Stamina spent, food/water spent, food/water gathered this turn
    - Upkeep: met / short by X
    - Planted / built: listed as COST ONLY ("Orchard: −25⚡ −5💧"). No mention of what it will become.
+   - Wording and templates: `docs/content/cost-summary.md`
    ▼
 [Gravestone]
    - Camera pans to the graveyard; your stone rises with your name
