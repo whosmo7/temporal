@@ -8,6 +8,7 @@ import type {
   CompletedWorld,
   JournalPage,
   Replay,
+  Settings,
   Transition,
   WorldState,
 } from './Backend';
@@ -82,8 +83,9 @@ export interface ReplayRow {
   journal: JournalRow[];
 }
 
-export interface WorldRow {
-  id: string;
+/** admin_list_worlds: locked_by and forced_for are usernames. */
+export interface AdminWorldRow {
+  world_id: string;
   seed: number;
   biome: Biome;
   status: 'open' | 'complete';
@@ -93,6 +95,14 @@ export interface WorldRow {
   locked_by: string | null;
   lock_expires_at: string | null;
   forced_for: string | null;
+  players: string[];
+  created_at: string | null;
+}
+
+export interface SettingsRow {
+  inherit_ratio: number;
+  default_turn_seconds: number;
+  default_generation_count: number;
 }
 
 const at = (turn: number, t: number | null) => (t === null ? { turn } : { turn, t });
@@ -174,18 +184,28 @@ export function toReplay(row: ReplayRow): Replay {
   };
 }
 
-export function toAdminWorld(row: WorldRow): AdminWorld {
+export function toAdminWorld(row: AdminWorldRow): AdminWorld {
   return {
-    worldId: row.id,
+    worldId: row.world_id,
     name: worldName(row.seed, row.biome),
     seed: row.seed,
     biome: row.biome,
     status: row.status,
-    turn: row.current_turn,
+    currentTurn: row.current_turn,
     generationCount: row.generation_count,
     turnSeconds: row.turn_seconds,
     lockedBy: row.locked_by,
     lockExpiresAt: row.lock_expires_at,
     forcedFor: row.forced_for,
+    players: row.players,
+    createdAt: row.created_at,
+  };
+}
+
+export function toSettings(row: SettingsRow): Settings {
+  return {
+    inheritRatio: Number(row.inherit_ratio),
+    defaultTurnSeconds: row.default_turn_seconds,
+    defaultGenerationCount: row.default_generation_count,
   };
 }

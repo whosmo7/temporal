@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createWorld } from '../../engine';
 import type { ActionEntry, ClaimedWorld } from '../Backend';
-import { DEFAULT_SETTINGS, LocalBackend } from '../LocalBackend';
+import { DEFAULT_SETTINGS, LOCK_TIMING, LocalBackend } from '../LocalBackend';
 
 // The 07 backend scenarios on LocalBackend. scripts/test-backend.ts runs the same ones (plus the
 // concurrency test) against the live Supabase project.
@@ -24,8 +24,8 @@ class MemoryStorage {
 
 const TTL_MS =
   (DEFAULT_SETTINGS.defaultTurnSeconds +
-    DEFAULT_SETTINGS.journalAllowanceSeconds +
-    DEFAULT_SETTINGS.lockGraceSeconds) *
+    LOCK_TIMING.journalAllowanceSeconds +
+    LOCK_TIMING.lockGraceSeconds) *
   1000;
 
 let clock = 0;
@@ -101,8 +101,9 @@ describe('LocalBackend', () => {
 
   it('logs actions under the committer, whatever actorId the client sent', async () => {
     const b = make();
-    const me = await b.signUp('alma', 'pw');
+    await b.signUp('admin', 'pw');
     await b.setSettings({ defaultGenerationCount: 1 });
+    const me = await b.signUp('alma', 'pw');
     rolls = [0.99, 0.1, 0.1];
     const w = await b.claimWorld();
     await b.commitTurn({ worldId: w.worldId, actions: [plantAction(w)], journal: journal('') });
@@ -180,11 +181,11 @@ describe('LocalBackend', () => {
     rolls = [0.99, 0.1, 0.1];
     const w = await b.claimWorld();
     const claimedAt = clock;
-    const cap = claimedAt + TTL_MS + DEFAULT_SETTINGS.heartbeatCapSeconds * 1000;
+    const cap = claimedAt + TTL_MS + LOCK_TIMING.heartbeatCapSeconds * 1000;
 
     clock = claimedAt + TTL_MS - 1000;
     const extended = await b.heartbeat(w.worldId);
-    expect(Date.parse(extended!)).toBe(clock + DEFAULT_SETTINGS.lockGraceSeconds * 1000);
+    expect(Date.parse(extended!)).toBe(clock + LOCK_TIMING.lockGraceSeconds * 1000);
 
     for (let i = 0; i < 20; i++) {
       clock += 60_000;
@@ -205,7 +206,7 @@ describe('LocalBackend', () => {
     await b.signUp('judge', 'pw');
     await b.signUp('admin', 'pw');
     await b.forceAssign(w.worldId, 'judge');
-    await b.setWorld(w.worldId, { turnSeconds: 60, generationCount: 3 });
+    await b.configureWorld(w.worldId, { turnSeconds: 60, generationCount: 3 });
 
     // Someone else can't take a world forced for the judge.
     rolls = [0, 0.99, 0.1, 0.1];
@@ -218,7 +219,8 @@ describe('LocalBackend', () => {
     expect(judged.turnSeconds).toBe(60);
     expect(judged.generationCount).toBe(3);
 
-    await b.completeWorld(w.worldId);
+    await b.signIn('admin', 'pw');
+    await b.markComplete(w.worldId);
     const gallery = await b.listCompletedWorlds();
     expect(gallery.map((g) => g.worldId)).toEqual([w.worldId]);
     expect(gallery[0]!.players).toEqual(['alma']);
@@ -229,8 +231,9 @@ describe('LocalBackend', () => {
 
   it('completes the world after its last generation', async () => {
     const b = make();
-    await b.signUp('alma', 'pw');
+    await b.signUp('admin', 'pw');
     await b.setSettings({ defaultGenerationCount: 2 });
+    await b.signUp('alma', 'pw');
     rolls = [0.99, 0.1, 0.1];
     const w = await b.claimWorld();
     await b.commitTurn({ worldId: w.worldId, actions: [], journal: journal('1') });

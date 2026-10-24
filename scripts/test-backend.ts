@@ -160,6 +160,22 @@ try {
   check('clients cannot call commit_turn_write', rpcError !== null);
   const { error: adminError } = await raw.rpc('admin_complete_world', { world: inherited.worldId });
   check('non-admins cannot use admin RPCs', adminError !== null);
+
+  // Admin panel calls (08), as a throwaway admin.
+  await admin.from('profiles').update({ is_admin: true }).eq('username', `zt_${run}_e`);
+  const panel = await e!.listWorlds();
+  check('admin lists worlds with usernames', panel.some((w) => w.lockedBy === `zt_${run}_e` || w.lockedBy === `zt_${run}_a`));
+  const held = panel.find((w) => w.lockedBy !== null)!;
+  const tooFew = await e!.configureWorld(held.worldId, { generationCount: 0 }).then(() => 'ok').catch((err: Error) => err.message);
+  check('configureWorld refuses a count below the current generation', tooFew !== 'ok', tooFew);
+  await e!.configureWorld(held.worldId, { turnSeconds: 45 });
+  await e!.clearLock(held.worldId);
+  const cleared = (await e!.listWorlds()).find((w) => w.worldId === held.worldId);
+  check('configureWorld and clearLock apply', cleared?.turnSeconds === 45 && cleared.lockedBy === null);
+  const empty = await e!.markComplete(held.worldId).then(() => 'ok').catch((err: Error) => err.message);
+  check('markComplete refuses a world nobody played', empty !== 'ok', empty);
+  const settingsNow = await e!.getSettings();
+  check('getSettings reads the settings row', settingsNow.inheritRatio === 1);
 } finally {
   await admin.from('settings').update(saved).eq('id', 1);
   console.log('settings restored');

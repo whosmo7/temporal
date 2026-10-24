@@ -19,7 +19,8 @@ describe('demo world', () => {
     const backend = new LocalBackend({ storageKey: 'test.offline' });
     await seedOffline(backend);
     await seedOffline(backend); // second load doesn't add another copy
-    expect(await backend.listAllWorlds()).toHaveLength(1);
+    await backend.signIn('admin', OFFLINE_PASSWORD);
+    expect(await backend.listWorlds()).toHaveLength(1);
 
     await backend.signIn(DEMO.judge, OFFLINE_PASSWORD);
     const world = await backend.claimWorld();

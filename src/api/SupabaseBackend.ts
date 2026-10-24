@@ -17,10 +17,12 @@ import {
   toClaimedWorld,
   toCompletedWorld,
   toReplay,
+  toSettings,
+  type AdminWorldRow,
   type ClaimRow,
   type CompletedRow,
   type ReplayRow,
-  type WorldRow,
+  type SettingsRow,
 } from './mappers';
 
 // The real backend (07). Writes go through RPCs and the commit-turn Edge Function only; RLS refuses
@@ -132,10 +134,19 @@ export class SupabaseBackend implements Backend {
     return toReplay(data as ReplayRow);
   }
 
-  async listAllWorlds(): Promise<AdminWorld[]> {
+  async listWorlds(): Promise<AdminWorld[]> {
     const { data, error } = await this.db.rpc('admin_list_worlds');
     fail(error);
-    return (data as WorldRow[]).map(toAdminWorld);
+    return (data as AdminWorldRow[]).map(toAdminWorld);
+  }
+
+  async getSettings(): Promise<Settings> {
+    const { data, error } = await this.db
+      .from('settings')
+      .select('inherit_ratio, default_turn_seconds, default_generation_count')
+      .single();
+    fail(error);
+    return toSettings(data as SettingsRow);
   }
 
   async setSettings(patch: Partial<Settings>): Promise<void> {
@@ -143,21 +154,18 @@ export class SupabaseBackend implements Backend {
       inherit_ratio: patch.inheritRatio ?? null,
       default_turn_seconds: patch.defaultTurnSeconds ?? null,
       default_generation_count: patch.defaultGenerationCount ?? null,
-      journal_allowance_seconds: patch.journalAllowanceSeconds ?? null,
-      lock_grace_seconds: patch.lockGraceSeconds ?? null,
-      heartbeat_cap_seconds: patch.heartbeatCapSeconds ?? null,
     });
     fail(error);
   }
 
-  async setWorld(
+  async configureWorld(
     worldId: string,
-    patch: { turnSeconds?: number; generationCount?: number },
+    config: { turnSeconds?: number; generationCount?: number },
   ): Promise<void> {
     const { error } = await this.db.rpc('admin_set_world', {
       world: worldId,
-      turn_seconds: patch.turnSeconds ?? null,
-      generation_count: patch.generationCount ?? null,
+      turn_seconds: config.turnSeconds ?? null,
+      generation_count: config.generationCount ?? null,
     });
     fail(error);
   }
@@ -178,7 +186,11 @@ export class SupabaseBackend implements Backend {
     return data as string;
   }
 
-  async completeWorld(worldId: string): Promise<void> {
+  async markComplete(worldId: string): Promise<void> {
     fail((await this.db.rpc('admin_complete_world', { world: worldId })).error);
+  }
+
+  async clearLock(worldId: string): Promise<void> {
+    fail((await this.db.rpc('admin_clear_lock', { world: worldId })).error);
   }
 }

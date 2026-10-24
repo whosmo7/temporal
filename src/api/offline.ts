@@ -21,8 +21,9 @@ function localAccounts(backend: LocalBackend): DemoAccounts {
 
 /** Seeds the demo world into an empty store. Reset by clearing site data (or `inheritance.offline`). */
 export async function seedOffline(backend: LocalBackend): Promise<void> {
-  if ((await backend.listAllWorlds()).length > 0) return;
-  await seedDemo(localAccounts(backend));
+  const accounts = localAccounts(backend);
+  const seeded = (await (await accounts.admin()).listWorlds()).length > 0;
+  if (!seeded) await seedDemo(accounts);
   await backend.signOut();
 }
 

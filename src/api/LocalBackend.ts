@@ -23,7 +23,7 @@ import { runTurn } from './runTurn';
 
 // Hot-seat backend on localStorage, for development and the offline demo. Same rules as the
 // Supabase RPCs in supabase/migrations (claim order, lock TTL, heartbeat cap, void on expiry).
-// Dev only: passwords are stored in plain text, and every user is an admin.
+// Dev only: passwords are stored in plain text. Signing up as `admin` makes an admin.
 
 const STORAGE_KEY = 'inheritance.local';
 
@@ -32,16 +32,22 @@ export const DEFAULT_SETTINGS: Settings = {
   inheritRatio: 0.7,
   defaultTurnSeconds: 600,
   defaultGenerationCount: 6,
+};
+/** Lock timing (settings columns the admin panel doesn't edit). */
+export const LOCK_TIMING = {
   journalAllowanceSeconds: 300,
   lockGraceSeconds: 120,
   heartbeatCapSeconds: 900,
 };
+/** Signing up as `admin` makes an admin, standing in for `update profiles set is_admin = true` (07). */
+const ADMIN_USERNAME = 'admin';
 const BIOMES: Biome[] = ['forest', 'island'];
 
 interface LocalUser {
   id: string;
   username: string;
   password: string;
+  isAdmin?: boolean;
 }
 
 interface LocalWorld {
@@ -57,6 +63,7 @@ interface LocalWorld {
   lockedAt: number | null;
   lockExpiresAt: number | null;
   forcedFor: string | null;
+  createdAt?: string;
   completedAt: string | null;
 }
 
@@ -88,7 +95,7 @@ export interface LocalBackendOptions {
 }
 
 function toProfile(user: LocalUser): Profile {
-  return { id: user.id, username: user.username, isAdmin: true };
+  return { id: user.id, username: user.username, isAdmin: !!user.isAdmin };
 }
 
 export class LocalBackend implements Backend {
@@ -99,8 +106,9 @@ export class LocalBackend implements Backend {
 
   constructor(options: LocalBackendOptions = {}) {
     this.key = options.storageKey ?? STORAGE_KEY;
-    this.now = options.now ?? Date.now;
-    this.random = options.random ?? Math.random;
+    // Looked up per call, so tests can spy on Math.random or fake the clock.
+    this.now = options.now ?? (() => Date.now());
+    this.random = options.random ?? (() => Math.random());
     this.initial = options.initial;
   }
 
@@ -125,9 +133,8 @@ export class LocalBackend implements Backend {
     return user;
   }
 
-  private ttlMs(db: LocalDb, world: LocalWorld): number {
-    const s = this.settings(db);
-    return (world.turnSeconds + s.journalAllowanceSeconds + s.lockGraceSeconds) * 1000;
+  private ttlMs(world: LocalWorld): number {
+    return (world.turnSeconds + LOCK_TIMING.journalAllowanceSeconds + LOCK_TIMING.lockGraceSeconds) * 1000;
   }
 
   private holds(world: LocalWorld, userId: string): boolean {
@@ -141,7 +148,12 @@ export class LocalBackend implements Backend {
       throw new Error('Usernames are 3 to 20 letters, numbers or underscores');
     }
     if (db.users.some((u) => u.username === name)) throw new Error('Username taken');
-    const user = { id: crypto.randomUUID(), username: name, password };
+    const user: LocalUser = {
+      id: crypto.randomUUID(),
+      username: name,
+      password,
+      isAdmin: name === ADMIN_USERNAME,
+    };
     db.users.push(user);
     db.session = user.id;
     this.save(db);
@@ -217,7 +229,7 @@ export class LocalBackend implements Backend {
     // 5. Lock it.
     world.lockedBy = me.id;
     world.lockedAt = now;
-    world.lockExpiresAt = now + this.ttlMs(db, world);
+    world.lockExpiresAt = now + this.ttlMs(world);
     world.forcedFor = null;
     this.save(db);
     return this.toClaimed(db, world);
@@ -228,9 +240,8 @@ export class LocalBackend implements Backend {
     const me = this.requireUser(db);
     const world = db.worlds.find((w) => w.id === worldId);
     if (!world || !this.holds(world, me.id)) return null;
-    const s = this.settings(db);
-    const cap = (world.lockedAt ?? 0) + this.ttlMs(db, world) + s.heartbeatCapSeconds * 1000;
-    const extended = Math.max(world.lockExpiresAt ?? 0, this.now() + s.lockGraceSeconds * 1000);
+    const cap = (world.lockedAt ?? 0) + this.ttlMs(world) + LOCK_TIMING.heartbeatCapSeconds * 1000;
+    const extended = Math.max(world.lockExpiresAt ?? 0, this.now() + LOCK_TIMING.lockGraceSeconds * 1000);
     world.lockExpiresAt = Math.min(extended, cap);
     this.save(db);
     return new Date(world.lockExpiresAt).toISOString();
@@ -317,72 +328,111 @@ export class LocalBackend implements Backend {
     };
   }
 
-  async listAllWorlds(): Promise<AdminWorld[]> {
+  async listWorlds(): Promise<AdminWorld[]> {
     const db = this.load();
-    const iso = (ms: number | null) => (ms === null ? null : new Date(ms).toISOString());
+    this.requireAdmin(db);
+    const name = (id: string | null) => (id ? this.usernameOf(db, id) : null);
     return db.worlds.map((w) => ({
       worldId: w.id,
       name: worldName(w.seed, w.biome),
       seed: w.seed,
       biome: w.biome,
       status: w.status,
-      turn: w.currentTurn,
+      currentTurn: w.currentTurn,
       generationCount: w.generationCount,
       turnSeconds: w.turnSeconds,
-      lockedBy: w.lockedBy,
-      lockExpiresAt: iso(w.lockExpiresAt),
-      forcedFor: w.forcedFor,
+      lockedBy: name(w.lockedBy),
+      lockExpiresAt: w.lockExpiresAt === null ? null : new Date(w.lockExpiresAt).toISOString(),
+      forcedFor: name(w.forcedFor),
+      players: this.turnsOf(db, w.id).map((t) => this.usernameOf(db, t.playerId)),
+      createdAt: w.createdAt ?? null,
     }));
+  }
+
+  async getSettings(): Promise<Settings> {
+    return this.settings(this.load());
   }
 
   async setSettings(patch: Partial<Settings>): Promise<void> {
     const db = this.load();
-    db.settings = { ...this.settings(db), ...patch };
+    this.requireAdmin(db);
+    const next = { ...this.settings(db), ...patch };
+    if (!(next.defaultTurnSeconds > 0 && next.defaultGenerationCount > 0)) {
+      throw new Error('Must be above 0');
+    }
+    if (!(next.inheritRatio >= 0 && next.inheritRatio <= 1)) {
+      throw new Error('Inherit ratio must be between 0 and 1');
+    }
+    db.settings = next;
     this.save(db);
   }
 
-  async setWorld(
+  async configureWorld(
     worldId: string,
-    patch: { turnSeconds?: number; generationCount?: number },
+    config: { turnSeconds?: number; generationCount?: number },
   ): Promise<void> {
     const db = this.load();
-    const world = this.openWorld(db, worldId);
-    world.turnSeconds = patch.turnSeconds ?? world.turnSeconds;
-    world.generationCount = patch.generationCount ?? world.generationCount;
+    this.requireAdmin(db);
+    const world = this.worldOf(db, worldId);
+    if (world.status === 'complete') throw new Error('This world has ended');
+    const { turnSeconds = world.turnSeconds, generationCount = world.generationCount } = config;
+    if (!(turnSeconds > 0)) throw new Error('Turn length must be above 0');
+    if (generationCount < world.currentTurn) {
+      throw new Error(`At least ${world.currentTurn} generations: that one is being played or next`);
+    }
+    world.turnSeconds = turnSeconds;
+    world.generationCount = generationCount;
     this.save(db);
   }
 
   async forceAssign(worldId: string, username: string): Promise<void> {
     const db = this.load();
-    const world = this.openWorld(db, worldId);
-    const user = db.users.find((u) => u.username === username.toLowerCase());
-    if (!user) throw new Error(`No player ${username}`);
+    this.requireAdmin(db);
+    const world = this.worldOf(db, worldId);
+    if (world.status !== 'open') throw new Error('This world has ended');
+    const user = db.users.find((u) => u.username === username.trim().toLowerCase());
+    if (!user) throw new Error('No player by that name');
     world.forcedFor = user.id;
     this.save(db);
   }
 
-  async createSeededWorld(seeded: SeededWorld): Promise<string> {
+  async markComplete(worldId: string): Promise<void> {
     const db = this.load();
-    const settings = this.settings(db);
-    const world = this.newWorld(seeded.seed, seeded.biome, settings);
-    world.preset = seeded.preset ?? world.preset;
-    world.turnSeconds = seeded.turnSeconds ?? world.turnSeconds;
-    world.generationCount = seeded.generationCount ?? world.generationCount;
-    db.worlds.push(world);
-    this.save(db);
-    return world.id;
-  }
-
-  async completeWorld(worldId: string): Promise<void> {
-    const db = this.load();
-    const world = this.openWorld(db, worldId);
+    this.requireAdmin(db);
+    const world = this.worldOf(db, worldId);
+    if (world.status === 'complete') return;
+    const played = this.turnsOf(db, worldId).length;
+    if (played === 0) throw new Error('Nobody has played this world yet');
     world.status = 'complete';
+    world.generationCount = played;
     world.completedAt = new Date(this.now()).toISOString();
     world.lockedBy = null;
     world.lockedAt = null;
     world.lockExpiresAt = null;
     world.forcedFor = null;
     this.save(db);
+  }
+
+  async clearLock(worldId: string): Promise<void> {
+    const db = this.load();
+    this.requireAdmin(db);
+    const world = this.worldOf(db, worldId);
+    world.lockedBy = null;
+    world.lockedAt = null;
+    world.lockExpiresAt = null;
+    this.save(db);
+  }
+
+  async createSeededWorld(seeded: SeededWorld): Promise<string> {
+    const db = this.load();
+    this.requireAdmin(db);
+    const world = this.newWorld(seeded.seed, seeded.biome, this.settings(db));
+    world.preset = seeded.preset ?? world.preset;
+    world.turnSeconds = seeded.turnSeconds ?? world.turnSeconds;
+    world.generationCount = seeded.generationCount ?? world.generationCount;
+    db.worlds.push(world);
+    this.save(db);
+    return world.id;
   }
 
   private newWorld(seed: number, biome: Biome, settings: Settings): LocalWorld {
@@ -399,14 +449,21 @@ export class LocalBackend implements Backend {
       lockedAt: null,
       lockExpiresAt: null,
       forcedFor: null,
+      createdAt: new Date(this.now()).toISOString(),
       completedAt: null,
     };
   }
 
-  private openWorld(db: LocalDb, worldId: string): LocalWorld {
-    const world = db.worlds.find((w) => w.id === worldId && w.status === 'open');
-    if (!world) throw new Error(`No open world ${worldId}`);
+  private worldOf(db: LocalDb, worldId: string): LocalWorld {
+    const world = db.worlds.find((w) => w.id === worldId);
+    if (!world) throw new Error('No such world');
     return world;
+  }
+
+  private requireAdmin(db: LocalDb): LocalUser {
+    const user = this.requireUser(db);
+    if (!user.isAdmin) throw new Error('Not allowed');
+    return user;
   }
 
   private usernameOf(db: LocalDb, id: string): string {
