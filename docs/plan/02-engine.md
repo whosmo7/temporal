@@ -158,7 +158,7 @@ result but still only appends. Record this choice as an open question for the en
 - [ ] **[A]** Append-only: no API mutates past log entries
 
 **Tooling**
-- [ ] **[A]** `scripts/simulate.ts`: plays N generations with scripted strategies and prints a resource table (used by game design for balancing)
+- [x] **[A]** `scripts/simulate.ts`: plays N generations with scripted strategies and prints a resource table (used by game design for balancing)
 
 ## Acceptance
 

@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "worldgen": "tsx scripts/worldgen-preview.ts"
+    "worldgen": "tsx scripts/worldgen-preview.ts",
+    "simulate": "tsx scripts/simulate.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
