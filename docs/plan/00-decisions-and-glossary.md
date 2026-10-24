@@ -26,6 +26,9 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Tone | Simple farming life, Minecraft-like simplicity |
 | View | **2D with a Stardew Valley-style angle** (top-down ¾ view) |
 | Map | **~32×32 tiles** (needs a camera that follows the player) |
+| Map size | **Configurable** per preset. Default **32×32 including the boundary** ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
+| Fields | **Configurable** per preset. Default **2** ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
+| Map presets | Named presets override any generator option and can **pin plots** to exact tiles ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
 | Seeds | Every world is generated from a seed and has a natural **boundary** |
 | Boundaries for hackathon | **Forest (trees)** and **Island (sea)** |
 | Boundary effect | **Small modifiers** to starting values. Rules are the same everywhere. |

@@ -11,6 +11,9 @@
 - **Pre-defined plots** for every action (no free placement).
 - **Small modifiers** per biome (see `01`).
 - New worlds start from a **seeded starter state**.
+- **Map size is configurable** through presets. The default is **32×32 including the boundary** ([001](../decisions/001-worldgen-map-size-and-presets.md)).
+- The **number of fields is configurable** through presets. The default is **2** ([001](../decisions/001-worldgen-map-size-and-presets.md)).
+- **Map presets**: every generator knob can be overridden by a named preset in `src/worldgen/presets.ts`, and plots can be pinned to exact tiles ([001](../decisions/001-worldgen-map-size-and-presets.md)).
 
 ## Spec
 
@@ -22,18 +25,43 @@
 4. **Plot layer**: fixed sites placed by the seeded generator inside the boundary, always reachable by path.
 5. **Collision grid**: derived from layers 1–4 for WASD movement.
 
+### Built (`src/worldgen/`)
+
+```ts
+generateMap(seed: number, biome: Biome, preset?: PresetName | WorldgenPreset): TileMap
+buildCollision(map): Uint8Array        // 1 = blocked, indexed y * width + x
+biomeFromSeed(seed): Biome             // for callers that want a seed-derived biome (open question 1)
+```
+
+- **`TileMap`** (`types.ts`): `{ width, height, biome, seed, layers: { terrain, boundary, deco }, plots: { id, kind, x, y, w, h }[], spawn }`.
+  Layers are flat row-major arrays (`y * width + x`) of tile IDs (see `ids.md` › Tiles). It is plain data with no Pixi.
+- **Presets** (`presets.ts`, `options.ts`): a preset is a partial `WorldgenOptions` merged over `BASE_OPTIONS` and then the
+  biome defaults. The knobs are size, boundary depth, corner radius, beach width, field count, plot sizes, plot spacing,
+  pond coverage, dirt amount, deco density and weights, path wiggle, lectern range, spawn clearance, spawn, `pin` and `maxAttempts`.
+  The built-in presets are `default`, `small`, `large`, `wide` and `bare`.
+  Preview one with `npm run worldgen -- --seed 123 --biome island --preset small`.
+- **Pinned plots** (`pin: { reservoir: { x, y } }`) are placed exactly and skip the kind rules (lectern range, wild-on-edge).
+  Ponds keep off them, so a pinned preset works with any seed. A pin on the boundary, on spawn or overlapping another pin throws `WorldgenError`.
+- **Collision:** boundary, ponds, `rock`/`bush` deco and the solid plots (`orchard`, `reservoir`, `well`, `lectern`) block movement.
+  `field`, `wild` and `graveyard` are walkable.
+- **Determinism:** each stage (plots, deco) has its own PRNG stream derived from `hash(seed, stage)`, so changing the
+  deco density never moves plots.
+- **Speed:** about 2–3 ms per 32×32 map, and under 10 ms for 40×40.
+
 ### Generation outline
 
 ```
 rng = prng(seed)
 biome = seed-derived or chosen ('forest' | 'island')
-mask = radial falloff + noise(seed) → inside/outside boundary
+mask = rounded-rect falloff + noise(seed) → inside/outside boundary (keep only the part connected to spawn)
+ponds = lowest ground by elevation noise, up to pondCoverage of the interior
   Forest: outside = tree tiles (2–3 tiles deep)
   Island: outside = sand ring → sea
 place plots via rng on a coarse grid inside mask, with min spacing:
   fields ×N, orchard plot ×1, reservoir ×1 (near water/low ground), well site ×1,
   wild spot ×1 (Island: shoreline/pier; Forest: tree edge), lectern ×1 (near spawn), graveyard ×1
-carve paths spawn → each plot (BFS on grid) so everything is reachable
+carve paths spawn → each plot (Dijkstra with noise-weighted steps, branching off the existing network);
+  if a plot has no spot or no path, re-roll placement with the next PRNG draws, up to maxAttempts, then throw
 scatter decoration avoiding paths/plots
 ```
 
@@ -59,16 +87,16 @@ generator places **at least one drought** so the reservoir decision always matte
 
 ## Tasks
 
-- [ ] **[B]** Seeded noise util (value noise is enough)
-- [ ] **[B]** Boundary mask for Forest and Island
-- [ ] **[B]** Plot placement with spacing + reachability guarantee (re-roll if unreachable)
-- [ ] **[B]** Path carving (BFS/A*)
-- [ ] **[B]** Decoration scatter
-- [ ] **[B]** Collision grid export
-- [ ] **[B]** Output a `TileMap` data structure: `{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }` with no Pixi dependency
+- [x] **[B]** Seeded noise util (value noise is enough)
+- [x] **[B]** Boundary mask for Forest and Island
+- [x] **[B]** Plot placement with spacing + reachability guarantee (re-roll if unreachable)
+- [x] **[B]** Path carving (BFS/A*)
+- [x] **[B]** Decoration scatter
+- [x] **[B]** Collision grid export
+- [x] **[B]** Output a `TileMap` data structure: `{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }` with no Pixi dependency
 - [ ] **[B]** Biome starter state + modifiers wired into `createWorld`
 - [ ] **[B]** Seeded event list (≥1 drought)
-- [ ] **[B]** Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps
+- [x] **[B]** Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps
 - [ ] **[B]** Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares (needs `04` basic renderer). Useful for picking demo seeds.
 
 ## Acceptance
@@ -78,7 +106,7 @@ generator places **at least one drought** so the reservoir decision always matte
 
 ## Open questions
 
-1. Is biome picked randomly from the seed, or chosen 50/50 at assignment?
-2. Number of fields (1, 2 or 3)?
-3. Should Gen 1 include a "founders" gravestone/journal page for flavour, or start with an empty graveyard?
-4. Exact map size: 32×32 including the boundary, or a 32×32 interior?
+1. Is biome picked randomly from the seed, or chosen 50/50 at assignment? (Worldgen takes biome as an input, and `biomeFromSeed()` covers the first option.)
+2. Should Gen 1 include a "founders" gravestone/journal page for flavour, or start with an empty graveyard?
+
+(Field count and map size are settled in [001](../decisions/001-worldgen-map-size-and-presets.md). Both are preset options.)
