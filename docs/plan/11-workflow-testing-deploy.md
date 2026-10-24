@@ -36,13 +36,13 @@ temporal/
 
 ## Setup tasks
 
-- [ ] **[A]** `npm create vite@latest` → React + TS. Add ESLint + Prettier.
-- [ ] **[A]** Add deps: `pixi.js`, `zustand`, `@supabase/supabase-js`, `howler`; dev: `vitest`, `@vitest/coverage-v8`
-- [ ] **[A]** `vite.config.ts`: `base: '/temporal/'` (or `/` if using a custom domain)
-- [ ] **[A]** Hash router (`react-router` `createHashRouter`)
+- [x] **[A]** `npm create vite@latest` → React + TS. Add ESLint + Prettier.
+- [x] **[A]** Add deps: `pixi.js`, `zustand`, `@supabase/supabase-js`, `howler`; dev: `vitest`, `@vitest/coverage-v8`
+- [x] **[A]** `vite.config.ts`: `base: '/temporal/'` (or `/` if using a custom domain)
+- [x] **[A]** Hash router (`react-router` `createHashRouter`)
 - [x] **[A]** `.env.example` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Real values go in GitHub Actions secrets. *(Done by C with the `07` project setup.)*
-- [ ] **[A]** `Backend` interface + `LocalBackend` stub, so the frontend and engine can start before Supabase exists
-- [ ] **[A]** Path alias `@engine/*` so the Edge Function and the client import the same code
+- [x] **[A]** `Backend` interface + `LocalBackend` stub, so the frontend and engine can start before Supabase exists
+- [x] **[A]** Path alias `@engine/*` so the Edge Function and the client import the same code
 - [ ] **[A]** Turn on Pages in repo settings (source: GitHub Actions)
 
 ## CI / deploy

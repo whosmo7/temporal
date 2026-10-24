@@ -64,7 +64,7 @@ For each generation g = 1..N:
 - [ ] **[B]** Plot history popover
 - [ ] **[B]** Generation stepping (buttons + arrow keys) + optional auto-play
 - [ ] **[C]** Title card + ending card
-- [ ] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image)
+- [ ] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see `docs/art/art-direction.md`)
 - [ ] **[C]** Route `/#/world/:id/replay` and `/#/gallery`
 - [ ] **[C]** Admin "skip to replay" hook (`08`)
 - [ ] **[C]** (Stretch) Legacy view per player
