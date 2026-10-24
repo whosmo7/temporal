@@ -52,6 +52,20 @@ function expectValidMap(map: TileMap, label: string): void {
       approach.some((i) => dist[i]! >= 0),
       `${where} reachable from spawn`,
     ).toBe(true);
+    // Trees are planted and picked one at a time (decision 019): each needs a reachable side.
+    if (plot.kind === 'orchard') {
+      for (let y = plot.y; y < plot.y + plot.h; y++) {
+        for (let x = plot.x; x < plot.x + plot.w; x++) {
+          const sides = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].filter(
+            ([sx, sy]) => sx! >= 0 && sy! >= 0 && sx! < map.width && sy! < map.height,
+          );
+          expect(
+            sides.some(([sx, sy]) => dist[sy! * map.width + sx!]! >= 0),
+            `${where} tree at ${x - plot.x},${y - plot.y} reachable`,
+          ).toBe(true);
+        }
+      }
+    }
   }
 
   for (let a = 0; a < map.plots.length; a++) {
@@ -174,9 +188,11 @@ describe('customisation', () => {
   });
 
   it('supports a field count and custom plot sizes', () => {
-    const map = generateMap(3, 'island', { width: 40, height: 40, fields: 4, plotSizes: { orchard: { w: 4, h: 4 } } });
+    const map = generateMap(3, 'island', { width: 40, height: 40, fields: 4, plotSizes: { orchard: { w: 4, h: 2 } } });
     expect(map.plots.filter((p) => p.kind === 'field')).toHaveLength(4);
-    expect(map.plots.find((p) => p.kind === 'orchard')).toMatchObject({ w: 4, h: 4 });
+    expect(map.plots.find((p) => p.kind === 'orchard')).toMatchObject({ w: 4, h: 2 });
+    // A tree in the middle of a solid orchard could never be reached (decision 019).
+    expect(() => generateMap(3, 'island', { plotSizes: { orchard: { w: 3, h: 3 } } })).toThrow(WorldgenError);
     expectValidMap(map, 'custom plots');
   });
 

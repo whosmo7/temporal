@@ -3,8 +3,9 @@
 
 import type { SeededEvent } from '../worldgen/events';
 import type { Biome, PlotId, PlotKind } from '../worldgen/types';
+import type { TileRef } from './tiles';
 
-export type { Biome, PlotId, PlotKind, SeededEvent };
+export type { Biome, PlotId, PlotKind, SeededEvent, TileRef };
 
 // ---- Time ----
 
@@ -128,8 +129,11 @@ export type StoreStage = 'full' | 'half' | 'empty' | 'rotting';
 export type PlotStage = FieldStage | OrchardStage | ReservoirStage | WellStage | WildStage;
 
 export interface PlotState {
+  /** A map plot's id, or a field or orchard tile's `<plot>:<x>,<y>` (decision 019). */
   id: PlotId;
   kind: PlotKind;
+  /** Set on field and orchard tiles: which map plot, and where in it. */
+  tile?: TileRef;
   /** Engine's current stage. Lectern and graveyard have none. */
   stage?: PlotStage;
   /** Structure wear in generations since last maintained. 0 = sound. */
@@ -221,6 +225,7 @@ export interface Snapshot {
 export interface VisiblePlot {
   id: PlotId;
   kind: PlotKind;
+  tile?: TileRef;
   stage?: PlotStage;
 }
 

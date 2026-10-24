@@ -21,27 +21,41 @@ export const CONFIG = {
   hungerSlowAt: 0, // at or below this the player walks slower
   hungrySpeedMult: 0.6,
 
-  // Actions
-  harvestCost: 5,
+  // Actions. Stamina costs are 0 for now: actions take time instead (decision 019). Fields and
+  // orchards are worked per tile, so their numbers are per field tile and per tree.
+  harvestCost: 0, // was 5
   harvestEatCost: 0, // harvest and eat costs no stamina (decision 016)
-  cropYield: 5,
-  orchardYield: 15, // once per generation
-  plantCropsCost: 8,
-  plantCropsWater: 1,
+  cropYield: 1, // per field tile (was 5 per field)
+  orchardYield: 4, // per tree, once per generation (was 15 per orchard)
+  plantCropsCost: 0, // was 8
+  plantCropsWater: 0, // sowing a tile is free (decision 019; was 1 per field)
   cropRipenPct: 0.25, // fraction of turnSeconds
-  plantOrchardCost: 25,
-  plantOrchardWater: 5,
+  plantOrchardCost: 0, // was 25
+  plantOrchardWater: 1, // per tree (was 5 per orchard)
   orchardMatureGens: 2,
-  repairReservoirCost: 60,
+  repairReservoirCost: 0, // was 60
   reservoirIncomeCracked: 4,
   reservoirIncomeRepaired: 12,
-  digWellCost: 20,
+  digWellCost: 0, // was 20
   digWellWater: 8,
   wellIncome: 6,
-  fishHuntCost: 8,
+  fishHuntCost: 0, // was 8
   fishHuntYield: 4,
-  maintainCost: 10,
+  maintainCost: 0, // was 10
   fastTrackMultiplier: 2,
+
+  // How long each action takes, in turn seconds. The player stands still while it happens and it
+  // lands at the end (decision 019). The client waits; the engine applies it at the end time.
+  actionSeconds: {
+    harvest: 1,
+    plantCrops: 1.5,
+    plantOrchard: 3,
+    repairReservoir: 8,
+    digWell: 6,
+    fishHunt: 3,
+    maintain: 3,
+    fastTrack: 2,
+  },
 
   // Decay and wear
   foodRotPct: 0, // decision 011: stored food (the house cabinet) doesn't rot for now; was 0.3

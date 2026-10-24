@@ -35,6 +35,9 @@ function play(world: WorldState, inputs: (Omit<ActionInput, 'actorId' | 'seq'> &
   return { view, ended };
 }
 
+/** A cost as the summary shows it: spent is negative, and nothing spent is 0 (not -0). */
+const spent = (n: number) => (n === 0 ? 0 : -n);
+
 const fresh = (biome: 'forest' | 'island' = 'forest') => {
   const w = createWorld(7, { worldId: 'w', biome }).state;
   w.events = [];
@@ -43,9 +46,9 @@ const fresh = (biome: 'forest' | 'island' = 'forest') => {
 
 describe('cost summary', () => {
   it('shows an orchard as its cost and nothing else', () => {
-    const { view } = play(fresh(), [{ id: 'a', type: 'plantOrchard', plotId: 'orchard-1', t: 10 }]);
+    const { view } = play(fresh(), [{ id: 'a', type: 'plantOrchard', plotId: 'orchard-1:0,0', t: 10 }]);
     expect(view.rows).toEqual([
-      { label: 'Orchard', count: 1, stamina: -CONFIG.plantOrchardCost, water: -CONFIG.plantOrchardWater, food: 0 },
+      { label: 'Orchard', count: 1, stamina: spent(CONFIG.plantOrchardCost), water: spent(CONFIG.plantOrchardWater), food: 0 },
     ]);
     expect(view.spentLine).toBe(`You spent ${CONFIG.plantOrchardCost}⚡.`);
     expect(view.foodLine).toBe('You gathered nothing.');
@@ -54,15 +57,15 @@ describe('cost summary', () => {
   it('groups repeats and shows what a harvest this turn really gave', () => {
     const ripe = CONFIG.cropRipenPct * CONFIG.turnSeconds + 1;
     const { view } = play(fresh(), [
-      { id: 'a', type: 'plantCrops', plotId: 'field-1', t: 0 },
-      { id: 'b', type: 'harvest', plotId: 'field-1', t: ripe },
+      { id: 'a', type: 'plantCrops', plotId: 'field-1:0,0', t: 0 },
+      { id: 'b', type: 'harvest', plotId: 'field-1:0,0', t: ripe },
       { id: 'c', type: 'fishHunt', plotId: 'wild', t: ripe + 1 },
       { id: 'd', type: 'fishHunt', plotId: 'wild', t: ripe + 2 },
     ]);
     const byLabel = Object.fromEntries(view.rows.map((r) => [r.label, r]));
-    expect(byLabel['Crops sown']).toMatchObject({ count: 1, stamina: -CONFIG.plantCropsCost, food: 0 });
+    expect(byLabel['Crops sown']).toMatchObject({ count: 1, stamina: spent(CONFIG.plantCropsCost), food: 0 });
     expect(byLabel['Harvest']).toMatchObject({ count: 1, food: CONFIG.cropYield });
-    expect(byLabel['Hunt']).toMatchObject({ count: 2, stamina: -2 * CONFIG.fishHuntCost, food: 2 * CONFIG.fishHuntYield });
+    expect(byLabel['Hunt']).toMatchObject({ count: 2, stamina: spent(2 * CONFIG.fishHuntCost), food: 2 * CONFIG.fishHuntYield });
   });
 
   it('adds up to the summary totals', () => {
@@ -72,14 +75,14 @@ describe('cost summary', () => {
     ]);
     const stamina = view.rows.reduce((s, r) => s + r.stamina, 0);
     const food = view.rows.reduce((s, r) => s + r.food, 0);
-    expect(-stamina).toBe(ended.summary.spent.stamina);
+    expect(spent(stamina)).toBe(ended.summary.spent.stamina);
     expect(food).toBe(ended.summary.gained.food);
     expect(view.rows.map((r) => r.label)).toEqual(['Well', 'Fishing']);
     expect(view.store).toEqual({ food: ended.state.resources.food, water: ended.state.resources.water });
   });
 
   it('names whose work was hurried', () => {
-    const planted = play(fresh(), [{ id: 'a', type: 'plantOrchard', plotId: 'orchard-1', t: 0 }], 'AL').ended.state;
+    const planted = play(fresh(), [{ id: 'a', type: 'plantOrchard', plotId: 'orchard-1:0,0', t: 0 }], 'AL').ended.state;
     planted.resources.water = 100;
     const { view } = play(planted, [{ id: 'b', type: 'fastTrack', targetEffectId: 'a:orchardMature', t: 0 }], 'MO');
     expect(view.rows[0]?.label).toBe("Hurried: AL's orchard");

@@ -3,7 +3,7 @@ import { beginTurn, createWorld } from '../../engine';
 import { generateMap } from '../../worldgen';
 import { useGameStore } from '../../store/game';
 import { clockLabel, gameHour, isNight, lightAt } from '../daylight';
-import { nearbyPlot } from '../interact';
+import { facedTile, interactTarget, nearbyPlot } from '../interact';
 
 describe('game clock', () => {
   it('runs one day, 6 am to 6 am, over the turn', () => {
@@ -48,6 +48,36 @@ describe('game clock', () => {
     s.setJournalOpen(false);
     s.advance(1000);
     expect(useGameStore.getState().t).toBe(600);
+  });
+});
+
+describe('facedTile', () => {
+  const map = {
+    ...generateMap(1, 'forest'),
+    plots: [
+      { id: 'field-1', kind: 'field' as const, x: 4, y: 4, w: 3, h: 3 },
+      { id: 'orchard-1', kind: 'orchard' as const, x: 10, y: 4, w: 2, h: 2 },
+      { id: 'well', kind: 'well' as const, x: 4, y: 8, w: 1, h: 1 },
+    ],
+  };
+
+  it('is the field tile in front of the player, wherever they stand', () => {
+    // Standing below the field's bottom-left tile, facing up.
+    expect(facedTile(map, { x: 4.5, y: 7.9, facing: 'up', moving: false })).toBe('field-1:0,2');
+    // Standing on the field, facing right along the top row.
+    expect(facedTile(map, { x: 4.5, y: 4.9, facing: 'right', moving: false })).toBe('field-1:1,0');
+    expect(facedTile(map, { x: 4.5, y: 7.9, facing: 'down', moving: false })).toBeNull();
+  });
+
+  it('works against a solid orchard, where the player stops at its edge', () => {
+    // Feet stop on the orchard's top edge when walking down into it.
+    expect(facedTile(map, { x: 11.5, y: 4, facing: 'down', moving: false })).toBe('orchard-1:1,0');
+    expect(facedTile(map, { x: 9.8, y: 5.9, facing: 'right', moving: false })).toBe('orchard-1:0,1');
+  });
+
+  it('falls back to whole plots, and never offers a whole field', () => {
+    expect(interactTarget(map, { x: 4.5, y: 7.9, facing: 'down', moving: false })).toBe('well');
+    expect(nearbyPlot(map, { x: 4.5, y: 7.9, facing: 'up', moving: false })).toBe('well');
   });
 });
 

@@ -9,5 +9,6 @@ export { tick } from './effects';
 export { explain, replay } from './replay';
 export type { CauseLine, CauseSummary, ExplainFilter, ReplayOptions, ReplayResult } from './replay';
 export { beginTurn, endTurn } from './turn';
+export { mapPlotOf, TILED_KINDS, tileId, tileOf } from './tiles';
 export { visibleView } from './view';
 export type * from './types';

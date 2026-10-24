@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../../engine/createWorld';
 import { CONFIG } from '../../engine/config';
+import { TILED_KINDS, tileId } from '../../engine/tiles';
 import { biomeFromSeed, founderState, generateMap } from '..';
 
 // The worldgen side of `createWorld` (03 › Biome starter state + modifiers): the engine's world is
@@ -8,12 +9,23 @@ import { biomeFromSeed, founderState, generateMap } from '..';
 const opts = { worldId: 'w' };
 
 describe('createWorld uses worldgen', () => {
-  it('has a plot state for every plot on the map, and nothing else', () => {
+  it('has a plot state for every plot on the map, one per tile for fields and orchards, and nothing else', () => {
     for (const preset of ['default', 'large', 'bare'] as const) {
       const map = generateMap(9, 'island', preset);
       const { plots } = createWorld(9, { ...opts, biome: 'island', preset }).state;
-      expect(Object.keys(plots)).toEqual(map.plots.map((p) => p.id));
-      for (const p of map.plots) expect(plots[p.id]!.kind).toBe(p.kind);
+      const expected = map.plots.flatMap((p) => {
+        if (!TILED_KINDS.has(p.kind)) return [p.id];
+        const tiles: string[] = [];
+        for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) tiles.push(tileId(p.id, x, y));
+        return tiles;
+      });
+      expect(Object.keys(plots)).toEqual(expected);
+      for (const p of map.plots) {
+        const id = TILED_KINDS.has(p.kind) ? tileId(p.id, p.w - 1, p.h - 1) : p.id;
+        expect(plots[id]!.kind).toBe(p.kind);
+      }
+      const corner = map.plots.find((p) => p.kind === 'field');
+      if (corner) expect(plots[tileId(corner.id, 1, 0)]!.tile).toEqual({ plot: corner.id, x: 1, y: 0 });
     }
   });
 

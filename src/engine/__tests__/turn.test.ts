@@ -37,12 +37,12 @@ describe('beginTurn and endTurn', () => {
 
   it('orchard planted in gen 1 fruits in gen 3 and is explained by the gen 1 action', () => {
     const game = newGame();
-    asActor(game, 'AL', (g) => g.act('plantOrchard', { plotId: 'orchard-1' }));
+    asActor(game, 'AL', (g) => g.act('plantOrchard', { plotId: 'orchard-1:0,0' }));
     game.turn();
-    expect(game.state.plots['orchard-1']?.stage).toBe('young');
+    expect(game.state.plots['orchard-1:0,0']?.stage).toBe('young');
     game.begin();
-    expect(game.state.plots['orchard-1']?.stage).toBe('fruiting');
-    game.act('harvest', { actorId: 'MO', plotId: 'orchard-1' });
+    expect(game.state.plots['orchard-1:0,0']?.stage).toBe('fruiting');
+    game.act('harvest', { actorId: 'MO', plotId: 'orchard-1:0,0' });
 
     const why = explain(game.transitions, { turn: 3, resource: 'food' });
     expect(why.lines.map((l) => l.cause)).toContainEqual({
@@ -139,9 +139,9 @@ describe('beginTurn and endTurn', () => {
 
   it('crops still in the ground at the end of the turn rot', () => {
     const game = newGame().begin();
-    game.act('plantCrops', { plotId: 'field-1', t: 500 }); // ripens after the turn ends
+    game.act('plantCrops', { plotId: 'field-1:0,0', t: 500 }); // ripens after the turn ends
     game.end();
-    expect(game.state.plots['field-1']?.stage).toBe('rotten');
+    expect(game.state.plots['field-1:0,0']?.stage).toBe('rotten');
     expect(game.summaries[0]?.cropsRotted).toBe(1);
     expect(game.state.pending[0]?.status).toBe('cancelled');
   });
@@ -149,7 +149,7 @@ describe('beginTurn and endTurn', () => {
   it('the summary only reports realised outcomes', () => {
     const game = newGame();
     game.turn((g) => {
-      g.act('plantOrchard', { plotId: 'orchard-1' });
+      g.act('plantOrchard', { plotId: 'orchard-1:0,0' });
       g.act('digWell', { plotId: 'well' });
     });
     const summary = game.summaries[0]!;

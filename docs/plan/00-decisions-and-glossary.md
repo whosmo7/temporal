@@ -69,6 +69,10 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 7. **Maintain**: repair wear on structures (well, reservoir, orchard)
 8. **Fast Track**: pull any pending effect forward to now at **double cost, paid by the current player**. Works on effects **other players** started too.
 
+**Per tile, and in time ([019](../decisions/019-per-tile-actions-take-time.md)):** fields and orchards are worked one tile
+at a time (the tile you face), each action takes a few seconds of the day with the player standing still, and every
+stamina cost is 0 for now.
+
 The **reservoir dilemma is designed in on purpose**: the numbers are tuned so one player can't
 fully repair the reservoir *and* comfortably meet their own upkeep in the same turn.
 

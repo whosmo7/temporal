@@ -4,7 +4,7 @@ import { playMusic, playSfx, stopMusic, type SfxName } from '../../audio/sound';
 import type { ActionEntry, EndTurnResult, Transition, VisibleWorld, WorldState } from '../../engine';
 import { gameHour, isNight } from '../../render/daylight';
 import { PixiStage } from '../../render/PixiStage';
-import { founderLook, type WorldLook, type WorldView } from '../../render/world-view';
+import { founderLook, lookIds, type WorldLook, type WorldView } from '../../render/world-view';
 import { isTimeUp, useGameStore, type ActionRequest } from '../../store/game';
 import type { Biome, TileMap } from '../../worldgen';
 import { plotOptions, type ActionOption } from '../hud/actionOptions';
@@ -114,23 +114,25 @@ export function Game({
   // The lectern opens the latest page; at the graveyard, E reads the nearest stone's page.
   const playing = step === 'play' && !journalOpen && !fastTrack;
   const readable = !playing ? null : nearby === 'lectern' ? 'lectern' : nearby === 'graveyard' && nearbyStone ? nearbyStone : null;
+  // `nearby` is a field or orchard tile you face, or a whole plot (decision 019).
   const options = useMemo(() => {
-    const plot = nearby ? map.plots.find((p) => p.id === nearby) : undefined;
+    const plot = nearby ? vis?.plots[nearby] : undefined;
     return vis && plot && playing ? plotOptions(vis, plot, check) : [];
-  }, [vis, nearby, map, playing, check]);
+  }, [vis, nearby, playing, check]);
   const biome = vis?.biome ?? map.biome;
 
-  const act = useCallback(
-    (request: ActionRequest) => {
-      const s = useGameStore.getState();
-      if (s.t < s.busyUntil) return; // still working on the last one
-      const r = s.act(request);
-      if (r.error) return playSfx('deny');
-      playSfx(sfxFor(request, biome));
-      view?.actionFx(request.type, request.plotId);
-    },
-    [view, biome],
-  );
+  const act = useCallback((request: ActionRequest) => {
+    const s = useGameStore.getState();
+    if (s.t < s.busyUntil) return; // still working on the last one
+    if (s.act(request).error) playSfx('deny');
+  }, []);
+  // An action takes its time (decision 019); its sound and burst come when it lands.
+  const lastAction = useGameStore((s) => s.lastAction);
+  useEffect(() => {
+    if (!lastAction?.done) return;
+    playSfx(sfxFor(lastAction.request, biome));
+    view?.actionFx(lastAction.request.type, lastAction.request.plotId);
+  }, [lastAction, view, biome]);
 
   useEffect(() => {
     if (!playing) return;
@@ -297,7 +299,9 @@ function lookSignature(v: VisibleWorld | null): string {
 function toLook(map: TileMap, v: VisibleWorld): WorldLook {
   const base = founderLook(map);
   return {
-    plots: Object.fromEntries(map.plots.map((p) => [p.id, v.plots[p.id]?.stage ?? base.plots[p.id]!])),
+    plots: Object.fromEntries(
+      map.plots.flatMap((p) => lookIds(p).map((id) => [id, v.plots[id]?.stage ?? base.plots[id]!])),
+    ),
     store: v.store,
     weakened: v.weakened,
     drought: v.drought,

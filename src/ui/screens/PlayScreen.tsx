@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Gravestone, JournalPage } from '../../api';
 import { beginTurn, CONFIG, createWorld, endTurn } from '../../engine';
-import { founderLook, type WorldLook } from '../../render/world-view';
+import { founderLook, lookIds, type WorldLook } from '../../render/world-view';
 import { useGameStore } from '../../store/game';
 import { generateMap, isPresetName, type Biome, type PresetName, type TileMap } from '../../worldgen';
 import { Game, type SealedTurn, type TurnStart } from '../play/Game';
@@ -106,7 +106,7 @@ function previewLook(map: TileMap, name: string | null): WorldLook | null {
     ? { field: 'ripe', orchard: 'fruiting', reservoir: 'full', well: 'clear', wild: 'many' }
     : { field: 'rotten', orchard: 'dead', reservoir: 'cracked', well: 'stagnant', wild: 'none' };
   return {
-    plots: Object.fromEntries(map.plots.map((p) => [p.id, stage[p.kind] ?? base.plots[p.id]!])),
+    plots: Object.fromEntries(map.plots.flatMap((p) => lookIds(p).map((id) => [id, stage[p.kind] ?? base.plots[id]!]))),
     store: healthy ? 'full' : 'rotting',
     weakened: !healthy,
     drought: !healthy,

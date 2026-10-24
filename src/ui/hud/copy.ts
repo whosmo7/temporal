@@ -39,7 +39,7 @@ export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome, eat 
     case 'plantCrops':
       return 'Sow crops';
     case 'plantOrchard':
-      return 'Plant an orchard';
+      return 'Plant a tree';
     case 'repairReservoir':
       return 'Repair the reservoir wall';
     case 'digWell':
@@ -47,10 +47,18 @@ export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome, eat 
     case 'fishHunt':
       return biome === 'island' ? 'Fish' : 'Hunt';
     case 'maintain':
-      return kind === 'well' ? 'Clear the well' : kind === 'reservoir' ? 'Shore up the wall' : 'Prune the trees';
+      return kind === 'well' ? 'Clear the well' : kind === 'reservoir' ? 'Shore up the wall' : 'Prune the tree';
     case 'fastTrack':
       return 'Hurry this along';
   }
+}
+
+/**
+ * One tile of a field or orchard in a list ("Field tile 4", "Tree 2"), numbered across its plot
+ * from the top left (decision 019).
+ */
+export function tileName(kind: PlotKind, n: number): string {
+  return kind === 'orchard' ? `Tree ${n}` : `${PLOT_NAME[kind]} tile ${n}`;
 }
 
 export function plotName(kind: PlotKind, biome: Biome): string {
@@ -78,12 +86,12 @@ export function stageName(kind: PlotKind, stage: string | undefined, biome: Biom
 const STAGE_NAME: Partial<Record<PlotKind, Record<string, string>>> = {
   field: { empty: 'Bare earth', sown: 'Sown', growing: 'Coming up', ripe: 'Ripe', rotten: 'Rotten' },
   orchard: {
-    empty: 'Orchard plot',
-    sapling: 'Saplings',
-    young: 'Young trees',
+    empty: 'Bare ground',
+    sapling: 'Sapling',
+    young: 'Young tree',
     fruiting: 'Fruiting',
-    worn: 'Untended trees',
-    dead: 'Dead trees',
+    worn: 'Untended tree',
+    dead: 'Dead tree',
   },
   reservoir: { cracked: 'Cracked', low: 'Low', full: 'Full' },
   well: { none: 'Soft ground', clear: 'Clear water', stagnant: 'Green water' },

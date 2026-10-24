@@ -8,23 +8,26 @@ yield later or when. Use the words a farmer would use. Keys are the canonical ID
 
 ## Actions
 
+Fields and orchards are worked a tile at a time, and every action takes a moment instead of stamina for now
+([019](../decisions/019-per-tile-actions-take-time.md)), so the prompts below show no stamina cost.
+
 | ID | Hotbar label | Interact prompt | Tooltip |
 |---|---|---|---|
-| `harvest` | Harvest | Harvest · 5⚡ | Gather what's ripe into the store. |
+| `harvest` | Harvest | Harvest | Gather what's ripe into the store. |
 | `harvest` + `eat` | Harvest and eat (Q) | Harvest and eat (free, [016](../decisions/016-hunger.md)) | Eat what you gather now. What you can't eat goes to the store. |
-| `plantCrops` | Sow | Sow crops · 8⚡ 1💧 | Quick to grow. Left in the ground at nightfall, they rot. |
-| `plantOrchard` | Plant trees | Plant an orchard · 25⚡ 5💧 | Saplings. They take their time. |
-| `repairReservoir` | Repair | Repair the reservoir wall · 60⚡ | Patch the cracks and rebuild the wall. |
-| `digWell` | Dig | Dig a well · 20⚡ | Water from the ground. A well needs looking after. |
-| `fishHunt` (Forest) | Hunt | Hunt · 8⚡ | Set snares along the tree line. |
-| `fishHunt` (Island) | Fish | Fish · 8⚡ | Cast a line off the rocks. |
-| `maintain` (well) | Tend | Clear the well · 10⚡ | Scrape it out and keep the water moving. |
-| `maintain` (reservoir) | Tend | Shore up the wall · 10⚡ | Fill the small cracks before they spread. |
-| `maintain` (orchard) | Tend | Prune the trees · 10⚡ | Cut back the dead wood. |
+| `plantCrops` | Sow | Sow crops | Quick to grow. Left in the ground at nightfall, they rot. |
+| `plantOrchard` | Plant trees | Plant a tree · 1💧 | A sapling. It takes its time. |
+| `repairReservoir` | Repair | Repair the reservoir wall | Patch the cracks and rebuild the wall. |
+| `digWell` | Dig | Dig a well | Water from the ground. A well needs looking after. |
+| `fishHunt` (Forest) | Hunt | Hunt | Set snares along the tree line. |
+| `fishHunt` (Island) | Fish | Fish | Cast a line off the rocks. |
+| `maintain` (well) | Tend | Clear the well | Scrape it out and keep the water moving. |
+| `maintain` (reservoir) | Tend | Shore up the wall | Fill the small cracks before they spread. |
+| `maintain` (orchard) | Tend | Prune the tree | Cut back the dead wood. |
 | `fastTrack` | Hurry | Hurry this along · {cost} | Push someone's work along now, at twice the effort. |
 
 Fast Track menu: title **"Hurry something along"**. Each row: `{what} — started by {name}, Generation {n}` + its current stage name + cost.
-No due dates or yields. Example: *"Orchard — started by AL, Generation 1 · Young trees · 50⚡ 10💧"*.
+No due dates or yields. One row per tile, numbered across the plot. Example: *"Tree 2 — started by AL, Generation 1 · Young tree · 2💧"*.
 
 ## Plots and stages (hover names)
 
@@ -33,7 +36,7 @@ Plot name, then the name of each visual stage from `visibleView()`.
 | Kind | Plot name | Stages |
 |---|---|---|
 | `field` | Field | `empty` Bare earth · `sown` Sown · `growing` Coming up · `ripe` Ripe · `rotten` Rotten |
-| `orchard` | Orchard | `empty` Orchard plot · `sapling` Saplings · `young` Young trees · `fruiting` Fruiting · `worn` Untended trees · `dead` Dead trees |
+| `orchard` | Orchard (one tree per tile) | `empty` Bare ground · `sapling` Sapling · `young` Young tree · `fruiting` Fruiting · `worn` Untended tree · `dead` Dead tree |
 | `reservoir` | Reservoir | `cracked` Cracked · `low` Low · `full` Full |
 | `well` | Well | `none` Soft ground · `clear` Clear water · `stagnant` Green water |
 | `wild` (Forest) | Tree line | `many` Tracks everywhere · `few` A few tracks · `none` Quiet |

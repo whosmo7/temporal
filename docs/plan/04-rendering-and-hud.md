@@ -63,9 +63,14 @@
 
 ## Interaction model
 
-- Walk next to a plot and an **interact prompt** appears showing the valid action(s) and costs.
+- Walk next to a plot and an **interact prompt** appears showing the valid action(s) and costs. Fields and orchards are
+  used **one tile at a time**: the tile in front of you (the way you face) is outlined and gets the prompt
+  ([019](../decisions/019-per-tile-actions-take-time.md), `facedTile` in `src/render/interact.ts`). Other plots use the
+  nearest one, as before.
 - `E` / `Space` does the default action, `Q` is Harvest and eat (free, refills hunger, [016](../decisions/016-hunger.md)). Number keys `1–8` pick a hotbar action when several are valid. Invalid actions are greyed out with a reason ("Not enough stamina").
-- After an action the player stands still for 0.5 s (`ACTION_TIME`) while the clock runs.
+- **Every action takes time** (`CONFIG.actionSeconds`, e.g. sow 1.5 s, repair 8 s): the player stands still with a bar
+  over their head while the clock runs, and the engine applies the action when it's done (`work` in the store). Its
+  sound and burst play then.
 - **Fast Track**: from a pending plot (e.g. a sapling), prompt "F: Fast Track (cost ×2)". The menu also lists every pending effect.
 - **Harvesting/planting animations** are short (~0.5s) and **use real turn time**, so walking and acting cost time.
 

@@ -37,6 +37,12 @@ same PR as any change.
 | `lectern` | `lectern` | 1 |
 | `graveyard` | `graveyard` | 1 |
 
+**Tiles (decision 019).** Fields and orchards are worked one tile at a time, so in the engine (`WorldState.plots`,
+`visibleView().plots`, actions' `plotId`, causes) each of their tiles is a plot of its own: `<plot>:<x>,<y>`, with
+`x`, `y` counted from the plot's top-left tile, e.g. `field-1:2,0`, `orchard-1:1,1`. Its `tile` field says
+`{ plot, x, y }`. The map (`TileMap.plots`) keeps the whole `field-1` and `orchard-1` for layout and collision.
+Helpers: `tileId`, `tileOf`, `mapPlotOf`, `TILED_KINDS` in `src/engine/tiles.ts`.
+
 ## Tiles (`TileMap` layers, `src/worldgen/types.ts`)
 
 The atlas needs a frame (or autotile set) for each of these.
@@ -63,7 +69,7 @@ in tall grass, `wild/many-island` fish in a pool).
 | Kind | Stages |
 |---|---|
 | `field` | `empty`, `sown`, `growing`, `ripe`, `rotten` |
-| `orchard` | `empty`, `sapling`, `young`, `fruiting`, `worn`, `dead` |
+| `orchard` | `empty`, `sapling`, `young`, `fruiting`, `worn`, `dead` (per tree; one-tile frames `orchard/tree-<stage>`) |
 | `reservoir` | `cracked`, `low`, `full` |
 | `well` | `none`, `clear`, `stagnant` |
 | `wild` | `many`, `few`, `none` |

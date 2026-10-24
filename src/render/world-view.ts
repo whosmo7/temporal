@@ -1,6 +1,6 @@
 import { Application, ColorMatrixFilter, Container, Graphics, Rectangle, RenderTexture, Sprite, Texture, TextureSource } from 'pixi.js';
 import type { Gravestone } from '../api/Backend';
-import { CONFIG, type ActionType } from '../engine';
+import { CONFIG, TILED_KINDS, tileId, tileOf, type ActionType } from '../engine';
 import { isTimeUp, useGameStore } from '../store/game';
 import { BASE_OPTIONS, buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
 import { cameraOffset, pickZoom } from './camera';
@@ -9,7 +9,7 @@ import { gameHour, lightAt } from './daylight';
 import { createFx } from './fx';
 import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
 import { KeyboardInput } from './input';
-import { nearbyPlot } from './interact';
+import { interactTarget } from './interact';
 import { stepWalker, type CollisionGrid, type Walker } from './movement';
 import { P, paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
@@ -33,7 +33,10 @@ const RISE_TIME = 1.8;
  * due dates or causes ever reach the renderer.
  */
 export interface WorldLook {
-  /** Stage per plot ID (`ids.md`). Plots left out keep their founder stage. */
+  /**
+   * Stage per plot ID (`ids.md`), and per tile for fields and orchards (`field-1:0,2`, decision
+   * 019). Plots and tiles left out keep their founder stage.
+   */
   plots: Record<PlotId, string>;
   /** Food store stage, shown by the cabinet: full | half | empty | rotting. */
   store: string;
@@ -60,15 +63,23 @@ export interface WorldView {
   destroy(): void;
 }
 
-/** Founder looks: every plot at its gen-1 stage, store half full, no flags. */
+/** Founder looks: every plot (and field and orchard tile) at its gen-1 stage, store half full, no flags. */
 export function founderLook(map: TileMap): WorldLook {
   return {
-    plots: Object.fromEntries(map.plots.map((p) => [p.id, defaultStage(p)])),
+    plots: Object.fromEntries(map.plots.flatMap((p) => lookIds(p).map((id) => [id, defaultStage(p)]))),
     store: 'half',
     weakened: false,
     drought: false,
     hungry: false,
   };
+}
+
+/** The ids a plot's look is keyed by: its tiles for fields and orchards, itself otherwise. */
+export function lookIds(p: Plot): PlotId[] {
+  if (!TILED_KINDS.has(p.kind)) return [p.id];
+  const ids: PlotId[] = [];
+  for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) ids.push(tileId(p.id, x, y));
+  return ids;
 }
 
 function defaultStage(p: Plot): string {
@@ -104,7 +115,10 @@ export function createWorldView(
   const dim = new Graphics();
   const groundSprite = new Sprite();
   const fx = createFx();
-  world.addChild(groundSprite, flat, sorted, fx.layer, dim);
+  // The faced tile's outline sits on the ground; the work bar over the player's head.
+  const marker = new Graphics();
+  const progress = new Graphics();
+  world.addChild(groundSprite, flat, marker, sorted, progress, fx.layer, dim);
   const lightTexture = Texture.from(paintLightHole());
   lightTexture.source.scaleMode = 'linear'; // a smooth gradient, the one non-pixel-art texture
   const night = new Sprite(lightTexture);
@@ -145,8 +159,47 @@ export function createWorldView(
     }
     return tex;
   };
+  // Field and orchard tiles (decision 019): a field tile is its cell of the 3×3 field frame (edge
+  // cells for edge tiles, so any size keeps its border); a tree is drawn on its own tile.
+  const tileTexture = (p: Plot, x: number, y: number, stage: string) => {
+    const key = `${p.kind}/${stage}@${p.kind === 'field' ? `${edge(x, p.w)},${edge(y, p.h)}` : 'tree'}`;
+    let tex = plotTextures.get(key);
+    if (tex) return tex;
+    const whole = p.kind === 'field' ? art[`field/${stage}`] : undefined;
+    const tree = p.kind === 'orchard' ? art[`orchard/tree-${stage}`] : undefined;
+    if (whole) {
+      const f = whole.frame;
+      const cell = new Rectangle(f.x + edge(x, p.w) * TILE, f.y + edge(y, p.h) * TILE, TILE, TILE);
+      tex = new Texture({ source: whole.source, frame: cell });
+    } else if (tree) {
+      tex = tree;
+    } else {
+      tex = Texture.from(paintPlot(p.kind, stage, 1, 1, map.biome));
+    }
+    plotTextures.set(key, tex);
+    return tex;
+  };
+  const tileSprites = new Map<PlotId, { plot: Plot; x: number; y: number; sprite: Sprite }>();
+
   const plotSprites = new Map<PlotId, Sprite>();
   for (const plot of map.plots) {
+    if (TILED_KINDS.has(plot.kind)) {
+      // Row by row from the top, so a lower tile draws over anything overhanging from the row above.
+      for (let y = 0; y < plot.h; y++) {
+        for (let x = 0; x < plot.w; x++) {
+          const s = bottomAnchored(tileTexture(plot, x, y, defaultStage(plot)), plot.x + x + 0.5, plot.y + y + 1);
+          s.anchor.x = 0.5;
+          s.label = tileId(plot.id, x, y);
+          if (FLAT_PLOTS.has(plot.kind)) flat.addChild(s);
+          else {
+            s.zIndex -= 0.5;
+            sorted.addChild(s);
+          }
+          tileSprites.set(s.label, { plot, x, y, sprite: s });
+        }
+      }
+      continue;
+    }
     // Bottom-centre, so art wider than the footprint (orchard canopies) spills evenly.
     const s = bottomAnchored(plotTexture(plot, defaultStage(plot)), plot.x + plot.w / 2, plot.y + plot.h);
     s.anchor.x = 0.5;
@@ -182,6 +235,14 @@ export function createWorldView(
 
   // Graveyard: the stones sit just in front of the fenced plot and sort among themselves.
   const graveyard = map.plots.find((p) => p.kind === 'graveyard') ?? null;
+  /** A plot's or tile's footprint in tiles. */
+  const rectOf = (id: PlotId) => {
+    const tile = tileOf(id);
+    const p = map.plots.find((q) => q.id === (tile?.plot ?? id));
+    if (!p) return null;
+    return tile ? { x: p.x + tile.x, y: p.y + tile.y, w: 1, h: 1 } : p;
+  };
+  let markedTile: PlotId | null = null;
   const stoneLayer = new Container({ sortableChildren: true });
   if (graveyard) {
     stoneLayer.position.set(graveyard.x * TILE, graveyard.y * TILE);
@@ -277,10 +338,17 @@ export function createWorldView(
       groundSprite.texture = groundTexture;
       bakedDrought = look.drought;
     }
-    for (const plot of map.plots) plotSprites.get(plot.id)!.texture = plotTexture(plot, look.plots[plot.id] ?? defaultStage(plot));
+    for (const [id, sprite] of plotSprites) {
+      const plot = map.plots.find((p) => p.id === id)!;
+      sprite.texture = plotTexture(plot, look.plots[id] ?? defaultStage(plot));
+    }
+    for (const [id, t] of tileSprites) t.sprite.texture = tileTexture(t.plot, t.x, t.y, look.plots[id] ?? defaultStage(t.plot));
     if (cabinet) cabinet.texture = frame(`store/${look.store}`);
     fx.setMotes(look.weakened);
-    const flySpots = map.plots.filter((p) => look.plots[p.id] === 'rotten').map((p) => ({ x: (p.x + p.w / 2) * TILE, y: (p.y + p.h / 2) * TILE }));
+    // One swarm per plot with anything rotten in it.
+    const flySpots = map.plots
+      .filter((p) => lookIds(p).some((id) => look.plots[id] === 'rotten'))
+      .map((p) => ({ x: (p.x + p.w / 2) * TILE, y: (p.y + p.h / 2) * TILE }));
     if (cabinet && look.store === 'rotting') flySpots.push({ x: cabinet.x + TILE / 2, y: cabinet.y - 20 });
     fx.setFlies(flySpots);
   };
@@ -319,8 +387,26 @@ export function createWorldView(
     player.texture = frame(`player/walk-${walker.facing}-${step}`);
     player.position.set(Math.round(walker.x * TILE), Math.round(walker.y * TILE));
     player.zIndex = walker.y * TILE;
-    const near = timeUp ? null : nearbyPlot(map, walker);
+    const near = timeUp ? null : interactTarget(map, walker);
     store.setNearby(near, near === 'graveyard' && graveyard ? (nearestStone(graveyard, spots, walker)?.stone ?? null) : null);
+
+    // Outline the tile an action would go to (or is going to), so you can see which one you face.
+    const target = store.work?.request.plotId ?? (timeUp || externallyPaused ? null : near);
+    const marked = target && tileOf(target) ? target : null;
+    if (marked !== markedTile) {
+      markedTile = marked;
+      marker.clear();
+      const r = marked ? rectOf(marked) : null;
+      if (r) marker.rect(r.x * TILE + 0.5, r.y * TILE + 0.5, TILE - 1, TILE - 1).stroke({ width: 1, color: P.cloud, alpha: 0.9 });
+    }
+    // Work takes time (decision 019): a bar over your head fills until the action lands.
+    const work = useGameStore.getState().work;
+    progress.visible = !!work;
+    if (work) {
+      const done = Math.min(1, (t - work.from) / Math.max(work.until - work.from, 0.001));
+      const [x, y] = [Math.round(walker.x * TILE) - 8, Math.round(walker.y * TILE) - 22];
+      progress.clear().rect(x - 1, y - 1, 18, 4).fill(P.ink).rect(x, y, Math.max(1, Math.round(16 * done)), 2).fill(P.cloud);
+    }
 
     if (house) {
       // During the end-of-turn pan the roof goes back on, so the camera can leave the house.
@@ -384,8 +470,8 @@ export function createWorldView(
     setStones,
     raiseStone,
     actionFx: (type, plotId) => {
-      const plot = plotId ? map.plots.find((p) => p.id === plotId) : undefined;
-      const at = plot ? { x: (plot.x + plot.w / 2) * TILE, y: (plot.y + plot.h / 2) * TILE } : { x: walker.x * TILE, y: (walker.y - 1) * TILE };
+      const r = plotId ? rectOf(plotId) : null;
+      const at = r ? { x: (r.x + r.w / 2) * TILE, y: (r.y + r.h / 2) * TILE } : { x: walker.x * TILE, y: (walker.y - 1) * TILE };
       fx.burst(SPLASH_ACTIONS.has(type) ? 'splash' : 'pop', at.x, at.y);
     },
     newTurn: () => {
@@ -470,6 +556,11 @@ function drawDim(g: Graphics, map: TileMap, h: House): void {
   const H = map.height * TILE;
   const [x0, y0, x1, y1] = [h.x * TILE, h.y * TILE, (h.x + h.w) * TILE, (h.y + h.h) * TILE];
   g.rect(0, 0, W, y0).rect(0, y1, W, H - y1).rect(0, y0, x0, y1 - y0).rect(x1, y0, W - x1, y1 - y0).fill(0x101418);
+}
+
+/** Which cell of a 3×3 frame a tile takes: the first cell for the first tile, the last for the last, the middle between. */
+function edge(i: number, n: number): number {
+  return i === 0 ? 0 : i === n - 1 ? 2 : 1;
 }
 
 function bottomAnchored(tex: Texture, x: number, bottomY: number): Sprite {

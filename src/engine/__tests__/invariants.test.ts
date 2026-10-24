@@ -15,7 +15,8 @@ const TYPES: ActionInput['type'][] = [
   'maintain',
   'fastTrack',
 ];
-const PLOTS: PlotId[] = ['field-1', 'field-2', 'orchard-1', 'reservoir', 'well', 'wild'];
+// Fields and orchards are acted on per tile (decision 019).
+const PLOTS: PlotId[] = ['field-1:0,0', 'field-1:2,2', 'field-2:1,1', 'orchard-1:0,0', 'orchard-1:1,1', 'reservoir', 'well', 'wild'];
 
 /** Plays a whole world with random (often invalid) actions drawn from a seeded stream. */
 function randomGame(seed: number, gens = 6): Game {
@@ -83,11 +84,11 @@ describe('engine invariants', () => {
   it('no engine call mutates the state it was given', () => {
     const game = newGame();
     game.begin();
-    game.act('plantOrchard', { plotId: 'orchard-1' });
+    game.act('plantOrchard', { plotId: 'orchard-1:0,0' });
     deepFreeze(game.state);
     expect(() => {
-      game.act('plantCrops', { plotId: 'field-1', t: 10 });
-      game.act('harvest', { plotId: 'field-1', t: 200 });
+      game.act('plantCrops', { plotId: 'field-1:0,0', t: 10 });
+      game.act('harvest', { plotId: 'field-1:0,0', t: 200 });
       game.end();
       game.begin();
       visibleView(game.state, 100);
@@ -104,14 +105,14 @@ describe('engine invariants', () => {
   it('the visible view never carries due dates or pending numbers', () => {
     const game = newGame();
     game.begin();
-    game.act('plantOrchard', { plotId: 'orchard-1' });
-    game.act('plantCrops', { plotId: 'field-1', t: 0 });
+    game.act('plantOrchard', { plotId: 'orchard-1:0,0' });
+    game.act('plantCrops', { plotId: 'field-1:0,0', t: 0 });
     const view = visibleView(game.state, 100);
     const text = JSON.stringify(view);
     expect(text).not.toContain('dueAt');
     expect(text).not.toContain('payload');
     expect(text).not.toContain('causes');
-    expect(view.plots['field-1']?.stage).toBe('growing');
+    expect(view.plots['field-1:0,0']?.stage).toBe('growing');
     expect(view.fastTrackable.map((o) => Object.keys(o).sort())).toEqual([
       ['actorId', 'committedTurn', 'cost', 'effectId', 'kind', 'plotId'],
       ['actorId', 'committedTurn', 'cost', 'effectId', 'kind', 'plotId'],
