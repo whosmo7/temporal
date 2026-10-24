@@ -16,6 +16,7 @@ export interface BiomeStart {
 
 export interface FounderConfig extends Omit<EventConfig, 'stormBiomes'> {
   baseStamina: number;
+  hungerMax: number;
   biomes: Record<Biome, BiomeStart>;
 }
 
@@ -33,7 +34,7 @@ export const FOUNDER_STAGE: Partial<Record<PlotKind, string>> = {
 export interface FounderState {
   map: TileMap;
   biome: Biome;
-  resources: { food: number; water: number; stamina: number };
+  resources: { food: number; water: number; stamina: number; hunger: number };
   wildStock: number;
   wildCap: number;
   plots: Record<PlotId, { kind: PlotKind; stage?: string }>;
@@ -57,7 +58,7 @@ export function founderState(
   return {
     map,
     biome,
-    resources: { food: start.food, water: start.water, stamina: cfg.baseStamina },
+    resources: { food: start.food, water: start.water, stamina: cfg.baseStamina, hunger: cfg.hungerMax },
     wildStock: start.wildStock,
     wildCap: start.wildCap,
     plots: Object.fromEntries(

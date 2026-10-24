@@ -45,7 +45,8 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Resources | **Food, Water, Labour** |
 | Labour | The **player's energy/stamina**. Actions spend it. |
 | Personal needs | **Player must meet food + water upkeep** at end of turn |
-| Eating | **Harvest and eat**: a Harvest option that turns the fresh yield into stamina, up to full. Not a ninth action ([003](../decisions/003-eating-via-harvest.md)) |
+| Eating | **Harvest and eat**: a free Harvest option (Q) that turns the fresh yield into hunger, up to full. Not a ninth action ([003](../decisions/003-eating-via-harvest.md), [016](../decisions/016-hunger.md)) |
+| Hunger | Inherited meter, 0..100: **−30 at each new generation**, eating refills it, at 0 the player walks slower ([016](../decisions/016-hunger.md)) |
 | Upkeep visibility | Screen order unchanged. HUD shows **"Needed by nightfall"** during play ([002](../decisions/002-upkeep-timing.md)) |
 | Failure | **Soft fail**: if upkeep isn't met, the successor gets a **weakened start** (low stamina, visibly blighted world) |
 | Decay | **Resource decay + infrastructure wear** (crops rot, water stagnates, structures wear unless maintained) |

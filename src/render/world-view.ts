@@ -1,5 +1,6 @@
 import { Application, ColorMatrixFilter, Container, Graphics, Rectangle, RenderTexture, Sprite, Texture, TextureSource } from 'pixi.js';
 import type { Gravestone } from '../api/Backend';
+import { CONFIG, type ActionType } from '../engine';
 import { isTimeUp, useGameStore } from '../store/game';
 import { BASE_OPTIONS, buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
 import { cameraOffset, pickZoom } from './camera';
@@ -28,8 +29,8 @@ const RISE_DELAY = 0.4;
 const RISE_TIME = 1.8;
 
 /**
- * What the world looks like: visual stages only, as `visibleView()` (02) will provide them. No
- * numbers, due dates or causes ever reach the renderer.
+ * What the world looks like: visual stages and flags only, from `visibleView()` (02). No numbers,
+ * due dates or causes ever reach the renderer.
  */
 export interface WorldLook {
   /** Stage per plot ID (`ids.md`). Plots left out keep their founder stage. */
@@ -38,6 +39,8 @@ export interface WorldLook {
   store: string;
   weakened: boolean;
   drought: boolean;
+  /** Hunger has run out: the player walks slower (decision 016). */
+  hungry: boolean;
 }
 
 export interface WorldView {
@@ -48,6 +51,10 @@ export interface WorldView {
   setStones(stones: Gravestone[]): void;
   /** End of turn: pans to the graveyard and raises this stone. Resolves once it has risen. */
   raiseStone(stone: Gravestone): Promise<void>;
+  /** A pop or splash where an action landed. */
+  actionFx(type: ActionType, plotId: PlotId | undefined): void;
+  /** The next generation wakes up: player back at the spawn, camera back on them. */
+  newTurn(): void;
   /** Frames per second, for the perf readout. */
   fps(): number;
   destroy(): void;
@@ -60,6 +67,7 @@ export function founderLook(map: TileMap): WorldLook {
     store: 'half',
     weakened: false,
     drought: false,
+    hungry: false,
   };
 }
 
@@ -296,8 +304,10 @@ export function createWorldView(
     store.advance(dt);
     const { t, turnSeconds, journalOpen } = useGameStore.getState();
     const timeUp = isTimeUp({ t, turnSeconds });
-    input.paused = externallyPaused || journalOpen || timeUp;
-    const speed = WALK_SPEED * (look.weakened ? WEAKENED_WALK : 1);
+    // Acting takes real turn time: the player stands still while they work (04).
+    const busy = t < store.busyUntil || store.fastTrack !== null;
+    input.paused = externallyPaused || journalOpen || timeUp || busy;
+    const speed = WALK_SPEED * (look.weakened ? WEAKENED_WALK : 1) * (look.hungry ? CONFIG.hungrySpeedMult : 1);
 
     accumulator += dt;
     while (accumulator >= FIXED_STEP) {
@@ -373,6 +383,18 @@ export function createWorldView(
     },
     setStones,
     raiseStone,
+    actionFx: (type, plotId) => {
+      const plot = plotId ? map.plots.find((p) => p.id === plotId) : undefined;
+      const at = plot ? { x: (plot.x + plot.w / 2) * TILE, y: (plot.y + plot.h / 2) * TILE } : { x: walker.x * TILE, y: (walker.y - 1) * TILE };
+      fx.burst(SPLASH_ACTIONS.has(type) ? 'splash' : 'pop', at.x, at.y);
+    },
+    newTurn: () => {
+      finishCeremony();
+      panTarget = null;
+      panT = 0;
+      walker = { x: map.spawn.x + 0.5, y: map.spawn.y + 0.9, facing: 'down', moving: false };
+      insideT = house && isInside(house, walker) ? 1 : 0;
+    },
     fps: () => app.ticker.FPS,
     destroy: () => {
       app.ticker.remove(update);
@@ -393,6 +415,9 @@ export function createWorldView(
 }
 
 const store = () => useGameStore.getState();
+
+/** Actions that put water in the ground get a splash; the rest a pop. */
+const SPLASH_ACTIONS = new Set<ActionType>(['plantCrops', 'plantOrchard', 'digWell', 'repairReservoir']);
 
 interface Dust {
   g: Graphics;

@@ -16,7 +16,8 @@ export interface TimePoint {
 
 // ---- Resources ----
 
-export type ResourceKey = 'food' | 'water' | 'stamina';
+/** `hunger` runs 0..hungerMax and carries between generations (decision 016). */
+export type ResourceKey = 'food' | 'water' | 'stamina' | 'hunger';
 
 // ---- Actions ----
 
@@ -40,7 +41,7 @@ export interface ActionEntry {
   plotId?: PlotId;
   /** For `fastTrack`: the pending effect being pulled forward. */
   targetEffectId?: string;
-  /** For `harvest`: eat now instead of storing (decision 003). */
+  /** For `harvest`: eat now instead of storing; free, and refills hunger (decisions 003, 016). */
   eat?: boolean;
   committedAt: TimePoint;
   /** When the main effect lands. Equals `committedAt` for immediate actions. */
@@ -76,7 +77,15 @@ export interface ScheduledEffect {
 // ---- Causes and transitions ----
 
 export type CauseRule =
-  'foodRot' | 'waterStagnate' | 'wear' | 'upkeep' | 'regrow' | 'weakened' | 'income' | 'newTurn';
+  | 'foodRot'
+  | 'waterStagnate'
+  | 'wear'
+  | 'upkeep'
+  | 'regrow'
+  | 'weakened'
+  | 'income'
+  | 'newTurn'
+  | 'hunger';
 
 export interface ActionCause {
   kind: 'action';
@@ -224,6 +233,8 @@ export interface VisibleWorld {
   store: StoreStage;
   weakened: boolean;
   drought: boolean;
+  /** Hunger is at or below `hungerSlowAt`: the player walks slower (decision 016). */
+  hungry: boolean;
   /** 0..1 through the turn. */
   timeOfDay: number;
   /** What the Fast Track menu may list: who started it and when, plus the price. No due dates. */

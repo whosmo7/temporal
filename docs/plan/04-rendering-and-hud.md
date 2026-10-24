@@ -53,15 +53,18 @@
   re-textures plots without rebuilding the world. Weakened desaturates with an ochre cast. Drought bakes cracks into the ground
   and adds a warm tint.
 - **Placeholder art** uses the art-direction palette, with 1 px ink outlines on objects.
-- **`#/play?seed=123&biome=island&preset=small`** (`src/ui/screens/PlayScreen.tsx`) is a local hot-seat world for now. Plots
-  show their founder stages until `visibleView()` (A) exists. Dev params: `look=healthy|neglected` previews the two
-  acceptance worlds, and `fps=1` shows a frame-rate readout.
+- **`#/play?seed=123&biome=island&preset=small`** (`src/ui/screens/PlayScreen.tsx`) is a local hot-seat world on the real
+  engine: the store (`src/store/game.ts`) holds the `WorldState`, the turn's log and transitions, and `visibleView()`;
+  Continue after your stone rises runs `beginTurn` and hands the world to the next generation. Dev params:
+  `turn=60` (seconds), `name=JO`, `graves=AL,MO` (idle earlier generations), `look=healthy|neglected` (fixed previews of the
+  two acceptance worlds) and `fps=1`.
 - **`#/dev/sprites`** shows every placeholder frame and plot stage at 3×, with frame names, for checking stages and atlas coverage.
 
 ## Interaction model
 
 - Walk next to a plot and an **interact prompt** appears showing the valid action(s) and costs.
-- `E` / `Space` does the default action. Number keys `1–8` pick a hotbar action when several are valid. Invalid actions are greyed out with a reason ("Not enough stamina").
+- `E` / `Space` does the default action, `Q` is Harvest and eat (free, refills hunger, [016](../decisions/016-hunger.md)). Number keys `1–8` pick a hotbar action when several are valid. Invalid actions are greyed out with a reason ("Not enough stamina").
+- After an action the player stands still for 0.5 s (`ACTION_TIME`) while the clock runs.
 - **Fast Track**: from a pending plot (e.g. a sapling), prompt "F: Fast Track (cost ×2)". The menu also lists every pending effect.
 - **Harvesting/planting animations** are short (~0.5s) and **use real turn time**, so walking and acting cost time.
 
@@ -88,7 +91,7 @@ These visuals should be enough to inherit the world without reading anything. No
 - **Bottom:** hotbar with 8 action icons + key hints.
 - **Generation badge:** "Generation 3 of 5" + world name/seed.
 - **Upkeep reminder:** a small "Needed by nightfall: 12🍎 10💧", always shown ([002](../decisions/002-upkeep-timing.md)).
-- **Stamina can rise mid-turn** when the player uses Harvest and eat ([003](../decisions/003-eating-via-harvest.md)).
+- **Hunger bar** next to stamina: it carries between generations and drops at each new one; Harvest and eat (Q, free) refills it, and at 0 the player walks slower ([016](../decisions/016-hunger.md)). Stamina no longer rises mid-turn.
 
 ## Day/night
 
@@ -107,15 +110,15 @@ hour, so noon is at 25%, 6 pm at 50% and midnight at 75%.
 - [x] **[B]** Camera follow + clamp to map bounds
 - [x] **[B]** Player avatar: 4-direction walk animation, collision against the grid
 - [x] **[B]** Y-sorting for trees/structures vs the player
-- [ ] **[B]** Plot sprites driven by `visibleView()` stages *(the renderer side is done: `WorldView.setLook()` takes stages per plot. It waits on A's `visibleView()`)*
-- [ ] **[B]** Interact prompt + key handling + hotbar *(the prompt component and nearby-plot detection are done, with the lectern working. Action prompts with costs and the hotbar wait on `applyAction`)*
-- [ ] **[B]** Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason.
-- [ ] **[B]** Fast Track menu (lists pending effects, with the originating player's name, no due dates)
+- [x] **[B]** Plot sprites driven by `visibleView()` stages *(`PlayScreen` maps the store's `visibleView()` to `WorldLook`; plots re-texture only when a stage or flag changes)*
+- [x] **[B]** Interact prompt + key handling + hotbar *(`plotOptions()` in `src/ui/hud/actionOptions.ts` lists what fits the plot's stage; E default, Q harvest and eat, F hurry, 1–8 hotbar)*
+- [x] **[B]** Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason. *(`useGameStore().act()`; greyed rows and a short flash show the engine's error as is; the engine `tick` runs at 4 Hz in `advance()`)*
+- [x] **[B]** Fast Track menu (lists pending effects, with the originating player's name, no due dates) *(key 8; F at a pending plot hurries it straight from the prompt)*
 - [x] **[B]** Day/night lighting + timer *(6 am → 6 am in-game clock, decision 012)*
-- [ ] **[B]** Freeze at time-up (lock input, dim world) → hand off to the `05` flow *(lock and dim are done; the hand-off waits on A's `endTurn`)*
+- [x] **[B]** Freeze at time-up (lock input, dim world) → hand off to the `05` flow *(the seal calls `finishTurn()` → `endTurn`; its `summary` is kept for C's cost summary)*
 - [x] **[B]** Visual-state variants for all rows in the table above *(every plot, store and grave stage; the weakened filter, slow walk and blight motes; drought cracks and tint)*
-- [ ] **[B]** FX: harvest pop, splash, rot flies, blight motes *(rot flies and blight motes are done in `fx.ts`. Harvest pop and splash need `applyAction`)*
-- [ ] **[B]** HUD components (React) styled to match the pixel art
+- [x] **[B]** FX: harvest pop, splash, rot flies, blight motes *(`WorldView.actionFx()`: a splash for sowing, planting, digging and repairs, a pop for the rest, plus each action's sound)*
+- [x] **[B]** HUD components (React) styled to match the pixel art *(`Hud`: food and water, stamina and hunger bars, upkeep reminder, generation badge; `Hotbar`; `InteractPrompt` rows with costs)*
 - [x] **[B]** Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (`05`) *(see `05` › Graveyard, [014](../decisions/014-gravestones.md))*
 - [x] **[B]** Lectern: interact opens the journal *(`E` next to the lectern opens C's `JournalModal` read-only)*
 - [x] **[B]** Perf check: 60 fps on a mid laptop at 32×32 *(held the browser's 60 fps ceiling at 32×32 and 40×40 with filters on, in headless Firefox on a dev machine. Add `&fps=1` to `#/play` to check on other laptops)*

@@ -111,8 +111,8 @@ describe('founderState', () => {
   it('uses the biome starter numbers', () => {
     const forest = founderState(10, 'forest', FOUNDER_CONFIG);
     const island = founderState(10, 'island', FOUNDER_CONFIG);
-    expect(forest.resources).toEqual({ food: 12, water: 16, stamina: 100 });
-    expect(island.resources).toEqual({ food: 12, water: 18, stamina: 100 });
+    expect(forest.resources).toEqual({ food: 12, water: 16, stamina: 100, hunger: 100 });
+    expect(island.resources).toEqual({ food: 12, water: 18, stamina: 100, hunger: 100 });
     expect([forest.wildStock, forest.wildCap]).toEqual([8, 10]);
     expect([island.wildStock, island.wildCap]).toEqual([8, 8]);
   });

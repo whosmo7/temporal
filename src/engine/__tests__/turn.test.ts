@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONFIG } from '../config';
 import { asActor, newGame } from '../__fixtures__/play';
 import { explain } from '../replay';
+import { visibleView } from '../view';
 
 describe('beginTurn and endTurn', () => {
   it('gen 1 starts from the founder state with nothing applied', () => {
@@ -10,6 +11,28 @@ describe('beginTurn and endTurn', () => {
     game.begin();
     expect(game.transitions).toEqual([]);
     expect(game.state.resources).toEqual(founder.resources);
+  });
+
+  it('hunger carries over and drops at each new generation, down to zero', () => {
+    const game = newGame();
+    game.turn();
+    expect(game.state.resources.hunger).toBe(CONFIG.hungerMax);
+    const hungerAt = [];
+    for (let gen = 2; gen <= 6; gen++) {
+      game.begin();
+      hungerAt.push(game.state.resources.hunger);
+      game.end();
+    }
+    expect(hungerAt).toEqual([70, 40, 10, 0, 0]);
+    const drop = game.transitions.find((t) => 'resource' in t.target && t.target.resource === 'hunger');
+    expect(drop?.causes).toEqual([{ kind: 'rule', rule: 'hunger' }]);
+  });
+
+  it('a player whose hunger has run out is shown as hungry', () => {
+    const game = newGame().begin();
+    expect(visibleView(game.state).hungry).toBe(false);
+    game.state.resources.hunger = CONFIG.hungerSlowAt;
+    expect(visibleView(game.state).hungry).toBe(true);
   });
 
   it('orchard planted in gen 1 fruits in gen 3 and is explained by the gen 1 action', () => {

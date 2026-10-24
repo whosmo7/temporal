@@ -11,7 +11,7 @@ yield later or when. Use the words a farmer would use. Keys are the canonical ID
 | ID | Hotbar label | Interact prompt | Tooltip |
 |---|---|---|---|
 | `harvest` | Harvest | Harvest · 5⚡ | Gather what's ripe into the store. |
-| `harvest` + `eat` | Harvest and eat | Harvest and eat · 5⚡ | Eat what you gather now. What you can't eat goes to the store. |
+| `harvest` + `eat` | Harvest and eat (Q) | Harvest and eat (free, [016](../decisions/016-hunger.md)) | Eat what you gather now. What you can't eat goes to the store. |
 | `plantCrops` | Sow | Sow crops · 8⚡ 1💧 | Quick to grow. Left in the ground at nightfall, they rot. |
 | `plantOrchard` | Plant trees | Plant an orchard · 25⚡ 5💧 | Saplings. They take their time. |
 | `repairReservoir` | Repair | Repair the reservoir wall · 60⚡ | Patch the cracks and rebuild the wall. |
@@ -62,6 +62,7 @@ Say what's missing, in a few words.
 | Tend the cracked reservoir | It needs repairing first |
 | Tend something already tended this turn | Already seen to today |
 | Hurry with nothing pending | Nothing to hurry |
+| Harvest and eat when not hungry ([016](../decisions/016-hunger.md)) | You're not hungry |
 
 ## HUD and other short lines
 
@@ -69,6 +70,7 @@ Say what's missing, in a few words.
 |---|---|
 | HUD upkeep reminder (decision 002) | Needed by nightfall: 12🍎 10💧 |
 | HUD generation badge | Generation {n} of {m} |
+| HUD hunger bar ([016](../decisions/016-hunger.md)) | (a bowl icon and a bar, no words; screen readers hear "Hunger") |
 | Weakened start ("You are inheriting…") | You wake up tired. |
 | Freeze | The day is over. |
 | After your stone rises (`05`) | Generation {n} is over. · button: Continue |

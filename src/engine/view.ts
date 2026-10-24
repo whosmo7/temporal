@@ -48,6 +48,7 @@ export function visibleView(state: WorldState, t = 0): VisibleWorld {
     store: storeStage(state.resources.food),
     weakened: state.weakened > 0,
     drought: !!eventAt(state, 'drought'),
+    hungry: state.resources.hunger <= CONFIG.hungerSlowAt,
     timeOfDay: state.turnSeconds > 0 ? time / state.turnSeconds : 0,
     fastTrackable,
   };

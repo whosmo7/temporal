@@ -25,6 +25,7 @@ describe('createWorld', () => {
         food: start.food,
         water: start.water,
         stamina: CONFIG.baseStamina,
+        hunger: CONFIG.hungerMax,
       });
       expect(state.wildStock).toBe(start.wildStock);
       expect(state.wildCap).toBe(start.wildCap);
