@@ -1,6 +1,6 @@
-# 011: Engine rule details left open by 01
+# 013: Engine rule details left open by 01
 
-**Status:** proposed (A, 2026-10-24). Built this way in `src/engine/`; confirm or change before balance runs.
+**Status:** accepted (A, 2026-10-24, picked from the engine decisions review). Items 1–8 are built as written.
 
 ## Context
 
@@ -27,6 +27,19 @@ player sees, so it's recorded here rather than left in code.
 7. **A field shows `growing` from halfway to ripe.** The view never exposes the ripening time itself.
 8. **Fast Track menu shows the price.** `fastTrackable` lists who started each effect, in which
    generation, and the 2× cost, but never its due turn.
+
+Settled in the same review:
+
+9. **Hoarding with no food rot ([011](011-cabinet-food-store-no-rot.md)):** keep `foodRotPct` at 0 and
+   pull another lever instead: starter food 12 → 10 or upkeep food 12 → 14. C picks which, after the
+   balance runs in item 11.
+10. **Commit authority:** the `commit-turn` Edge Function re-runs the turn through the engine and
+    rejects a log the engine won't accept. The trust-the-client RPC is only a fallback if Deno can't
+    import the engine. `LocalBackend.commitTurn` already works this way.
+11. **Tuning waits for the fixtures.** One simulation seed made `planter` look strongest. Don't tune
+    yet: run the three balance fixtures (`01` task 5) over many seeds and both biomes first.
+12. **The oven stays furniture** (the open question in [010](010-player-house.md)). Cooking stored food
+    for stamina is a stretch goal once the demo works end to end.
 
 ## Consequences
 

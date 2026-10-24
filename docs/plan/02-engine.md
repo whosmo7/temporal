@@ -168,6 +168,6 @@ result but still only appends. Record this choice as an open question for the en
 
 ## Open questions
 
-1. Edge Function re-simulation vs RPC trusting the client (see Authority).
+1. ~~Edge Function re-simulation vs RPC trusting the client (see Authority).~~ **Decided: Edge Function** ([013](../decisions/013-engine-rule-details.md) item 10).
 2. Store full state snapshots per gen (fast replay) or re-simulate on demand? Recommendation: store a snapshot per gen, which is small at 32×32 with only a few plots.
 3. Effect IDs: engine-derived or ULID?

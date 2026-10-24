@@ -184,7 +184,7 @@ nothing was ever written.
 
 ## Open questions
 
-1. Edge Function (authoritative) vs RPC (trust client) for commit?
+1. ~~Edge Function (authoritative) vs RPC (trust client) for commit?~~ **Decided: Edge Function** re-runs the turn through the engine ([013](../decisions/013-engine-rule-details.md) item 10). The RPC is the fallback only if Deno can't import the engine.
 2. Journal writing time allowance → lock TTL.
 3. Can a player be assigned the world they just played (repeat play is allowed, but straight away)?
 4. Should players be able to *choose* to start a new world, or is assignment always random?
