@@ -1,8 +1,9 @@
-import type { Biome } from '../worldgen/types';
+import type { ActionEntry, Biome, Transition, WorldState } from '../engine/types';
+import type { PresetName } from '../worldgen/presets';
 
-export type WorldState = unknown;
-export type Action = unknown;
-export type Transition = unknown;
+export type { ActionEntry, Transition, WorldState };
+
+// Placeholders until endTurn's summary (02) and the journal stroke format (05) exist.
 export type TurnSummary = unknown;
 export type Drawing = unknown;
 
@@ -27,8 +28,10 @@ export interface ClaimedWorld {
   worldId: string;
   seed: number;
   biome: Biome;
+  preset: PresetName;
   turn: number;
   generationCount: number;
+  turnSeconds: number;
   lockExpiresAt: string;
   snapshot: WorldState | null; // null on generation 1
   journal: JournalPage[];
@@ -37,7 +40,7 @@ export interface ClaimedWorld {
 
 export interface CommitInput {
   worldId: string;
-  actions: Action[];
+  actions: ActionEntry[];
   journal: { text: string; drawing: Drawing };
 }
 
@@ -54,8 +57,8 @@ export interface Replay {
   worldId: string;
   seed: number;
   biome: Biome;
-  snapshots: WorldState[]; // index = turn
-  actions: Action[];
+  snapshots: WorldState[]; // one per committed turn, in order
+  actions: ActionEntry[];
   transitions: Transition[];
   journal: JournalPage[];
 }

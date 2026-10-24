@@ -1,6 +1,7 @@
 import type { Biome } from '../worldgen/types';
+import type { PresetName } from '../worldgen/presets';
 import type {
-  Action,
+  ActionEntry,
   Backend,
   ClaimedWorld,
   CommitInput,
@@ -18,9 +19,12 @@ import type {
 
 const STORAGE_KEY = 'inheritance.local';
 
-// TODO: read these from config/settings once they exist.
-const LOCK_MS = 10 * 60 * 1000;
-const DEFAULT_GENERATIONS = 10;
+// TODO: read these from settings once LocalBackend has an admin settings call.
+// Matches the settings defaults in the schema migration (decision 007).
+const TURN_SECONDS = 600;
+const JOURNAL_ALLOWANCE_SECONDS = 300;
+const LOCK_GRACE_SECONDS = 120;
+const DEFAULT_GENERATIONS = 6;
 const INHERIT_RATIO = 0.7;
 const BIOMES: Biome[] = ['forest', 'island'];
 
@@ -34,7 +38,9 @@ interface LocalWorld {
   id: string;
   seed: number;
   biome: Biome;
+  preset: PresetName;
   generationCount: number;
+  turnSeconds: number;
   currentTurn: number;
   status: 'open' | 'complete';
   lockedBy: string | null;
@@ -47,7 +53,7 @@ interface LocalTurn {
   worldId: string;
   turn: number;
   playerId: string;
-  actions: Action[];
+  actions: ActionEntry[];
   snapshot: WorldState | null;
   journal: { text: string; drawing: Drawing };
   committedAt: string;
@@ -103,8 +109,10 @@ function toClaimed(db: Db, world: LocalWorld): ClaimedWorld {
     worldId: world.id,
     seed: world.seed,
     biome: world.biome,
+    preset: world.preset,
     turn: world.currentTurn,
     generationCount: world.generationCount,
+    turnSeconds: world.turnSeconds,
     lockExpiresAt: new Date(world.lockExpiresAt ?? 0).toISOString(),
     snapshot: turns.at(-1)?.snapshot ?? null,
     journal: journalOf(db, world.id),
@@ -114,7 +122,8 @@ function toClaimed(db: Db, world: LocalWorld): ClaimedWorld {
 
 function lock(world: LocalWorld, userId: string, now: number): void {
   world.lockedBy = userId;
-  world.lockExpiresAt = now + LOCK_MS;
+  world.lockExpiresAt =
+    now + (world.turnSeconds + JOURNAL_ALLOWANCE_SECONDS + LOCK_GRACE_SECONDS) * 1000;
 }
 
 export class LocalBackend implements Backend {
@@ -185,7 +194,9 @@ export class LocalBackend implements Backend {
         id: crypto.randomUUID(),
         seed: Math.floor(Math.random() * 2 ** 31),
         biome: BIOMES[Math.floor(Math.random() * BIOMES.length)] ?? 'forest',
+        preset: 'default',
         generationCount: DEFAULT_GENERATIONS,
+        turnSeconds: TURN_SECONDS,
         currentTurn: 1,
         status: 'open',
         lockedBy: null,
@@ -256,7 +267,7 @@ export class LocalBackend implements Backend {
       worldId: world.id,
       seed: world.seed,
       biome: world.biome,
-      snapshots: turns.map((t) => t.snapshot),
+      snapshots: turns.flatMap((t) => (t.snapshot ? [t.snapshot] : [])),
       actions: turns.flatMap((t) => t.actions),
       transitions: [], // TODO: from the engine once it exists
       journal: journalOf(db, worldId),

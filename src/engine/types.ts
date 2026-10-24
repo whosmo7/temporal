@@ -40,6 +40,8 @@ export interface ActionEntry {
   plotId?: PlotId;
   /** For `fastTrack`: the pending effect being pulled forward. */
   targetEffectId?: string;
+  /** For `harvest`: eat now instead of storing (decision 003). */
+  eat?: boolean;
   committedAt: TimePoint;
   /** When the main effect lands. Equals `committedAt` for immediate actions. */
   dueAt: TimePoint;
@@ -50,11 +52,7 @@ export interface ActionEntry {
 // ---- Scheduled effects ----
 
 export type EffectKind =
-  | 'cropRipe'
-  | 'orchardMature'
-  | 'orchardYield'
-  | 'reservoirRepaired'
-  | 'wellIncome';
+  'cropRipe' | 'orchardMature' | 'orchardYield' | 'reservoirRepaired' | 'wellIncome';
 
 export type EffectStatus = 'pending' | 'resolved' | 'cancelled' | 'fastTracked';
 
@@ -74,13 +72,7 @@ export interface ScheduledEffect {
 // ---- Causes and transitions ----
 
 export type CauseRule =
-  | 'foodRot'
-  | 'waterStagnate'
-  | 'wear'
-  | 'upkeep'
-  | 'regrow'
-  | 'weakened'
-  | 'income';
+  'foodRot' | 'waterStagnate' | 'wear' | 'upkeep' | 'regrow' | 'weakened' | 'income';
 
 /** `share` is this cause's part of the transition's delta, when it can be split. */
 export type Cause = { share?: number } & (
@@ -90,9 +82,7 @@ export type Cause = { share?: number } & (
 );
 
 export type TransitionTarget =
-  | { resource: ResourceKey }
-  | { plot: PlotId; field: string }
-  | { world: 'wildStock' | 'weakened' };
+  { resource: ResourceKey } | { plot: PlotId; field: string } | { world: 'wildStock' | 'weakened' };
 
 /** One recorded state change. Append-only; always has at least one cause. */
 export interface Transition {
