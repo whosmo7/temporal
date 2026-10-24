@@ -27,7 +27,7 @@ export interface Gravestone {
 
 export interface ClaimedWorld {
   worldId: string;
-  /** From the seed, `worldName` (decision 019). */
+  /** From the seed, `worldName` (decision 020). */
   name: string;
   seed: number;
   biome: Biome;
@@ -82,7 +82,7 @@ export interface Settings {
 /** A world as the admin panel lists it. Usernames, not ids. */
 export interface AdminWorld {
   worldId: string;
-  /** From the seed, `worldName` (decision 019). */
+  /** From the seed, `worldName` (decision 020). */
   name: string;
   seed: number;
   biome: Biome;
