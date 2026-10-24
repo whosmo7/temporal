@@ -63,12 +63,12 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 - [x] **[C]** Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the `09` style) *(Kit in `src/ui/kit/`: `Button`, `ButtonLink`, `Panel`, `Dialog` (the Modal), `TextInput`, `Icon`; tokens in `src/ui/theme/`; sheet at `#/dev/kit` in dev. UI font is the pack's pixel font on a 9 px size grid.)*
 - [x] **[C]** Landing page with a background world (a floating island over a teal sky, see `docs/art/art-direction.md`) *("One generation a minute" from `docs/design/app-shell-brief.md`: `IslandScene` composites the world atlas on a 2D canvas, with a 60 s multiply-light loop and one stone rising each nightfall. Reduced motion holds at dusk. It stands in for a live `04` render of a sample world, which can replace the canvas later.)*
 - [x] **[C]** Auth screen + session persistence + logout + username display *(`/#/auth`, `?next=` returns the player where they were and `?mode=signup` opens on sign up. Session in `src/store/session.ts`, `RequireUser` guards `/play`. The app talks to `backend` from `src/api/index.ts`, `LocalBackend` until `SupabaseBackend` exists.)*
-- [ ] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another"
-- [ ] **[B]** Resume: if the user refreshes while holding a lock, put them back in (or void; open question)
+- [x] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another" *(`PlayFlow` in `src/ui/play/`: claim → `Inheriting` → `Game` → seal commits ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) → Play another / Home. `#/play?seed=…` is an offline dev sandbox that saves nothing. **Testing only:** an "End turn (test)" button under the clock jumps to 6 am; remove it before the demo.)*
+- [x] **[B]** Resume: if the user refreshes while holding a lock, put them back in (or void; open question) *(The same turn starts over at 6 am: `claimWorld` hands back the held world ([018](../decisions/018-commit-on-seal-refresh-restarts.md)).)*
 - [ ] **[C]** Tutorial scene
 - [x] **[C]** Gallery + replay routes (screens from `06`) *(see `06`)*
 - [ ] **[C]** Admin panel + guard
-- [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup)
+- [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup) *(Claim failed and commit failed are done: Try again on both, and the local copy. No network waits for `SupabaseBackend`.)*
 - [x] **[C]** Audio toggle (mute) in the shell (`09`) *(`MuteToggle` in the header, saved in localStorage.)*
 
 ## Acceptance
@@ -80,4 +80,4 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 
 1. Is the tutorial mandatory on first play, or skippable?
 2. Is the "this will take longer than you have" hint OK, given pending effects are partly hidden?
-3. Refresh mid-turn: resume with the time remaining, or void?
+3. ~~Refresh mid-turn: resume with the time remaining, or void?~~ Settled: the same turn starts over ([018](../decisions/018-commit-on-seal-refresh-restarts.md)).

@@ -84,6 +84,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | When the timer ends | **Time freezes**. The player reads and writes in the shared journal. |
 | End flow | **Freeze → journal → cost summary → gravestone** |
 | Fast Track on an orchard | Fruits now, **no long-term yield penalty**; the 2× cost is the price ([004](../decisions/004-fast-tracked-orchard-yield.md)) |
+| Committed at | **"Seal page"**; the cost summary and stone are for show. A failed save offers Try again, and a local copy is sent on the next Play ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) |
 | Cost summary | Shows **only what has been realised now** (costs paid, immediate gains). Pending benefits are left out on purpose, which sets up the demo moment. |
 
 ## Journal, graveyard, replay
@@ -112,6 +113,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Assignment | **Weighted random** between inheriting an unlocked in-progress world and getting a new one; **ratio configurable** |
 | Concurrency | **Only one player can hold a world at a time** (lock) |
 | Abandon mid-turn | **Turn voided**: the lock expires, the world stays as it was before the turn, no gravestone |
+| Refresh mid-turn | **The same turn starts over** at 6 am, within the original lock ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) |
 | Identity | **Username + password** (security isn't the focus) |
 | Repeat play | **Allowed**: the same person can play several generations of one world |
 | New world (Gen 1) | **Seeded starter state** (some food/water, damaged reservoir, wild stock, empty plots, biome modifier) |

@@ -53,8 +53,9 @@
   re-textures plots without rebuilding the world. Weakened desaturates with an ochre cast. Drought bakes cracks into the ground
   and adds a warm tint.
 - **Placeholder art** uses the art-direction palette, with 1 px ink outlines on objects.
-- **`#/play?seed=123&biome=island&preset=small`** (`src/ui/screens/PlayScreen.tsx`) is a local hot-seat world on the real
-  engine: the store (`src/store/game.ts`) holds the `WorldState`, the turn's log and transitions, and `visibleView()`;
+- **`#/play`** claims a world from the backend and plays it (`08`, `src/ui/play/PlayFlow.tsx`). With a seed,
+  **`#/play?seed=123&biome=island&preset=small`** (`src/ui/screens/PlayScreen.tsx`) is an offline sandbox that saves nothing.
+  Both run `Game` (`src/ui/play/Game.tsx`) on the real engine: the store (`src/store/game.ts`) holds the `WorldState`, the turn's log and transitions, and `visibleView()`;
   Continue after your stone rises runs `beginTurn` and hands the world to the next generation. Dev params:
   `turn=60` (seconds), `name=JO`, `graves=AL,MO` (idle earlier generations), `look=healthy|neglected` (fixed previews of the
   two acceptance worlds) and `fps=1`.
