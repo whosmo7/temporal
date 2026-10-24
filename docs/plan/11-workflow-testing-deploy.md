@@ -40,7 +40,7 @@ temporal/
 - [x] **[A]** Add deps: `pixi.js`, `zustand`, `@supabase/supabase-js`, `howler`; dev: `vitest`, `@vitest/coverage-v8`
 - [x] **[A]** `vite.config.ts`: `base: '/temporal/'` (or `/` if using a custom domain)
 - [x] **[A]** Hash router (`react-router` `createHashRouter`)
-- [ ] **[A]** `.env.example` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Real values go in GitHub Actions secrets.
+- [x] **[A]** `.env.example` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Real values go in GitHub Actions secrets. *(Done by C with the `07` project setup.)*
 - [x] **[A]** `Backend` interface + `LocalBackend` stub, so the frontend and engine can start before Supabase exists
 - [x] **[A]** Path alias `@engine/*` so the Edge Function and the client import the same code
 - [ ] **[A]** Turn on Pages in repo settings (source: GitHub Actions)

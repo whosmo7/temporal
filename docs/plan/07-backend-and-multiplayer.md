@@ -15,6 +15,13 @@
 - **Repeat play allowed.**
 - **Append-only** action log.
 
+## Project
+
+- Supabase org **Temporal**, project ref `nswzjqylyuwhydyyqsmq`, region `eu-west-1`. API URL `https://nswzjqylyuwhydyyqsmq.supabase.co`.
+- The repo is linked: `supabase/config.toml` holds the auth settings (email confirmation **off**, site URL = the GitHub Pages URL). Change them there and run `npx supabase config diff` then `npx supabase config push`.
+- The CLI is a dev dependency (`npx supabase …`). Run `npx supabase login` once per machine. Ask C for an invite to the Supabase org.
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are in the GitHub Actions secrets. For local dev, copy `.env.example` to `.env.local`.
+
 ## Auth: username + password on Supabase
 
 Supabase Auth is email-based. Use **synthetic emails**: `username@players.temporal.local`, with
@@ -150,7 +157,7 @@ nothing was ever written.
 
 ## Tasks
 
-- [ ] **[A]** Create the Supabase project. Turn email confirmation off. Add the env vars to the repo secrets + `.env.example`.
+- [x] **[A]** Create the Supabase project. Turn email confirmation off. Add the env vars to the repo secrets + `.env.example`. *(Done by C, see **Project** above.)*
 - [ ] **[A]** SQL migrations for the schema above (`supabase/migrations/`)
 - [ ] **[A]** RLS policies (read-public for completed worlds, no update/delete)
 - [ ] **[A]** Username signup/login with synthetic emails + `profiles` insert trigger
