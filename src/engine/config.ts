@@ -58,6 +58,9 @@ export const CONFIG = {
     forest: { food: 12, water: 16, wildStock: 8, wildCap: 10, storm: false },
     island: { food: 12, water: 18, wildStock: 8, wildCap: 8, storm: true },
   },
-} as const satisfies FounderConfig;
+} as const;
 
 export type Config = typeof CONFIG;
+
+/** CONFIG as worldgen's founderState input. Stops compiling if a founder number goes missing. */
+export const FOUNDER_CONFIG: FounderConfig = CONFIG;
