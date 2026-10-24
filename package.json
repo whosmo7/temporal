@@ -16,7 +16,9 @@
     "worldgen": "tsx scripts/worldgen-preview.ts",
     "simulate": "tsx scripts/simulate.ts",
     "atlas": "tsx scripts/build-atlas.ts",
-    "audio": "tsx scripts/build-audio.ts"
+    "audio": "tsx scripts/build-audio.ts",
+    "functions:bundle": "tsx scripts/bundle-engine.ts",
+    "functions:deploy": "npm run functions:bundle && supabase functions deploy commit-turn --use-api"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

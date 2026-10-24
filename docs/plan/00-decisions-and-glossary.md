@@ -111,7 +111,10 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Concurrency | **Only one player can hold a world at a time** (lock) |
 | Abandon mid-turn | **Turn voided**: the lock expires, the world stays as it was before the turn, no gravestone |
 | Identity | **Username + password** (security isn't the focus) |
-| Repeat play | **Allowed**: the same person can play several generations of one world |
+| Repeat play | **Allowed**: the same person can play several generations of one world. Straight after a turn, the device asks not to be handed the same world again (a client-side hint, [016](../decisions/016-claim-and-lock-rules.md)) |
+| Choosing a world | **No**: assignment is always the weighted random draw ([016](../decisions/016-claim-and-lock-rules.md)) |
+| World names | **From the seed**, `worldName(seed, biome)`, e.g. "Hollow Elm" ([016](../decisions/016-claim-and-lock-rules.md)) |
+| Lock while reading | **Heartbeat** extends the lock while the clock is stopped, capped at 15 extra minutes ([016](../decisions/016-claim-and-lock-rules.md)) |
 | New world (Gen 1) | **Seeded starter state** (some food/water, damaged reservoir, wild stock, empty plots, biome modifier) |
 
 ## Screens

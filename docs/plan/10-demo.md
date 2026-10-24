@@ -50,10 +50,10 @@ the replay) next to the judge's flourishing orchard.
 - [ ] **[C]** Pick the demo seed (orchard visible, nice-looking biome)
 - [ ] **[C]** Decide the demo world's generation count + turn length
 - [ ] **[C]** Write the founder journal pages (natural, not preachy)
-- [ ] **[A]** Write `scripts/seed-demo.ts` (+ a spare world)
+- [x] **[A]** Write `scripts/seed-demo.ts` (+ a spare world) *(Plays `src/api/demo-world.json` through claim → commit, force-assigns the judge, and makes an unassigned spare. The seed, length and pages in that file are placeholders for C.)*
 - [ ] **[C]** Create judge accounts (or a shared "judge" account) + admin account
 - [ ] **[C]** Rehearse force-assign → play → replay flow 3+ times on the demo laptop
-- [ ] **[A]** Offline fallback: the `LocalBackend` hot-seat build with the same seed + log baked in, in case the venue Wi-Fi fails
+- [x] **[A]** Offline fallback: the `LocalBackend` hot-seat build with the same seed + log baked in, in case the venue Wi-Fi fails *(`VITE_OFFLINE=1 npm run build && npm run preview`. First load seeds the same demo world; the judge signs in as `judge` / `demo`.)*
 - [ ] **[C]** Decide on the "what this player saw" replay panel (open question)
 
 ## Acceptance

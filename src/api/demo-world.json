@@ -1,0 +1,17 @@
+{
+  "$comment": "The pre-seeded demo world (10). PLACEHOLDERS until C picks the seed, generation count, turn length and founder pages. Usernames must match ^[a-z0-9_]{3,20}$.",
+  "world": { "seed": 42, "biome": "forest", "preset": "default", "turnSeconds": 60, "generationCount": 3 },
+  "judge": "judge",
+  "generations": [
+    {
+      "player": "founder_a",
+      "actions": [{ "type": "plantOrchard", "plot": "orchard-1", "t": 8 }],
+      "journal": "I planted something by the east fence. Look after it."
+    },
+    {
+      "player": "founder_b",
+      "actions": [{ "type": "repairReservoir", "plot": "reservoir", "t": 6 }],
+      "journal": "Fixed the reservoir wall. Went to bed hungry."
+    }
+  ]
+}
