@@ -40,13 +40,12 @@
   width: min(1180px, 100%);
   height: min(648px, calc(100vh - var(--px) * 16));
   min-height: 560px;
-  padding: calc(var(--px) * 3) calc(var(--px) * 3) calc(var(--px) * 7);
-  background: var(--bark);
-  /* Cover: bark with a darker rim and a lighter inner line, like the kit panels. */
-  box-shadow:
-    inset 0 0 0 var(--px) var(--panel-edge),
-    inset 0 0 0 calc(var(--px) * 2) var(--clay),
-    0 calc(var(--px) * 3) 0 rgb(64 67 99 / 0.45);
+  padding: 0 0 calc(var(--px) * 4);
+  /* Cover: stitched leather with brass corners, a 9-slice from the atlas build (`09`). */
+  border: calc(var(--px) * 8) solid var(--bark);
+  border-image: url('/assets/journal/cover.png') 8 fill / calc(var(--px) * 8) round;
+  image-rendering: pixelated;
+  box-shadow: 0 calc(var(--px) * 3) 0 rgb(64 67 99 / 0.45);
   animation: book-open 220ms var(--ease-out);
 }
 
@@ -75,12 +74,18 @@
 
 /* Gutter: the pages curve into the spine. */
 .page--left {
-  background: linear-gradient(to left, rgb(180 132 113 / 0.32), rgb(180 132 113 / 0) 9%), var(--paper);
+  background:
+    linear-gradient(to left, rgb(180 132 113 / 0.32), rgb(180 132 113 / 0) 9%),
+    url('/assets/journal/paper.png') 0 0 / calc(var(--px) * 32) repeat,
+    var(--paper);
   padding-right: calc(var(--page-pad) + var(--px) * 4);
 }
 
 .page--right {
-  background: linear-gradient(to right, rgb(180 132 113 / 0.32), rgb(180 132 113 / 0) 9%), var(--paper);
+  background:
+    linear-gradient(to right, rgb(180 132 113 / 0.32), rgb(180 132 113 / 0) 9%),
+    url('/assets/journal/paper.png') 0 0 / calc(var(--px) * 32) repeat,
+    var(--paper);
   padding-left: calc(var(--page-pad) + var(--px) * 4);
 }
 
@@ -143,7 +148,7 @@
   position: absolute;
   top: calc(var(--px) * 10);
   bottom: calc(var(--px) * 14);
-  right: 100%;
+  right: calc(100% + var(--px) * 8); /* outside the cover's 8 px border */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;

@@ -101,11 +101,10 @@ export const FRAMES: FrameSpec[] = [
   { name: 'deco/flower-1', src: NATURE, x: 3, y: 11, recolour: 'flower' },
   { name: 'deco/flower-2', src: NATURE, x: 6, y: 11, recolour: 'flower' },
 
-  // Graveyard stones: tombstone, cross, post, a fieldstone.
+  // Graveyard stones: tombstone, cross, post. The fourth, a fieldstone, is drawn (scripts/art/compose.ts).
   { name: 'grave/1', src: ELEMENT, x: 4, y: 2, recolour: 'stone' },
   { name: 'grave/2', src: ELEMENT, x: 3, y: 2, recolour: 'stone' },
   { name: 'grave/3', src: ELEMENT, x: 5, y: 2, recolour: 'stone' },
-  { name: 'grave/4', src: NATURE, x: 18, y: 9, recolour: 'stone' },
 
   // Player (Villager4, chosen by C): Walk.png has a column per direction and a row per frame.
   ...DIRECTIONS.flatMap((facing, col) =>

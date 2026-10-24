@@ -47,7 +47,7 @@ biomeFromSeed(seed): Biome             // for callers that want a seed-derived b
   cabinet (the food store), oven, shelf, plant, bed, table and rug. It's placed right after the boundary, within `houseRange` of the
   map centre (or `spawn`), and before ponds, so nothing can block it. Paths start at the tile in front of the door, and the lectern
   goes near the door. The player spawns inside, just above the door. `pin.house` fixes the house and `house: false` turns it off.
-- **Collision:** boundary, ponds, `rock`/`bush` deco and the solid plots (`orchard`, `reservoir`, `well`, `lectern`, `graveyard`) block movement.
+- **Collision:** boundary, ponds, `rock`/`bush` deco and the solid plots (`orchard`, `reservoir`, `well`, `lectern`) block movement.
   So do house walls (except the door) and furniture (except the rug).
   `field`, `wild` and `graveyard` are walkable.
 - **Determinism:** each stage (plots, deco) has its own PRNG stream derived from `hash(seed, stage)`, so changing the

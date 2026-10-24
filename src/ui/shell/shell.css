@@ -67,16 +67,56 @@
 }
 
 .shell__wordmark {
-  color: var(--paper);
-  font-size: var(--text-lg);
-  letter-spacing: 0.08em;
   text-decoration: none;
+}
+
+.shell__controls {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 3);
+  margin-left: auto;
+  color: var(--ink);
+}
+
+/* Logo: paper type with an ink outline, a sapling growing out of the first letter. */
+.logo {
+  --logo-cast: var(--px);
+  display: inline-block;
+  color: var(--paper);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  white-space: nowrap;
   text-shadow:
     var(--px) 0 0 var(--ink),
     calc(var(--px) * -1) 0 0 var(--ink),
     0 var(--px) 0 var(--ink),
     0 calc(var(--px) * -1) 0 var(--ink),
-    var(--px) var(--px) 0 var(--ink);
+    var(--logo-cast) var(--logo-cast) 0 var(--ink);
+}
+
+.logo--header {
+  font-size: var(--text-lg);
+  padding-top: calc(var(--px) * 6);
+}
+
+.logo--landing {
+  --logo-cast: calc(var(--px) * 2);
+  font-size: var(--text-wordmark);
+  padding-top: calc(var(--px) * 12);
+}
+
+.logo__first {
+  position: relative;
+  display: inline-block;
+}
+
+.logo__sapling {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 0.3em);
+  /* The pixel font's I sits left of its advance (letter-spacing pads the right). */
+  transform: translateX(calc(-50% - 0.04em));
+  pointer-events: none;
 }
 
 .shell__main {
@@ -96,16 +136,8 @@
 
 .landing__wordmark {
   margin: 0;
-  font-size: var(--text-wordmark);
+  font-size: inherit;
   font-weight: normal;
-  letter-spacing: 0.08em;
-  color: var(--paper);
-  text-shadow:
-    var(--px) 0 0 var(--ink),
-    calc(var(--px) * -1) 0 0 var(--ink),
-    0 var(--px) 0 var(--ink),
-    0 calc(var(--px) * -1) 0 var(--ink),
-    calc(var(--px) * 2) calc(var(--px) * 2) 0 var(--ink);
 }
 
 .landing__premise {
@@ -128,4 +160,11 @@
 
 .lost p {
   margin: 0 0 calc(var(--px) * 6);
+}
+
+.landing__credits {
+  margin: calc(var(--px) * 10) 0 0;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  opacity: 0.7;
 }

@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Link, type LinkProps } from 'react-router-dom';
+import { playSfx } from '../../audio/sound';
 import { Icon, type IconName } from './Icon';
 
 type Variant = 'default' | 'primary' | 'quiet';
@@ -51,11 +52,20 @@ export function Button({
   children,
   className,
   type = 'button',
+  onClick,
   ...rest
 }: Look & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>) {
   const look = { variant, size, icon, iconOnly, children };
   return (
-    <button type={type} className={classes(look, className)} {...rest}>
+    <button
+      type={type}
+      className={classes(look, className)}
+      onClick={(e) => {
+        playSfx('ui-click');
+        onClick?.(e);
+      }}
+      {...rest}
+    >
       <Content {...look} />
     </button>
   );

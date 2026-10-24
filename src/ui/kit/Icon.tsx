@@ -3,7 +3,7 @@ import { palette } from '../theme/palette';
 /**
  * UI glyphs drawn on a 12-pixel grid. `#` is the current text colour, so one glyph works on ink
  * and on paper; letters pick a palette colour. Resource and action icons come from the Kyrise
- * atlas (`09`) instead; these cover the controls the pack doesn't (close, undo, eraser, clear).
+ * atlas (`09`) instead; these cover the controls the pack doesn't (close, undo, eraser, clear, sound).
  */
 const GLYPHS = {
   close: [
@@ -88,6 +88,34 @@ const GLYPHS = {
     '.....###....',
     '....###.....',
     '....##......',
+    '............',
+  ],
+  sound: [
+    '............',
+    '.....#......',
+    '....##...#..',
+    '...###....#.',
+    '######..#.#.',
+    '######...#.#',
+    '######...#.#',
+    '######..#.#.',
+    '...###....#.',
+    '....##...#..',
+    '.....#......',
+    '............',
+  ],
+  muted: [
+    '............',
+    '.....#......',
+    '....##......',
+    '...###......',
+    '######.#...#',
+    '######..#.#.',
+    '######...#..',
+    '######..#.#.',
+    '...###.#...#',
+    '....##......',
+    '.....#......',
     '............',
   ],
 } as const;

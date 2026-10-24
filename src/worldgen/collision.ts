@@ -2,7 +2,7 @@ import { bfsDistance, rectTiles } from './grid';
 import type { DecoTile, FurnitureKind, PlotKind, Point, TileMap } from './types';
 
 /** Plots you walk up to rather than onto. The player interacts from an adjacent tile. */
-export const SOLID_PLOT_KINDS: ReadonlySet<PlotKind> = new Set(['orchard', 'reservoir', 'well', 'lectern', 'graveyard']);
+export const SOLID_PLOT_KINDS: ReadonlySet<PlotKind> = new Set(['orchard', 'reservoir', 'well', 'lectern']);
 export const BLOCKING_DECO: ReadonlySet<DecoTile> = new Set(['rock', 'bush']);
 /** Furniture you can walk over. Everything else blocks. */
 export const WALKABLE_FURNITURE: ReadonlySet<FurnitureKind> = new Set(['rug']);

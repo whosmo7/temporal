@@ -1,13 +1,16 @@
 /**
  * Packs the world atlas from the asset packs in art/source/ (`09`):
  *   npm run atlas
- * Writes public/assets/atlas/world.png + world.json (Pixi spritesheet format). The raw packs are
+ * Writes public/assets/atlas/world.png + world.json (Pixi spritesheet format) and the UI icon atlas
+ * public/assets/atlas/ui.png + src/ui/kit/ui-atlas.json (read by PixelIcon). The raw packs are
  * git-ignored, so only whoever has them downloaded needs to run this; the output is committed.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { PNG } from 'pngjs';
 import { FRAMES, RECOLOUR, type FrameSpec } from './atlas-manifest.ts';
+import { composedFrames, domImages, type Composed } from './art/compose.ts';
+import { uiFrames } from './art/ui.ts';
 
 const OUT_PNG = 'public/assets/atlas/world.png';
 const OUT_JSON = 'public/assets/atlas/world.json';
@@ -38,7 +41,7 @@ function parseHex(h: string): [number, number, number] {
 }
 
 interface Cropped {
-  spec: FrameSpec;
+  spec: Pick<FrameSpec, 'name'>;
   w: number;
   h: number;
   data: Buffer;
@@ -108,34 +111,46 @@ function pack(items: Cropped[]) {
   throw new Error(`Frames don't fit in ${MAX}×${MAX}`);
 }
 
-const names = new Set<string>();
-for (const f of FRAMES) {
-  if (names.has(f.name)) throw new Error(`Duplicate frame name ${f.name}`);
-  names.add(f.name);
-}
-
-const items = FRAMES.map(crop);
-const { size, placed } = pack(items);
-const out = new PNG({ width: size, height: size });
-const frames: Record<string, unknown> = {};
-for (const it of items) {
-  const { x, y } = placed.get(it.spec.name)!;
-  for (let row = 0; row < it.h; row++) {
-    it.data.copy(out.data, ((y + row) * size + x) * 4, row * it.w * 4, (row + 1) * it.w * 4);
+function writeAtlas(items: Cropped[], pngPath: string, jsonPath: string) {
+  const names = new Set<string>();
+  for (const it of items) {
+    if (names.has(it.spec.name)) throw new Error(`Duplicate frame name ${it.spec.name}`);
+    names.add(it.spec.name);
   }
-  frames[it.spec.name] = {
-    frame: { x, y, w: it.w, h: it.h },
-    rotated: false,
-    trimmed: false,
-    spriteSourceSize: { x: 0, y: 0, w: it.w, h: it.h },
-    sourceSize: { w: it.w, h: it.h },
-  };
+  const { size, placed } = pack(items);
+  const out = new PNG({ width: size, height: size });
+  const frames: Record<string, unknown> = {};
+  for (const it of items) {
+    const { x, y } = placed.get(it.spec.name)!;
+    for (let row = 0; row < it.h; row++) {
+      it.data.copy(out.data, ((y + row) * size + x) * 4, row * it.w * 4, (row + 1) * it.w * 4);
+    }
+    frames[it.spec.name] = {
+      frame: { x, y, w: it.w, h: it.h },
+      rotated: false,
+      trimmed: false,
+      spriteSourceSize: { x: 0, y: 0, w: it.w, h: it.h },
+      sourceSize: { w: it.w, h: it.h },
+    };
+  }
+  mkdirSync(dirname(pngPath), { recursive: true });
+  mkdirSync(dirname(jsonPath), { recursive: true });
+  writeFileSync(pngPath, PNG.sync.write(out));
+  const image = pngPath.split('/').pop();
+  writeFileSync(jsonPath, `${JSON.stringify({ frames, meta: { image, format: 'RGBA8888', size: { w: size, h: size }, scale: 1 } }, null, 1)}\n`);
+  console.log(`Packed ${items.length} frames into ${pngPath} (${size}×${size})`);
 }
 
-mkdirSync(dirname(OUT_PNG), { recursive: true });
-writeFileSync(OUT_PNG, PNG.sync.write(out));
-writeFileSync(
-  OUT_JSON,
-  `${JSON.stringify({ frames, meta: { image: 'world.png', format: 'RGBA8888', size: { w: size, h: size }, scale: 1 } }, null, 1)}\n`,
-);
-console.log(`Packed ${items.length} frames into ${OUT_PNG} (${size}×${size})`);
+const asCropped = ({ name, img }: Composed): Cropped => ({ spec: { name }, w: img.w, h: img.h, data: img.data });
+
+writeAtlas([...FRAMES.map(crop), ...composedFrames().map(asCropped)], OUT_PNG, OUT_JSON);
+// The UI atlas is read by DOM components, so its frame list is bundled with the app's source.
+writeAtlas(uiFrames().map(asCropped), 'public/assets/atlas/ui.png', 'src/ui/kit/ui-atlas.json');
+
+for (const [path, img] of Object.entries(domImages())) {
+  const png = new PNG({ width: img.w, height: img.h });
+  img.data.copy(png.data);
+  mkdirSync(dirname(`public/${path}`), { recursive: true });
+  writeFileSync(`public/${path}`, PNG.sync.write(png));
+  console.log(`Wrote public/${path}`);
+}

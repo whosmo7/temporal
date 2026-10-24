@@ -254,3 +254,12 @@
   flex: none;
   shape-rendering: crispEdges;
 }
+
+/* Pack icon from the UI atlas (PixelIcon): a CSS sprite, never smoothed. */
+.kit-pixel-icon {
+  display: inline-block;
+  flex: none;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  vertical-align: middle;
+}

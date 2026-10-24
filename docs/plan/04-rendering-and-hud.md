@@ -116,7 +116,7 @@ hour, so noon is at 25%, 6 pm at 50% and midnight at 75%.
 - [x] **[B]** Visual-state variants for all rows in the table above *(every plot, store and grave stage; the weakened filter, slow walk and blight motes; drought cracks and tint)*
 - [ ] **[B]** FX: harvest pop, splash, rot flies, blight motes *(rot flies and blight motes are done in `fx.ts`. Harvest pop and splash need `applyAction`)*
 - [ ] **[B]** HUD components (React) styled to match the pixel art
-- [x] **[B]** Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (`05`) *(see `05` › Graveyard, [014](../decisions/014-gravestones.md))*
+- [ ] **[B]** Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (`05`)
 - [x] **[B]** Lectern: interact opens the journal *(`E` next to the lectern opens C's `JournalModal` read-only)*
 - [x] **[B]** Perf check: 60 fps on a mid laptop at 32×32 *(held the browser's 60 fps ceiling at 32×32 and 40×40 with filters on, in headless Firefox on a dev machine. Add `&fps=1` to `#/play` to check on other laptops)*
 

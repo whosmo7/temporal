@@ -91,11 +91,12 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 |---|---|
 | Journal | One page per player. **Free text + drawing**. **Earlier pages can't be edited.** |
 | Journal text limit | **400 characters** ([009](../decisions/009-journal-character-limit.md)) |
+| Music | **Ninja Adventure tracks (CC0)**, not original: day `Peaceful`, dusk `Quiet`, reflective `Melancholia` ([014](../decisions/014-music-from-the-pack.md)) |
 | Drawing tools | **Single pen, a few colours** (+ eraser) |
 | Journal access | An **in-world object, openable any time** (reading it doesn't use game time: the clock stops, [012](../decisions/012-day-night-clock.md)) |
 | Day/night | A turn is **one in-game day, 6 am to 6 am** ([012](../decisions/012-day-night-clock.md)) |
 | What successors learn | **Only the journal.** The world never explains why it is in its current state. |
-| Gravestone | **Name/initials**, **click to open that player's journal page**. Hover shows "AL · Generation 2"; E at the graveyard reads the nearest stone ([014](../decisions/014-gravestones.md)) |
+| Gravestone | **Name/initials**, **click to open that player's journal page** |
 | Replay | For each generation: **a snapshot of the world plus that player's diary entry**. The replay is where causes are explained. |
 | Replay audience | **Anyone**, through a public **gallery** of completed worlds |
 | Sharing/export | **No**, in-app only |

@@ -55,7 +55,9 @@ Frames: `house/exterior` (roof and front wall, faded out while you're inside), `
 
 ## Visual stages (from `visibleView()`; also sprite frame names)
 
-Sprite frames are named `<kind>/<stage>`, e.g. `orchard/fruiting`, `well/stagnant`.
+Sprite frames are named `<kind>/<stage>`, e.g. `orchard/fruiting`, `well/stagnant`. A frame can also carry the
+biome, `<kind>/<stage>-<biome>`, which the renderer tries first: the wild spot uses it (`wild/many-forest` is game
+in tall grass, `wild/many-island` fish in a pool).
 
 | Kind | Stages |
 |---|---|
@@ -69,6 +71,15 @@ Sprite frames are named `<kind>/<stage>`, e.g. `orchard/fruiting`, `well/stagnan
 
 World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground overlay), plus
 `timeOfDay` from 0 to 1.
+
+## UI icons and sounds (C's atlases, `09`)
+
+- **Icons** (`src/ui/kit/ui-atlas.json`, `<PixelIcon>`): `ui/icon-food`, `ui/icon-water`, `ui/icon-stamina`,
+  `ui/icon-<ActionType>` (e.g. `ui/icon-plantOrchard`), except Fish/Hunt, which is per biome:
+  `ui/icon-fishHunt-island`, `ui/icon-fishHunt-forest`. Clock: `ui/icon-day`, `ui/icon-night` (24 px).
+- **Sounds** (`src/audio/sfx-sprite.json`, `playSfx()`): every `ActionType` (Fish/Hunt as `fishHunt-island` and
+  `fishHunt-forest`), plus `deny`, `ui-click`, `tick`, `bell`, `page`, `pen`, `seal`, `stone`, `footstep-1`,
+  `footstep-2`. Music (`playMusic()`): `day`, `dusk`, `reflective`.
 
 ## Causes (`Cause.kind`)
 

@@ -1,16 +1,14 @@
 import { Application, ColorMatrixFilter, Container, Graphics, Rectangle, RenderTexture, Sprite, Texture, TextureSource } from 'pixi.js';
-import type { Gravestone } from '../api/Backend';
 import { isTimeUp, useGameStore } from '../store/game';
-import { buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
+import { BASE_OPTIONS, buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
 import { cameraOffset, pickZoom } from './camera';
 import { FIXED_STEP, INDOOR_DARKNESS, NIGHT_LIGHT_TILES, TILE, VIEW_TILES_INSIDE, WALK_SPEED, WEAKENED_WALK } from './constants';
 import { gameHour, lightAt } from './daylight';
 import { createFx } from './fx';
-import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
 import { KeyboardInput } from './input';
 import { nearbyPlot } from './interact';
 import { stepWalker, type CollisionGrid, type Walker } from './movement';
-import { P, paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
+import { paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
 // Pixel art: never smooth when scaling.
 TextureSource.defaultOptions.scaleMode = 'nearest';
@@ -22,10 +20,6 @@ const FLAT_PLOTS = new Set<Plot['kind']>(['field', 'wild']);
 const ROOF_FADE = 0.35;
 /** How dark the outside gets while you're in the house. */
 const OUTSIDE_DIM = 0.6;
-/** End of turn (05): seconds to pan to the graveyard, to wait, and for your stone to rise. */
-const PAN_TIME = 1.4;
-const RISE_DELAY = 0.4;
-const RISE_TIME = 1.8;
 
 /**
  * What the world looks like: visual stages only, as `visibleView()` (02) will provide them. No
@@ -44,10 +38,6 @@ export interface WorldView {
   setLook(look: WorldLook): void;
   /** Pause movement while a DOM overlay is open. */
   setInputPaused(paused: boolean): void;
-  /** The graveyard's stones, one per committed turn (05). */
-  setStones(stones: Gravestone[]): void;
-  /** End of turn: pans to the graveyard and raises this stone. Resolves once it has risen. */
-  raiseStone(stone: Gravestone): Promise<void>;
   /** Frames per second, for the perf readout. */
   fps(): number;
   destroy(): void;
@@ -72,8 +62,8 @@ function defaultStage(p: Plot): string {
  *   world (scaled + camera offset, colour filter: time of day, weakened, drought)
  *   ├─ ground    terrain, ponds, sea, flowers (+ drought cracks): baked into one RenderTexture
  *   ├─ flat      flat plots (fields, wild spot) and the house floor
- *   ├─ sorted    trees, bushes, rocks, structures, furniture, the house shell, gravestones and
- *   │            the player, y-sorted by their bottom edge
+ *   ├─ sorted    trees, bushes, rocks, structures, furniture, the house shell and the player,
+ *   │            y-sorted by their bottom edge
  *   ├─ fx        blight motes, rot flies
  *   └─ dim       darkens everything but the house while you're inside
  *   night        screen-space darkness with a soft light round the player
@@ -122,8 +112,13 @@ export function createWorldView(
   }
 
   // Plots: one sprite each, re-textured when their stage changes.
+  // C's atlas has plot art for the default plot sizes (wild spots per biome); other sizes keep the
+  // painted frames.
   const plotTextures = new Map<string, Texture>();
   const plotTexture = (p: Plot, stage: string) => {
+    const std = BASE_OPTIONS.plotSizes[p.kind];
+    const drawn = std.w === p.w && std.h === p.h ? (art[`${p.kind}/${stage}-${map.biome}`] ?? art[`${p.kind}/${stage}`]) : undefined;
+    if (drawn) return drawn;
     const key = `${p.kind}/${stage}/${p.w}x${p.h}`;
     let tex = plotTextures.get(key);
     if (!tex) {
@@ -134,7 +129,9 @@ export function createWorldView(
   };
   const plotSprites = new Map<PlotId, Sprite>();
   for (const plot of map.plots) {
-    const s = bottomAnchored(plotTexture(plot, defaultStage(plot)), plot.x, plot.y + plot.h);
+    // Bottom-centre, so art wider than the footprint (orchard canopies) spills evenly.
+    const s = bottomAnchored(plotTexture(plot, defaultStage(plot)), plot.x + plot.w / 2, plot.y + plot.h);
+    s.anchor.x = 0.5;
     s.label = plot.id;
     if (FLAT_PLOTS.has(plot.kind)) flat.addChild(s);
     else {
@@ -164,88 +161,6 @@ export function createWorldView(
     drawDim(dim, map, house);
     dim.alpha = 0;
   }
-
-  // Graveyard: the stones sit just in front of the fenced plot and sort among themselves.
-  const graveyard = map.plots.find((p) => p.kind === 'graveyard') ?? null;
-  const stoneLayer = new Container({ sortableChildren: true });
-  if (graveyard) {
-    stoneLayer.position.set(graveyard.x * TILE, graveyard.y * TILE);
-    stoneLayer.zIndex = (graveyard.y + graveyard.h) * TILE - 0.4;
-    sorted.addChild(stoneLayer);
-  }
-  let stones: Gravestone[] = [];
-  let spots: StoneSpot[] = [];
-  const stoneSprites = new Map<number, Sprite>();
-  let hovered: StoneSpot | null = null;
-  const setStones = (next: Gravestone[]) => {
-    finishCeremony();
-    stones = next;
-    spots = graveyard ? layoutStones(graveyard, stones) : [];
-    for (const sprite of stoneSprites.values()) sprite.destroy();
-    stoneSprites.clear();
-    hovered = null;
-    for (const spot of spots) {
-      const sprite = new Sprite(frame(spot.frame));
-      sprite.anchor.set(0.5, 1);
-      sprite.position.set(spot.x, spot.y);
-      sprite.scale.set(spot.scale);
-      sprite.zIndex = spot.y;
-      sprite.eventMode = 'static';
-      sprite.cursor = 'pointer';
-      sprite.on('pointerover', () => (hovered = spot));
-      sprite.on('pointerout', () => hovered === spot && (hovered = null));
-      sprite.on('pointertap', () => !input.paused && store().openJournal(spot.stone.turn));
-      stoneLayer.addChild(sprite);
-      stoneSprites.set(spot.stone.turn, sprite);
-    }
-  };
-
-  // Your stone at the end of the turn: the camera pans over, then it rises out of the ground.
-  let panTarget: { x: number; y: number } | null = null;
-  let panT = 0;
-  let ceremony: { sprite: Sprite; mask: Graphics; baseX: number; baseY: number; t: number; dust: Dust[]; done: () => void } | null = null;
-  const finishCeremony = () => {
-    if (!ceremony) return;
-    ceremony.sprite.mask = null;
-    ceremony.sprite.position.set(ceremony.baseX, ceremony.baseY);
-    ceremony.mask.destroy();
-    ceremony.dust.forEach((d) => d.g.destroy());
-    const { done } = ceremony;
-    ceremony = null;
-    done();
-  };
-  const raiseStone = (stone: Gravestone) =>
-    new Promise<void>((resolve) => {
-      if (!graveyard) return resolve();
-      setStones([...stones.filter((s) => s.turn !== stone.turn), stone]);
-      const sprite = stoneSprites.get(stone.turn)!;
-      // Only what's above the ground line shows, so the stone seems to push up through the earth.
-      const mask = new Graphics().rect(sprite.x - TILE, sprite.y - 3 * TILE, 2 * TILE, 3 * TILE).fill(0xffffff);
-      stoneLayer.addChild(mask);
-      sprite.mask = mask;
-      const baseY = sprite.y;
-      sprite.y = baseY + sprite.height;
-      panTarget = { x: (graveyard.x + graveyard.w / 2) * TILE, y: (graveyard.y + graveyard.h / 2) * TILE };
-      ceremony = { sprite, mask, baseX: sprite.x, baseY, t: 0, dust: [], done: resolve };
-    });
-  const updateCeremony = (dt: number) => {
-    if (!ceremony) return;
-    const c = ceremony;
-    c.t += dt;
-    const riseAt = PAN_TIME + RISE_DELAY;
-    if (c.t >= riseAt && c.dust.length === 0) c.dust = spawnDust(stoneLayer, c.baseX, c.baseY);
-    const f = Math.min(1, Math.max(0, (c.t - riseAt) / RISE_TIME));
-    c.sprite.y = Math.round(c.baseY + (1 - ease(f)) * c.sprite.height);
-    c.sprite.x = c.baseX + (f > 0 && f < 1 && Math.floor(c.t * 20) % 2 ? 1 : 0); // a slight grinding shake
-    for (const d of c.dust) {
-      d.vy += 40 * dt;
-      d.x += d.vx * dt;
-      d.y += d.vy * dt;
-      d.g.position.set(Math.round(d.x), Math.round(d.y));
-      d.g.alpha = Math.max(0, 1 - (c.t - riseAt) / 1.2);
-    }
-    if (f >= 1 && c.t >= riseAt + 1.2) finishCeremony();
-  };
 
   const player = new Sprite(frame('player/walk-down-0'));
   player.anchor.set(0.5, 1);
@@ -302,12 +217,10 @@ export function createWorldView(
     player.texture = frame(`player/walk-${walker.facing}-${step}`);
     player.position.set(Math.round(walker.x * TILE), Math.round(walker.y * TILE));
     player.zIndex = walker.y * TILE;
-    const near = timeUp ? null : nearbyPlot(map, walker);
-    store.setNearby(near, near === 'graveyard' && graveyard ? (nearestStone(graveyard, spots, walker)?.stone ?? null) : null);
+    store.setNearby(timeUp ? null : nearbyPlot(map, walker));
 
     if (house) {
-      // During the end-of-turn pan the roof goes back on, so the camera can leave the house.
-      const target = !panTarget && isInside(house, walker) ? 1 : 0;
+      const target = isInside(house, walker) ? 1 : 0;
       insideT = approach(insideT, target, dt / ROOF_FADE);
       shell!.alpha = 1 - insideT;
       dim.alpha = OUTSIDE_DIM * insideT;
@@ -319,21 +232,11 @@ export function createWorldView(
     const outsideZoom = pickZoom(view.w, view.h, dpr);
     const zoom = house && e > 0 ? lerp(outsideZoom, pickZoom(view.w, view.h, dpr, VIEW_TILES_INSIDE), e) : outsideZoom;
     const playerFocus = { x: walker.x * TILE, y: (walker.y - 0.5) * TILE };
-    const walkFocus = house && e > 0 ? lerpPoint(playerFocus, { x: (house.x + house.w / 2) * TILE, y: (house.y + house.h / 2) * TILE }, e) : playerFocus;
-    panT = approach(panT, panTarget ? 1 : 0, dt / PAN_TIME);
-    const focus = panTarget ? lerpPoint(walkFocus, panTarget, ease(panT)) : walkFocus;
+    const focus = house && e > 0 ? lerpPoint(playerFocus, { x: (house.x + house.w / 2) * TILE, y: (house.y + house.h / 2) * TILE }, e) : playerFocus;
     const offset = cameraOffset(focus, view, { w: map.width * TILE, h: map.height * TILE }, zoom, dpr);
     world.scale.set(zoom);
     world.position.set(offset.x, offset.y);
     fx.update(journalOpen ? 0 : dt, focus);
-    updateCeremony(dt);
-
-    // The hover label is DOM (React); give it the stone's top in canvas px, following the camera.
-    const hoverSprite = hovered && !input.paused ? stoneSprites.get(hovered.stone.turn) : undefined;
-    if (hovered && hoverSprite) {
-      const at = hoverSprite.getGlobalPosition();
-      store.setHoveredStone({ ...hovered.stone, x: Math.round(at.x), y: Math.round(at.y - hoverSprite.height * zoom) });
-    } else store.setHoveredStone(null);
 
     // Light: the day tint multiplies with the weakened/drought looks; night darkens round a soft light.
     const light = lightAt(gameHour(t, turnSeconds));
@@ -352,8 +255,7 @@ export function createWorldView(
     night.scale.set((NIGHT_LIGHT_TILES * TILE * zoom) / LIGHT_HOLE_RADIUS);
 
     // Time up: lock input (above) and dim the world; the end-of-turn flow (05) takes over from here.
-    // The dim lifts again while your stone rises, so it can be seen.
-    frozenT = approach(frozenT, timeUp && !panTarget ? 1 : 0, dt / 0.6);
+    frozenT = approach(frozenT, timeUp ? 1 : 0, dt / 0.6);
     if (frozenT > 0) frozen.clear().rect(0, 0, view.w, view.h).fill(0x101418);
     frozen.alpha = 0.45 * frozenT;
   };
@@ -364,15 +266,11 @@ export function createWorldView(
     setInputPaused: (paused) => {
       externallyPaused = paused;
     },
-    setStones,
-    raiseStone,
     fps: () => app.ticker.FPS,
     destroy: () => {
       app.ticker.remove(update);
       input.destroy();
-      finishCeremony();
       store().setNearby(null);
-      store().setHoveredStone(null);
       world.destroy({ children: true });
       night.destroy();
       frozen.destroy();
@@ -386,24 +284,6 @@ export function createWorldView(
 }
 
 const store = () => useGameStore.getState();
-
-interface Dust {
-  g: Graphics;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-}
-
-/** A few specks of earth thrown up round the stone's base. Fixed spread, no randomness needed. */
-function spawnDust(layer: Container, x: number, y: number): Dust[] {
-  return [-7, -4, -2, 2, 4, 7].map((dx, i) => {
-    const g = new Graphics().rect(0, 0, 1, 1).fill(i % 2 ? P.dirt : P.ledge);
-    g.zIndex = y + 1;
-    layer.addChild(g);
-    return { g, x: x + dx, y: y - 1, vx: dx * 2.5, vy: -18 - (i % 3) * 6 };
-  });
-}
 
 /** Radius (canvas px) of the clear hole in the night texture; the texture is 16× wider than it. */
 const LIGHT_HOLE_RADIUS = 64;

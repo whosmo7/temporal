@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import type { JournalPage } from '../../api/Backend';
+import { currentMusic, playMusic, playSfx, stopMusic } from '../../audio/sound';
 import { Button, Dialog, PixelBitmap } from '../kit';
 import { palette } from '../theme/palette';
 import { JOURNAL_CHAR_LIMIT, PENS, SEAL_HOLD_MS, SEAL_PRESS_MS, type PenId } from './constants';
@@ -30,8 +31,6 @@ type Props = {
       /** From the lectern during play: read only. Esc or Close shuts it. */
       mode: 'read';
       onClose: () => void;
-      /** Generation to open at (a gravestone's page). Defaults to the latest page. */
-      openAt?: number;
     }
 );
 
@@ -116,12 +115,7 @@ export function JournalModal(props: Props) {
   const pages = useMemo(() => [...rawPages].sort((a, b) => a.turn - b.turn), [rawPages]);
 
   const dialog = useRef<HTMLDialogElement>(null);
-  const openAt = props.mode === 'read' ? props.openAt : undefined;
-  const firstPage = () => {
-    const i = pages.findIndex((p) => p.turn === openAt);
-    return i >= 0 ? i : pages.length - 1;
-  };
-  const [selected, setSelected] = useState(firstPage);
+  const [selected, setSelected] = useState(pages.length - 1);
   const [text, setText] = useState('');
   const [drawing, setDrawing] = useState<Drawing>([]);
   const [history, setHistory] = useState<Drawing[]>([]);
@@ -142,13 +136,28 @@ export function JournalModal(props: Props) {
     // showModal focuses the first control (a letter sliver); typing should land on your page.
     el.querySelector<HTMLTextAreaElement>('.page__writing')?.focus();
     const pending = timers.current;
-    return () => pending.forEach(clearTimeout);
+    // The journal has its own quiet theme; reading at the lectern hands the day loop back after.
+    const before = currentMusic();
+    playMusic('reflective');
+    return () => {
+      pending.forEach(clearTimeout);
+      if (before) playMusic(before);
+      else stopMusic();
+    };
   }, []);
 
-  // Re-pick only when a page is added or a different stone is clicked.
-  useEffect(() => setSelected(firstPage()), [pages.length, openAt]);
+  useEffect(() => setSelected(pages.length - 1), [pages.length]);
+
+  /** A page turn the reader asked for (not the initial jump to the latest page). */
+  const turnTo = (next: number) => {
+    const page = Math.min(Math.max(next, 0), pages.length - 1);
+    if (page === selected) return;
+    playSfx('page');
+    setSelected(page);
+  };
 
   const commit = (next: Drawing) => {
+    playSfx('pen');
     setHistory((h) => [...h, drawing]);
     setDrawing(next);
   };
@@ -166,7 +175,10 @@ export function JournalModal(props: Props) {
     setSeal('pressing');
     const page: SealedPage = { text: text.trim(), drawing };
     timers.current.push(
-      window.setTimeout(() => setSeal('sealed'), SEAL_PRESS_MS),
+      window.setTimeout(() => {
+        setSeal('sealed');
+        playSfx('seal');
+      }, SEAL_PRESS_MS),
       window.setTimeout(() => onSeal(page), SEAL_PRESS_MS + SEAL_HOLD_MS),
     );
   };
@@ -179,8 +191,8 @@ export function JournalModal(props: Props) {
       undo();
     }
     if (mode === 'read' && !inText) {
-      if (e.key === 'ArrowLeft') setSelected((s) => Math.max(0, s - 1));
-      if (e.key === 'ArrowRight') setSelected((s) => Math.min(pages.length - 1, s + 1));
+      if (e.key === 'ArrowLeft') turnTo(selected - 1);
+      if (e.key === 'ArrowRight') turnTo(selected + 1);
     }
   };
 
@@ -199,7 +211,7 @@ export function JournalModal(props: Props) {
       onKeyDown={onKeyDown}
     >
       <div className="book">
-        <LetterStack pages={pages} selected={selected} onSelect={setSelected} />
+        <LetterStack pages={pages} selected={selected} onSelect={turnTo} />
 
         <article className="page page--left on-paper">
           {/* Keyed so turning to another letter replays the page-turn. */}
@@ -213,7 +225,7 @@ export function JournalModal(props: Props) {
                 variant="quiet"
                 icon="left"
                 disabled={selected === 0}
-                onClick={() => setSelected((s) => s - 1)}
+                onClick={() => turnTo(selected - 1)}
               >
                 Earlier
               </Button>
@@ -222,7 +234,7 @@ export function JournalModal(props: Props) {
                 variant="quiet"
                 icon="right"
                 disabled={selected === pages.length - 1}
-                onClick={() => setSelected((s) => s + 1)}
+                onClick={() => turnTo(selected + 1)}
               >
                 Later
               </Button>

@@ -68,7 +68,7 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 - [ ] **[C]** Gallery + replay routes (screens from `06`)
 - [ ] **[C]** Admin panel + guard
 - [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup)
-- [ ] **[C]** Audio toggle (mute) in the shell (`09`)
+- [x] **[C]** Audio toggle (mute) in the shell (`09`) *(`MuteToggle` in the header, saved in localStorage.)*
 
 ## Acceptance
 

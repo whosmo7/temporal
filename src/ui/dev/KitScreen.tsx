@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Dialog, Icon, Panel, TextInput, type IconName } from '../kit';
+import { Button, Dialog, Icon, Panel, PixelIcon, TextInput, type IconName, type PixelIconName } from '../kit';
+import uiAtlas from '../kit/ui-atlas.json';
 import { palette } from '../theme/palette';
 
 const ICONS: IconName[] = ['close', 'undo', 'eraser', 'clear', 'left', 'right'];
@@ -84,6 +85,20 @@ export function KitScreen() {
           <p style={{ margin: 0 }}>Your world stays as you left it.</p>
         </Dialog>
       </Panel>
+
+      <div style={{ gridColumn: '1 / -1' }}>
+        <Panel title="Pack icons (HUD 2×, hotbar 3×)">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'end' }}>
+            {(Object.keys(uiAtlas.frames) as PixelIconName[]).map((n) => (
+              <div key={n} style={{ display: 'grid', justifyItems: 'center', gap: 6 }}>
+                <PixelIcon name={n} scale={3} label={n} />
+                <PixelIcon name={n} scale={2} />
+                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--muted)' }}>{n.replace('ui/icon-', '')}</span>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </div>
 
       <div style={{ gridColumn: '1 / -1' }}>
         <Panel title="Palette">
