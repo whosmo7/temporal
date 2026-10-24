@@ -173,8 +173,8 @@ nothing was ever written.
 - [x] **[A]** Admin RPCs: set `settings`, set a world's `turn_seconds`/`generation_count`, force-assign, mark complete (skip to replay) *(Also `admin_list_worlds` and `admin_create_world` (a world from a chosen seed, for the demo).)*
 - [x] **[A]** Gallery + replay read queries *(`list_completed_worlds()` and `get_replay(world)`, security invoker so RLS decides.)*
 - [x] **[A]** `LocalBackend` implementation of the same interface (hot-seat) *(Same claim order, TTL, heartbeat cap and void rules; scenario tests in `src/api/__tests__/LocalBackend.test.ts`.)*
-- [ ] **[A]** Concurrency test: 2 clients call `claim_world` at once → different worlds
-- [ ] **[A]** Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone
+- [x] **[A]** Concurrency test: 2 clients call `claim_world` at once → different worlds *(`scripts/test-backend.ts`, passed live 2026-10-24 along with commit → successor, gallery/replay and RLS checks.)*
+- [x] **[A]** Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone *(`scripts/test-backend.ts` shortens the TTL for the run; also covered on LocalBackend.)*
 - [x] **[A]** Seed script for the demo world (`10`) *(`scripts/seed-demo.ts`, see `10`.)*
 
 ## Acceptance

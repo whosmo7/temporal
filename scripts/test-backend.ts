@@ -8,6 +8,7 @@
 // and their worlds afterwards (test fixtures only; player history is never deleted).
 
 import { createClient } from '@supabase/supabase-js';
+import { runTurn } from '../src/api/runTurn';
 import { SupabaseBackend } from '../src/api/SupabaseBackend';
 
 const url = process.env.VITE_SUPABASE_URL;
@@ -117,7 +118,15 @@ try {
   const replay = await e!.getReplay(successor.worldId);
   check('replay has a snapshot per generation', replay.snapshots.length === 2);
   check('replay has both pages', replay.journal.map((j) => j.text).join('|') === 'Look after it.|End.');
-  check('replay transitions are in engine order', replay.transitions[0]?.id.startsWith('begin-1') ?? false);
+  // Rebuild both (empty) turns with the engine; the replay must return their transitions in that order.
+  const meta = {
+    worldId: replay.worldId, seed: replay.seed, biome: replay.biome, preset: 'default' as const,
+    generationCount: 2, turnSeconds: TURN_SECONDS,
+  };
+  const gen1 = runTurn(meta, null, [], '');
+  const gen2 = runTurn(meta, gen1.state, [], '');
+  const expected = [...gen1.transitions, ...gen2.transitions].map((t) => t.id).join();
+  check('replay transitions are in engine order', replay.transitions.map((t) => t.id).join() === expected);
 
   // Concurrency: exactly one open unlocked world (a fresh claim left to lapse), then two players
   // claim at the same moment.
