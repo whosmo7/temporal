@@ -116,18 +116,21 @@ const harvest: Handler = (ctx) => {
     return 'Nothing to harvest here';
   }
 
-  const blocked = cannotAfford(state, CONFIG.harvestCost);
+  // Harvest and eat is free, so it needs room to eat; otherwise it would be a free harvest (decision 016).
+  if (input.eat && state.resources.hunger >= CONFIG.hungerMax) return "You're not hungry";
+  const cost = input.eat ? CONFIG.harvestEatCost : CONFIG.harvestCost;
+  const blocked = cannotAfford(state, cost);
   if (blocked) return blocked;
-  pay(ctx, CONFIG.harvestCost);
+  if (cost > 0) pay(ctx, cost);
 
   let stored = amount;
   if (input.eat) {
-    // Eat only the fresh yield, up to full stamina; the rest goes to the store (decision 003).
-    const room = CONFIG.baseStamina - state.resources.stamina;
-    const eaten = Math.min(amount, Math.ceil(room / CONFIG.staminaPerFoodEaten));
+    // Eat only the fresh yield, until hunger is full; the rest goes to the store (decisions 003, 016).
+    const room = CONFIG.hungerMax - state.resources.hunger;
+    const eaten = Math.min(amount, Math.ceil(room / CONFIG.hungerPerFoodEaten));
     if (eaten > 0) {
-      const gain = Math.min(eaten * CONFIG.staminaPerFoodEaten, room);
-      setResource(state, rec, 'stamina', state.resources.stamina + gain, [cause]);
+      const gain = Math.min(eaten * CONFIG.hungerPerFoodEaten, room);
+      setResource(state, rec, 'hunger', state.resources.hunger + gain, [cause]);
       state.tally.foodEaten += eaten;
       stored -= eaten;
     }

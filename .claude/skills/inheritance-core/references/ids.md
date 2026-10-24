@@ -10,6 +10,7 @@ same PR as any change.
 | `food` | Stored food | Yes, minus rot |
 | `water` | Stored water | Yes, minus stagnation |
 | `stamina` | The player's energy for this turn | No, reset each turn (reduced if weakened) |
+| `hunger` | How fed the family is, 0..100; eating refills it (decision 016) | Yes, minus 30 at each new generation |
 
 ## Actions (`ActionType`)
 
@@ -69,7 +70,7 @@ in tall grass, `wild/many-island` fish in a pool).
 | `store` (the house cabinet, i.e. the food store) | `full`, `half`, `empty`, `rotting` |
 | `lectern`, `graveyard` | `default` (they always look the same) |
 
-World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground overlay), plus
+World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground overlay), `hungry` (slow walk), plus
 `timeOfDay` from 0 to 1.
 
 ## UI icons and sounds (C's atlases, `09`)
@@ -90,7 +91,7 @@ World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground 
 | `rule` | `rule` | one of the rules below |
 
 Rules: `foodRot`, `waterStagnate`, `wear`, `upkeep`, `regrow`, `weakened`, `income`, `newTurn`
-(stamina refilled at the start of a generation).
+(stamina refilled at the start of a generation), `hunger` (the drop at the start of a generation).
 
 ## Events (`SeededEvent.kind`)
 

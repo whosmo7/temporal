@@ -1,158 +1,106 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import type { Gravestone, JournalPage } from '../../api/Backend';
-import { playMusic, stopMusic } from '../../audio/sound';
-import { CONFIG } from '../../engine/config';
-import { gameHour, isNight } from '../../render/daylight';
-import { PixiStage } from '../../render/PixiStage';
-import { founderLook, type WorldLook, type WorldView } from '../../render/world-view';
-import { isTimeUp, useGameStore } from '../../store/game';
-import { generateMap, isPresetName, type Biome, type TileMap } from '../../worldgen';
-import { Clock } from '../hud/Clock';
-import { EndCard } from '../hud/EndCard';
-import { InteractPrompt } from '../hud/InteractPrompt';
-import { StoneLabel } from '../hud/StoneLabel';
-import { JournalModal, type SealedPage } from '../journal';
-
-/** End of turn (05): freeze → write your page → your stone rises → done. Cost summary (C) slots in after `write`. */
-type EndStep = 'play' | 'freeze' | 'write' | 'stone' | 'over';
-/** How long "The day is over." shows before the journal opens. */
-const FREEZE_MS = 2200;
+import type { Gravestone, JournalPage } from '../../api';
+import { beginTurn, CONFIG, createWorld, endTurn } from '../../engine';
+import { founderLook, type WorldLook } from '../../render/world-view';
+import { useGameStore } from '../../store/game';
+import { generateMap, isPresetName, type Biome, type PresetName, type TileMap } from '../../worldgen';
+import { Game, type SealedTurn, type TurnStart } from '../play/Game';
+import { PlayFlow } from '../play/PlayFlow';
 
 /**
- * Local hot-seat world for now: `#/play?seed=123&biome=island&preset=small`. Once the engine and
- * Backend exist (`02`, `07`, `08`), this gets its world, journal pages and look from the claimed
- * turn and `visibleView()`. Dev params: `look=healthy|neglected` previews world states,
- * `turn=60` shortens the turn to 60 s, `fps=1` shows the frame rate, `graves=AL,MO,KE` fills the
- * graveyard with earlier players (and their pages), `name=JO` is you.
+ * `#/play` claims a world from the backend and plays it (08). With `seed=` it's an offline dev
+ * sandbox instead: `#/play?seed=123&biome=island&preset=small`, where Continue hands the same
+ * world to the next generation and nothing is saved. Sandbox params: `turn=60` shortens the turn
+ * to 60 s, `name=JO` is you, `graves=AL,MO,KE` plays that many idle generations first (their stones
+ * and pages too), and `look=healthy|neglected` swaps the engine's look for a fixed preview.
+ * `fps=1` shows the frame rate in both.
  */
 export function PlayScreen() {
   const [params] = useSearchParams();
+  const showFps = params.get('fps') === '1';
+  return params.has('seed') ? <Sandbox params={params} showFps={showFps} /> : <PlayFlow showFps={showFps} />;
+}
+
+function Sandbox({ params, showFps }: { params: URLSearchParams; showFps: boolean }) {
   const seed = Number(params.get('seed') ?? 123);
   const biome: Biome = params.get('biome') === 'island' ? 'island' : 'forest';
   const presetParam = params.get('preset') ?? 'default';
   const preset = isPresetName(presetParam) ? presetParam : 'default';
   const lookParam = params.get('look');
   const turnSeconds = Number(params.get('turn') ?? CONFIG.turnSeconds);
-  const showFps = params.get('fps') === '1';
   const author = params.get('name') ?? 'Player';
   const gravesParam = params.get('graves') ?? '';
 
   const map = useMemo(() => generateMap(seed, biome, preset), [seed, biome, preset]);
-  const look = useMemo(() => previewLook(map, lookParam), [map, lookParam]);
-  const [view, setView] = useState<WorldView | null>(null);
-  // Until the play flow (08) claims a real world, the journal and graveyard are local.
-  const earlier = useMemo(() => previewHistory(gravesParam), [gravesParam]);
-  const [pages, setPages] = useState<JournalPage[]>(earlier.pages);
-  const [stones, setStones] = useState<Gravestone[]>(earlier.stones);
-  useEffect(() => {
-    setPages(earlier.pages);
-    setStones(earlier.stones);
-  }, [earlier]);
-  const generation = earlier.stones.length + 1;
-  useEffect(() => view?.setStones(stones), [view, stones]);
+  const preview = useMemo(() => previewLook(map, lookParam), [map, lookParam]);
+  const first = useMemo(
+    () => localWorld({ seed, biome, preset, turnSeconds }, gravesParam),
+    [seed, biome, preset, turnSeconds, gravesParam],
+  );
+  const [start, setStart] = useState(first);
+  const [prevFirst, setPrevFirst] = useState(first);
+  if (first !== prevFirst) {
+    setPrevFirst(first);
+    setStart(first);
+  }
 
-  const startTurn = useGameStore((s) => s.startTurn);
-  const nearby = useGameStore((s) => s.nearby);
-  const nearbyStone = useGameStore((s) => s.nearbyStone);
-  const journalOpen = useGameStore((s) => s.journalOpen);
-  const journalPage = useGameStore((s) => s.journalPage);
-  const openJournal = useGameStore((s) => s.openJournal);
-  const setJournalOpen = useGameStore((s) => s.setJournalOpen);
-  const timeUp = useGameStore(isTimeUp);
-  const [step, setStep] = useState<EndStep>('play');
-
-  // Music: the day loop, crossfading to the dusk loop from 7 pm (decisions 012, 015).
-  const night = useGameStore((s) => isNight(gameHour(s.t, s.turnSeconds)));
-  useEffect(() => playMusic(night ? 'dusk' : 'day'), [night]);
-  useEffect(() => () => stopMusic(), []);
-  useEffect(() => {
-    startTurn(turnSeconds);
-    setStep('play');
-  }, [map, turnSeconds, startTurn]);
-
-  // The lectern opens the latest page; at the graveyard, E reads the nearest stone's page.
-  const readable = step !== 'play' ? null : nearby === 'lectern' ? 'lectern' : nearby === 'graveyard' && nearbyStone ? nearbyStone : null;
-  useEffect(() => {
-    if (!readable || journalOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'KeyE' || e.code === 'Space') {
-        e.preventDefault();
-        openJournal(readable === 'lectern' ? undefined : readable.turn);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [readable, journalOpen, openJournal]);
-
-  useEffect(() => {
-    if (!timeUp || step !== 'play') return;
-    setJournalOpen(false);
-    setStep('freeze');
-  }, [timeUp, step, setJournalOpen]);
-  useEffect(() => {
-    if (step !== 'freeze') return;
-    const id = setTimeout(() => setStep('write'), FREEZE_MS);
-    return () => clearTimeout(id);
-  }, [step]);
+  // Nothing is saved; the sealed page joins the local journal for the next generation.
+  const [sealed, setSealed] = useState<SealedTurn | null>(null);
+  const save = useCallback(async (turn: SealedTurn) => setSealed(turn), []);
 
   const navigate = useNavigate();
-  const onSeal = (page: SealedPage) => {
-    // TODO(07): commit the turn here; TODO(C, 05): the cost summary goes between the seal and the stone.
-    const stone = { turn: generation, username: author };
-    setPages((p) => [...p, { turn: generation, authorUsername: author, ...page }]);
-    setStep('stone');
-    if (!view) return setStep('over');
-    void view.raiseStone(stone).then(() => {
-      setStones((s) => [...s, stone]);
-      setStep('over');
-    });
-  };
+  const onContinue = useCallback(() => {
+    const world = useGameStore.getState().world;
+    if (!world || world.turn > world.generationCount || !sealed) return navigate('/');
+    const generation = world.turn - 1;
+    const next = beginTurn(world);
+    setStart((s) => ({
+      world: next.state,
+      begun: next.transitions,
+      pages: [...s.pages, { turn: generation, authorUsername: author, ...sealed.page }],
+      stones: [...s.stones, { turn: generation, username: author }],
+    }));
+  }, [sealed, author, navigate]);
+  const endActions = useMemo(() => [{ label: 'Continue', onClick: onContinue }], [onContinue]);
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#101418' }}>
-      <PixiStage map={map} look={look} onReady={setView} />
-      <div style={{ position: 'absolute', top: 12, right: 12 }}>
-        <Clock />
-      </div>
-      {readable && !journalOpen && (
-        <div style={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)' }}>
-          <InteractPrompt keyLabel="E" text={readable === 'lectern' ? 'Read the journal' : `Read ${readable.username}'s page`} />
-        </div>
-      )}
-      {!journalOpen && <StoneLabel />}
-      {journalOpen && step === 'play' && (
-        // Reading the journal stops the clock (decision 012).
-        <JournalModal
-          mode="read"
-          pages={pages}
-          generation={generation}
-          author={author}
-          openAt={journalPage ?? undefined}
-          onClose={() => setJournalOpen(false)}
-        />
-      )}
-      {step === 'freeze' && <EndCard text="The day is over." />}
-      {step === 'write' && <JournalModal mode="write" pages={pages} generation={generation} author={author} onSeal={onSeal} />}
-      {step === 'over' && <EndCard text={`Generation ${generation} is over.`} action="Continue" onAction={() => navigate('/')} />}
-      {showFps && view && <FpsReadout view={view} />}
-    </div>
+    <Game map={map} start={start} author={author} save={save} endActions={endActions} previewLook={preview} showFps={showFps} />
   );
 }
 
-/** Dev: earlier players for the graveyard and the journal, from `graves=AL,MO,KE`. */
-function previewHistory(names: string): { stones: Gravestone[]; pages: JournalPage[] } {
-  const players = names.split(',').map((n) => n.trim()).filter(Boolean);
-  return {
-    stones: players.map((username, i) => ({ turn: i + 1, username })),
-    pages: players.map((authorUsername, i) => ({ turn: i + 1, authorUsername, text: `(Dev preview: ${authorUsername}'s page.)`, drawing: [] })),
-  };
+/**
+ * Dev hot-seat world: a fresh engine world, plus one idle generation (no actions) per name in
+ * `graves=AL,MO,KE`, so the graveyard, journal and world all agree on who came before.
+ */
+function localWorld(
+  opts: { seed: number; biome: Biome; preset: PresetName; turnSeconds: number },
+  graves: string,
+): TurnStart {
+  const players = graves.split(',').map((n) => n.trim()).filter(Boolean);
+  let world = createWorld(opts.seed, {
+    worldId: `local-${opts.seed}`,
+    biome: opts.biome,
+    preset: opts.preset,
+    turnSeconds: opts.turnSeconds,
+    generationCount: Math.max(CONFIG.generationCount, players.length + 1),
+  }).state;
+  for (let i = 0; i < players.length; i++) world = endTurn(beginTurn(world).state).state;
+  const begun = beginTurn(world);
+  const stones: Gravestone[] = players.map((username, i) => ({ turn: i + 1, username }));
+  const pages: JournalPage[] = players.map((authorUsername, i) => ({
+    turn: i + 1,
+    authorUsername,
+    text: `(Dev preview: ${authorUsername}'s page.)`,
+    drawing: [],
+  }));
+  return { world: begun.state, begun: begun.transitions, stones, pages };
 }
 
-/** Dev previews of a thriving and a neglected world, until visibleView() drives the look. */
-function previewLook(map: TileMap, name: string | null): WorldLook {
+/** Dev previews of a thriving and a neglected world (`look=`), in place of the engine's look. */
+function previewLook(map: TileMap, name: string | null): WorldLook | null {
+  if (name !== 'healthy' && name !== 'neglected') return null;
   const base = founderLook(map);
-  if (name !== 'healthy' && name !== 'neglected') return base;
   const healthy = name === 'healthy';
   const stage: Record<string, string> = healthy
     ? { field: 'ripe', orchard: 'fruiting', reservoir: 'full', well: 'clear', wild: 'many' }
@@ -162,18 +110,6 @@ function previewLook(map: TileMap, name: string | null): WorldLook {
     store: healthy ? 'full' : 'rotting',
     weakened: !healthy,
     drought: !healthy,
+    hungry: !healthy,
   };
-}
-
-function FpsReadout({ view }: { view: WorldView }) {
-  const [fps, setFps] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setFps(view.fps()), 500);
-    return () => clearInterval(id);
-  }, [view]);
-  return (
-    <div style={{ position: 'absolute', top: 12, left: 12, padding: '2px 6px', background: '#1f2027', color: '#fefadb', font: '12px monospace' }}>
-      {fps.toFixed(0)} fps
-    </div>
-  );
 }

@@ -13,10 +13,17 @@ export const CONFIG = {
   upkeepWater: 10,
   weakenFactor: 0.6,
   minStaminaPct: 0.4,
-  staminaPerFoodEaten: 2, // harvest and eat (decision 003)
+
+  // Hunger (decision 016): carried across generations, drops at each new generation, eating refills it
+  hungerMax: 100,
+  hungerDropPerGen: 30,
+  hungerPerFoodEaten: 10, // harvest and eat (decisions 003, 016)
+  hungerSlowAt: 0, // at or below this the player walks slower
+  hungrySpeedMult: 0.6,
 
   // Actions
   harvestCost: 5,
+  harvestEatCost: 0, // harvest and eat costs no stamina (decision 016)
   cropYield: 5,
   orchardYield: 15, // once per generation
   plantCropsCost: 8,

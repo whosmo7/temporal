@@ -158,6 +158,7 @@ nothing was ever written.
 ## Client data layer
 
 - `src/api/` wraps `supabase-js`: `signUp`, `signIn`, `claimWorld`, `commitTurn`, `listCompletedWorlds`, `getReplay(worldId)`, admin calls.
+  `listCompletedWorlds` also returns each world's `preset` and `finalState` (the last snapshot's state), both optional, for the gallery thumbnails (`06`).
 - Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the anon key is safe in a static bundle when RLS is on).
 - **Offline/hot-seat mode** (build first, and keep as a demo fallback): the same interface, backed by `localStorage`, so the game can be developed before the backend exists.
 
