@@ -250,6 +250,8 @@ Rehearsing the demo (`10`) is listed under C, but all three of you should be the
 
 ### `10` Demo World & Demo Moment (5.5 pts)
 
+These wait until the product is finalised (see `10`).
+
 | Task | Pts |
 |---|---|
 | Pick the demo seed (orchard visible, nice-looking biome) | 1 |

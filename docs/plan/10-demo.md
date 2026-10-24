@@ -47,14 +47,17 @@ the replay) next to the judge's flourishing orchard.
 
 ## Tasks
 
-- [ ] **[C]** Pick the demo seed (orchard visible, nice-looking biome)
-- [ ] **[C]** Decide the demo world's generation count + turn length
-- [ ] **[C]** Write the founder journal pages (natural, not preachy)
+C's demo tasks wait until the product is finalised: the seed, length, founder pages and rehearsal all depend on
+the final world, numbers and copy, so doing them earlier means doing them twice.
+
+- [ ] **[C]** Pick the demo seed (orchard visible, nice-looking biome) *(After the product is finalised.)*
+- [ ] **[C]** Decide the demo world's generation count + turn length *(After the product is finalised.)*
+- [ ] **[C]** Write the founder journal pages (natural, not preachy) *(After the product is finalised.)*
 - [x] **[A]** Write `scripts/seed-demo.ts` (+ a spare world) *(Plays `src/api/demo-world.json` through claim → commit, force-assigns the judge, and makes an unassigned spare. The seed, length and pages in that file are placeholders for C.)*
-- [ ] **[C]** Create judge accounts (or a shared "judge" account) + admin account
-- [ ] **[C]** Rehearse force-assign → play → replay flow 3+ times on the demo laptop
+- [ ] **[C]** Create judge accounts (or a shared "judge" account) + admin account *(After the product is finalised.)*
+- [ ] **[C]** Rehearse force-assign → play → replay flow 3+ times on the demo laptop *(After the product is finalised.)*
 - [x] **[A]** Offline fallback: the `LocalBackend` hot-seat build with the same seed + log baked in, in case the venue Wi-Fi fails *(`VITE_OFFLINE=1 npm run build && npm run preview`. First load seeds the same demo world; the judge signs in as `judge` / `demo`.)*
-- [ ] **[C]** Decide on the "what this player saw" replay panel (open question)
+- [ ] **[C]** Decide on the "what this player saw" replay panel (open question) *(After the product is finalised.)*
 
 ## Acceptance
 
