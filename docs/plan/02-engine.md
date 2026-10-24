@@ -36,6 +36,7 @@ interface ActionEntry {
   type: ActionType;           // 'harvest' | 'plantCrops' | ... | 'fastTrack'
   plotId?: PlotId;
   targetEffectId?: string;    // for fastTrack
+  eat?: boolean;              // harvest only: eat the fresh yield for stamina (decision 003)
   committedAt: TimePoint;     // when it was taken
   dueAt: TimePoint;           // when its main effect lands (== committedAt for immediate)
 }

@@ -15,7 +15,7 @@ same PR as any change.
 
 | ID | Player-facing name | Target |
 |---|---|---|
-| `harvest` | Harvest | ripe `field` or fruiting `orchard` |
+| `harvest` | Harvest / Harvest and eat (`eat: true`, decision 003) | ripe `field` or fruiting `orchard` |
 | `plantCrops` | Plant Crops | empty `field` |
 | `plantOrchard` | Plant Orchard | empty `orchard` |
 | `repairReservoir` | Repair Reservoir | `reservoir` |
@@ -74,7 +74,10 @@ Rules: `foodRot`, `waterStagnate`, `wear`, `upkeep`, `regrow`, `weakened`, `inco
 
 ## Events (`SeededEvent.kind`)
 
-`drought`, `goodHarvest`, `storm` (Island only). The final list is an open question in `01`.
+`drought`, `goodHarvest`, `storm` (Island only), from decision 005. The drought timing comes from decision 008.
+
+`SeededEvent = { id, kind, turn, spellId? }`, with one entry per event per generation (`src/worldgen/events.ts`). The ID is `<kind>-<turn>`,
+e.g. `drought-4`. Every generation of a multi-generation drought shares the same `spellId` (`drought-<startTurn>`).
 
 ## Effect kinds (`ScheduledEffect.kind`)
 

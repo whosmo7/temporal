@@ -11,6 +11,10 @@
 
 ## Art
 
+**Art direction:** [`docs/art/art-direction.md`](../art/art-direction.md) has the pillars, palette, filters, plot stages and the floating-island title.
+
+**Chosen:** **Ninja Adventure** (CC0) as the one pack family, and **Kyrise's 16x16 icons** (CC BY 4.0) for the HUD. 16 px tiles at 3× scale. See `ASSETS.md`.
+
 ### Asset pack sourcing (check every licence before use)
 
 Candidates to evaluate (confirm current licence terms. Some free tiers are non-commercial only):
@@ -46,7 +50,8 @@ Record every asset and its licence in `ASSETS.md` (credit requirements).
 
 ### Visual identity
 
-- Palette: warm, earthy, storybook. Blight = desaturation + yellow-brown shift (done as a filter so no extra sprites are needed).
+- Palette: from the art direction (Pokémon BW-style bright day, peach/plum dusk). Blight = desaturation + ochre shift (done as a filter so no extra sprites are needed).
+- Title, landing and gallery: each world shown as a **floating island** in a teal sky.
 - Logo/title: "INHERITANCE" in a pixel display font, maybe with a sapling/gravestone motif.
 
 ## Audio
@@ -85,7 +90,7 @@ Sources: Kenney audio packs (CC0), Freesound (check CC-BY attribution), OpenGame
 
 ## Tasks
 
-- [ ] **[C]** Evaluate 2–3 packs and pick one family. Write `ASSETS.md` with licences.
+- [x] **[C]** Evaluate 2–3 packs and pick one family. Write `ASSETS.md` with licences.
 - [ ] **[C]** Build the Pixi spritesheet/atlas (TexturePacker free / `free-tex-packer`) + JSON
 - [ ] **[C]** Map `03` tile types → atlas frames (agree the names with the engine dev)
 - [ ] **[C]** Map `04` visual states → frames

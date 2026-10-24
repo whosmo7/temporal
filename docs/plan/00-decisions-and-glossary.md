@@ -43,10 +43,15 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Resources | **Food, Water, Labour** |
 | Labour | The **player's energy/stamina**. Actions spend it. |
 | Personal needs | **Player must meet food + water upkeep** at end of turn |
+| Eating | **Harvest and eat**: a Harvest option that turns the fresh yield into stamina, up to full. Not a ninth action ([003](../decisions/003-eating-via-harvest.md)) |
+| Upkeep visibility | Screen order unchanged. HUD shows **"Needed by nightfall"** during play ([002](../decisions/002-upkeep-timing.md)) |
 | Failure | **Soft fail**: if upkeep isn't met, the successor gets a **weakened start** (low stamina, visibly blighted world) |
 | Decay | **Resource decay + infrastructure wear** (crops rot, water stagnates, structures wear unless maintained) |
 | Delayed-effect visibility | **Partly hidden**: you can see something is growing or decaying, but not the exact numbers |
 | Random events | **Seeded** (deterministic from the world seed) |
+| Event set | **Drought**, **good harvest**, **storm** (Island only, 50%) ([005](../decisions/005-seeded-events.md)) |
+| Drought | **Exactly one per world**, lasting `min(5, ceil(gens / 10))` consecutive generations, starting at a random gen ≥ 2 ([008](../decisions/008-drought-length-and-timing.md)) |
+| Wild spot | **Forest = hunt, Island = fish**, same numbers ([006](../decisions/006-wild-spot-per-biome.md)) |
 | Borrowing | **None** |
 | Scoring | **No score.** The replay is the ending. |
 
@@ -68,13 +73,14 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 
 | Topic | Decision |
 |---|---|
-| Turn length | **Configurable** per world (default chosen by the game designer) |
-| Generations per world | **Configurable** (not fixed at 4) |
+| Turn length | **Configurable** per world. Default **10 minutes** (600 s) ([007](../decisions/007-turn-and-generation-defaults.md)) |
+| Generations per world | **Configurable** (not fixed at 4). Default **6** ([007](../decisions/007-turn-and-generation-defaults.md)) |
 | Actions per turn | **Unlimited** within the time limit (stamina and resources still apply) |
 | In-turn time | **Day/night cycle** plays out across the turn |
 | Movement | **Walk with WASD/arrows** |
 | When the timer ends | **Time freezes**. The player reads and writes in the shared journal. |
 | End flow | **Freeze → journal → cost summary → gravestone** |
+| Fast Track on an orchard | Fruits now, **no long-term yield penalty**; the 2× cost is the price ([004](../decisions/004-fast-tracked-orchard-yield.md)) |
 | Cost summary | Shows **only what has been realised now** (costs paid, immediate gains). Pending benefits are left out on purpose, which sets up the demo moment. |
 
 ## Journal, graveyard, replay
