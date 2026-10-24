@@ -1,4 +1,4 @@
-# 016 — Gallery and replays are public
+# 017 — Gallery and replays are public
 
 **Status:** decided 2026-10-24 by C · **Section:** `08` Q4
 

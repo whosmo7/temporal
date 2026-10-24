@@ -38,7 +38,7 @@ const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
 
 /**
  * Hash routes (GitHub Pages). Everything but the game sits in the shell's sky; the game is
- * full-screen. Play needs a signed-in player; the gallery and replays are public (decision 016).
+ * full-screen. Play needs a signed-in player; the gallery and replays are public (decision 017).
  * Later screens slot in here: `tutorial`, `admin`.
  */
 export const router = createHashRouter([

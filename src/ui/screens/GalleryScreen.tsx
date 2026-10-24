@@ -7,7 +7,7 @@ const BIOME_NAME: Record<CompletedWorld['biome'], string> = { forest: 'Forest', 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; worlds: CompletedWorld[] };
 
 /**
- * Completed worlds, newest first. Public: no login needed (decision 016). The floating-island
+ * Completed worlds, newest first. Public: no login needed (decision 017). The floating-island
  * thumbnails come with the gallery grid task (`06`); until then each card is text only.
  */
 export function GalleryScreen() {

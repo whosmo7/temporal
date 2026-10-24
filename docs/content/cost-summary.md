@@ -36,6 +36,7 @@ Left in the store: 4🍎 8💧
 | Water | You used {spent}💧 and gathered {gained}💧. | always. Drop a half if it's 0 ("You used 6💧."); if both are 0: "You used no water." |
 | Food | You gathered {gained}🍎. | always ("You gathered nothing." if 0) |
 | Eating | You ate {n}🍎. | only if they used Harvest and eat |
+| Rotted | One field of crops rotted in the ground. / {n} fields of crops rotted in the ground. | only if crops were left in the ground at the end (`summary.cropsRotted`) |
 | Per-action rows | `{label}  −{stamina}⚡  {±water}💧  {+food}🍎` | one row per action type used; group repeats as "×N" |
 | Upkeep met | For the night: {food}🍎 {water}💧 — enough. | upkeep met |
 | Upkeep short | For the night: {food}🍎 {water}💧 — short by {x}🍎 {y}💧. | any shortfall (omit a zero part) |

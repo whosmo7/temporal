@@ -6,7 +6,7 @@ import { ButtonLink, Panel } from '../kit';
 type Load = { state: 'loading' } | { state: 'missing' } | { state: 'ready'; replay: Replay };
 
 /**
- * `/world/:id/replay`. Public (decision 016). Loads the replay and holds the route; the viewer
+ * `/world/:id/replay`. Public (decision 017). Loads the replay and holds the route; the viewer
  * itself (snapshot, journal and causes panels, timeline) is B's replay layout task in `06`.
  */
 export function ReplayScreen() {

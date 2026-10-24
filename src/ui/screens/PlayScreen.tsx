@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Gravestone, JournalPage } from '../../api/Backend';
 import { playMusic, playSfx, stopMusic, type SfxName } from '../../audio/sound';
-import { beginTurn, CONFIG, createWorld, endTurn, type Transition, type TurnSummary, type VisibleWorld, type WorldState } from '../../engine';
+import { beginTurn, CONFIG, createWorld, endTurn, type Transition, type VisibleWorld, type WorldState } from '../../engine';
 import { gameHour, isNight } from '../../render/daylight';
 import { PixiStage } from '../../render/PixiStage';
 import { founderLook, type WorldLook, type WorldView } from '../../render/world-view';
@@ -19,9 +19,11 @@ import { Hud } from '../hud/Hud';
 import { InteractPrompt, type PromptRow } from '../hud/InteractPrompt';
 import { StoneLabel } from '../hud/StoneLabel';
 import { JournalModal, type SealedPage } from '../journal';
+import { CostSummary } from '../summary/CostSummary';
+import { costSummary, type CostSummaryView } from '../summary/summaryView';
 
-/** End of turn (05): freeze → write your page → your stone rises → done. Cost summary (C) slots in after `write`. */
-type EndStep = 'play' | 'freeze' | 'write' | 'stone' | 'over';
+/** End of turn (05): freeze → write your page → what you gave → your stone rises → done. */
+type EndStep = 'play' | 'freeze' | 'write' | 'summary' | 'stone' | 'over';
 /** How long "The day is over." shows before the journal opens. */
 const FREEZE_MS = 2200;
 
@@ -149,15 +151,20 @@ export function PlayScreen() {
     return () => clearTimeout(id);
   }, [step]);
 
-  const [, setSummary] = useState<TurnSummary | null>(null);
+  const [summary, setSummary] = useState<CostSummaryView | null>(null);
+  const [sealedStone, setSealedStone] = useState<Gravestone | null>(null);
   const onSeal = (page: SealedPage) => {
     // The engine ends the turn: crops left in the ground rot, upkeep is paid.
     // TODO(07): commit the turn (log, transitions, page) here.
-    // TODO(C, 05): show the cost summary (`summary`) between the seal and the stone.
     const ended = useGameStore.getState().finishTurn();
-    if (ended) setSummary(ended.summary);
-    const stone = { turn: generation, username: author };
+    const { log, transitions } = useGameStore.getState();
     setPages((p) => [...p, { turn: generation, authorUsername: author, ...page }]);
+    setSealedStone({ turn: generation, username: author });
+    if (!ended) return raise({ turn: generation, username: author });
+    setSummary(costSummary({ summary: ended.summary, log, transitions, after: ended.state, biome, actor: author }));
+    setStep('summary');
+  };
+  const raise = (stone: Gravestone) => {
     setStep('stone');
     if (!view) return setStep('over');
     void view.raiseStone(stone).then(() => {
@@ -224,6 +231,7 @@ export function PlayScreen() {
       )}
       {step === 'freeze' && <EndCard text="The day is over." />}
       {step === 'write' && <JournalModal mode="write" pages={pages} generation={generation} author={author} onSeal={onSeal} />}
+      {step === 'summary' && summary && sealedStone && <CostSummary view={summary} onContinue={() => raise(sealedStone)} />}
       {step === 'over' && <EndCard text={`Generation ${generation} is over.`} action="Continue" onAction={onContinue} />}
       {showFps && view && <FpsReadout view={view} />}
     </div>

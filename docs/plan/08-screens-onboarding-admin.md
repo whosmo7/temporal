@@ -8,7 +8,7 @@
 - Screens: **Landing/title**, **Sign up / Log in**, **Onboarding/tutorial**, **Game**, **Gallery** (+ Replay).
 - **Admin tools**: force-assign a world, configure turn length/generations, skip to replay.
 - Desktop only.
-- The gallery and replays are **public**: no login needed. Only Play needs an account ([016](../decisions/016-public-gallery.md)).
+- The gallery and replays are **public**: no login needed. Only Play needs an account ([017](../decisions/017-public-gallery.md)).
 - Hosted on GitHub Pages, so use **hash routing** (`/#/…`) to avoid 404s on refresh.
 
 ## Routes

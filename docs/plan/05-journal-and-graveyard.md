@@ -76,7 +76,7 @@
 - [x] **[C]** Drawing canvas: pen, colours, eraser, clear; serialise strokes *(4 pens + eraser + clear, Ctrl+Z undoes a stroke. Format `{ color, width, points }[]` on 320×200; eraser strokes use `color: 'erase'`.)*
 - [x] **[C]** Stroke renderer (reused by the replay `06` and gallery thumbnails) *(`StrokeRenderer` component, or `paintStrokes(ctx, drawing, scale)` for Pixi/offscreen use.)*
 - [x] **[C]** "Seal page" confirmation; locks the page client-side *(Calls `onSeal({ text, drawing })` after the stamp; B's end flow takes it from there.)*
-- [ ] **[C]** Cost summary screen from `endTurn().summary` (**realised only**)
+- [x] **[C]** Cost summary screen from `endTurn().summary` (**realised only**) *(`src/ui/summary/`: `costSummary()` builds the lines from the summary plus this turn's own actions and transitions, so a row only shows what that action changed this turn. `PlayScreen` shows it between the seal and the stone.)*
 - [x] **[B]** Gravestone placement animation + camera pan *(`WorldView.raiseStone()`. `PlayScreen` runs it after the seal; the cost summary slots in before it.)*
 - [x] **[B]** Graveyard rendering and interaction (with `04`) *(hover label, click and E open the page; `JournalModal` got an optional `openAt`. Dev: `#/play?graves=AL,MO,KE&turn=20`.)*
 - [x] **[B]** Lectern interaction → read-only journal during play *(the world's pages are passed in by the play flow, `08`; for now the list is empty)*

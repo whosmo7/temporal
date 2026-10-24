@@ -65,7 +65,7 @@ For each generation g = 1..N:
 - [ ] **[B]** Generation stepping (buttons + arrow keys) + optional auto-play
 - [ ] **[C]** Title card + ending card
 - [ ] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see `docs/art/art-direction.md`)
-- [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([016](../decisions/016-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; thumbnails come with the grid task. `ReplayScreen` loads `getReplay` and shows a stand-in until B's replay layout lands.)*
+- [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; thumbnails come with the grid task. `ReplayScreen` loads `getReplay` and shows a stand-in until B's replay layout lands.)*
 - [ ] **[C]** Admin "skip to replay" hook (`08`)
 - [ ] **[C]** (Stretch) Legacy view per player
 - [ ] **[B]** (Stretch) Animate drawing strokes in the journal panel
