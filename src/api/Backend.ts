@@ -27,7 +27,7 @@ export interface Gravestone {
 
 export interface ClaimedWorld {
   worldId: string;
-  /** From the seed, `worldName` (decision 016). */
+  /** From the seed, `worldName` (decision 019). */
   name: string;
   seed: number;
   biome: Biome;

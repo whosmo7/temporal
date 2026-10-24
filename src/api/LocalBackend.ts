@@ -27,7 +27,7 @@ import { runTurn } from './runTurn';
 
 const STORAGE_KEY = 'inheritance.local';
 
-// Matches the settings defaults in the migrations (decision 007, 016).
+// Matches the settings defaults in the migrations (decision 007, 019).
 export const DEFAULT_SETTINGS: Settings = {
   inheritRatio: 0.7,
   defaultTurnSeconds: 600,
@@ -295,9 +295,8 @@ export class LocalBackend implements Backend {
         generationCount: w.generationCount,
         completedAt: w.completedAt ?? '',
         players: this.turnsOf(db, w.id).map((t) => this.usernameOf(db, t.playerId)),
-        players: turnsOf(db, w.id).map((t) => usernameOf(db, t.playerId)),
         preset: w.preset,
-        finalState: turnsOf(db, w.id).at(-1)?.snapshot ?? null,
+        finalState: this.turnsOf(db, w.id).at(-1)?.snapshot ?? null,
       }));
   }
 

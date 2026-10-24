@@ -115,6 +115,7 @@ try {
   const listed = gallery.find((g) => g.worldId === successor.worldId);
   check('completed world is in the gallery', listed !== undefined);
   check('gallery lists both players in order', listed?.players.join() === `zt_${run}_b,zt_${run}_c`);
+  check('gallery carries the thumbnail state', listed?.finalState?.turn === 3 && listed.preset === 'default');
   const replay = await e!.getReplay(successor.worldId);
   check('replay has a snapshot per generation', replay.snapshots.length === 2);
   check('replay has both pages', replay.journal.map((j) => j.text).join('|') === 'Look after it.|End.');

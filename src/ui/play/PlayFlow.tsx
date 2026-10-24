@@ -25,6 +25,8 @@ type Phase =
 export function PlayFlow({ showFps }: { showFps: boolean }) {
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
   const username = useSession((s) => s.user?.username ?? '');
+  // Actions are logged under the profile id (ActionEntry.actorId); commit-turn stamps the same.
+  const userId = useSession((s) => s.user?.id ?? '');
   const navigate = useNavigate();
 
   // One claim at a time (StrictMode runs the first effect twice; a double resend would fail).
@@ -94,7 +96,7 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
           start={phase.start}
           onBegin={() => {
             // Load the turn before the game mounts, so its first render doesn't see the last turn's clock.
-            useGameStore.getState().loadTurn(phase.start.world, username, phase.start.begun);
+            useGameStore.getState().loadTurn(phase.start.world, userId, phase.start.begun);
             setPhase({ ...phase, kind: 'playing' });
           }}
         />

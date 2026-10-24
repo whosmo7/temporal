@@ -1,7 +1,7 @@
 import type { Biome } from './types';
 import { deriveRng } from './rng';
 
-// World names from the seed (07 open question 6, decision 016). Computed on the client, so
+// World names from the seed (07 open question 6, decision 019). Computed on the client, so
 // worlds.name stays null and both backends show the same name for the same seed.
 
 const ADJECTIVES = [

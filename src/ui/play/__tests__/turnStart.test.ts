@@ -35,10 +35,10 @@ describe('the play flow on LocalBackend', () => {
 
   it('a committed turn is what the next player inherits', async () => {
     const backend = new LocalBackend();
-    await backend.signUp('alma', '');
+    const alma = await backend.signUp('alma', '');
     const claim = await backend.claimWorld();
     const start = turnStart(claim);
-    useGameStore.getState().loadTurn(start.world, 'alma', start.begun);
+    useGameStore.getState().loadTurn(start.world, alma.id, start.begun);
     const repair = useGameStore.getState().act({ type: 'repairReservoir', plotId: 'reservoir' });
     expect(repair.error).toBeUndefined();
     const { log } = useGameStore.getState();

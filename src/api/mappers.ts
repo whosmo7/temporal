@@ -42,6 +42,8 @@ export interface CompletedRow {
   generation_count: number;
   completed_at: string;
   players: string[];
+  preset: PresetName;
+  final_state: WorldState | null;
 }
 
 export interface ActionRow {
@@ -125,6 +127,8 @@ export function toCompletedWorld(row: CompletedRow): CompletedWorld {
     generationCount: row.generation_count,
     completedAt: row.completed_at,
     players: row.players,
+    preset: row.preset,
+    finalState: row.final_state,
   };
 }
 
