@@ -125,13 +125,28 @@
   padding: calc(var(--px) * 4) calc(var(--px) * 8) calc(var(--px) * 12);
 }
 
-/* Stand-in landing (the landing task replaces this with the island scene) ------------------------ */
+/* Landing ---------------------------------------------------------------------------------------- */
 
 .landing {
   display: grid;
   justify-items: center;
-  gap: calc(var(--px) * 6);
+  gap: calc(var(--px) * 4);
   text-align: center;
+}
+
+/* The loop's light: multiplies over the sky and the island, under the words and buttons. */
+.landing__light {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background-color: rgb(255 255 255);
+}
+
+.landing > :not(.landing__light, .island) {
+  position: relative;
+  z-index: 2;
 }
 
 .landing__wordmark {
@@ -140,16 +155,44 @@
   font-weight: normal;
 }
 
-.landing__premise {
+/* Paper with an ink outline, like the logo, so it reads at noon and at night. */
+.landing__premise,
+.landing__credits {
   margin: 0;
+  color: var(--paper);
+  text-shadow:
+    var(--px) 0 0 var(--ink),
+    calc(var(--px) * -1) 0 0 var(--ink),
+    0 var(--px) 0 var(--ink),
+    0 calc(var(--px) * -1) 0 var(--ink);
+}
+
+.landing__premise {
   font-size: var(--text-md);
-  color: var(--ink);
 }
 
 .landing__actions {
   display: flex;
   gap: calc(var(--px) * 5);
-  margin-top: calc(var(--px) * 4);
+  margin-top: calc(var(--px) * 2);
+}
+
+.island {
+  animation: island-bob 4s steps(4, jump-none) infinite alternate;
+}
+
+.island__canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+@keyframes island-bob {
+  from {
+    transform: translateY(-2px);
+  }
+  to {
+    transform: translateY(2px);
+  }
 }
 
 /* Not found -------------------------------------------------------------------------------------- */
@@ -163,10 +206,8 @@
 }
 
 .landing__credits {
-  margin: calc(var(--px) * 10) 0 0;
+  margin-top: calc(var(--px) * 4);
   font-size: var(--text-sm);
-  color: var(--ink);
-  opacity: 0.7;
 }
 
 /* Auth ------------------------------------------------------------------------------------------- */
