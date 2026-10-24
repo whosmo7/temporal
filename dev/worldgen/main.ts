@@ -9,6 +9,7 @@ import {
   walkDistance,
   type Biome,
   type FounderState,
+  type FurnitureKind,
   type PlotKind,
   type WorldgenPreset,
 } from '../../src/worldgen';
@@ -35,6 +36,16 @@ const PLOT_COLOURS: Record<PlotKind, string> = {
   wild: '#f39c12',
   lectern: '#9b59b6',
   graveyard: '#7f8c8d',
+};
+
+const FURNITURE_COLOURS: Record<FurnitureKind, string> = {
+  oven: '#62606c',
+  cabinet: '#d95763',
+  bed: '#4191a8',
+  table: '#b48471',
+  shelf: '#404363',
+  plant: '#61aa81',
+  rug: '#ecaa8e',
 };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -146,6 +157,20 @@ function draw({ map }: FounderState): void {
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1;
     ctx.strokeRect(p.x * z + 0.5, p.y * z + 0.5, p.w * z - 1, p.h * z - 1);
+  }
+
+  const house = map.house;
+  if (house) {
+    ctx.fillStyle = '#6f4e4c';
+    ctx.fillRect(house.x * z, house.y * z, house.w * z, house.h * z);
+    ctx.fillStyle = '#c2917c';
+    ctx.fillRect(house.interior.x * z, house.interior.y * z, house.interior.w * z, house.interior.h * z);
+    ctx.fillStyle = '#e7d7a1';
+    ctx.fillRect(house.door.x * z, house.door.y * z, z, z);
+    for (const f of house.furniture) {
+      ctx.fillStyle = FURNITURE_COLOURS[f.kind];
+      ctx.fillRect(f.x * z + 1, f.y * z + 1, f.w * z - 2, f.h * z - 2);
+    }
   }
 
   const grid = buildCollision(map);

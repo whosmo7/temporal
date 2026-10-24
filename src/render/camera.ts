@@ -4,8 +4,8 @@ import { TILE, VIEW_TILES } from './constants';
  * World scale in CSS pixels per art pixel. It's an integer number of *device* pixels per art
  * pixel, so pixel art stays crisp on fractional devicePixelRatio screens too.
  */
-export function pickZoom(viewW: number, viewH: number, dpr: number): number {
-  const devicePerArt = Math.max(1, Math.floor(Math.min((viewW * dpr) / (VIEW_TILES.x * TILE), (viewH * dpr) / (VIEW_TILES.y * TILE))));
+export function pickZoom(viewW: number, viewH: number, dpr: number, tiles: { x: number; y: number } = VIEW_TILES): number {
+  const devicePerArt = Math.max(1, Math.floor(Math.min((viewW * dpr) / (tiles.x * TILE), (viewH * dpr) / (tiles.y * TILE))));
   return devicePerArt / dpr;
 }
 

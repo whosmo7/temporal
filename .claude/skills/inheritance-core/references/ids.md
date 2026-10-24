@@ -46,6 +46,13 @@ The atlas needs a frame (or autotile set) for each of these.
 | `boundary` | `tree`, `sea`, or `null` | Frames the map and always blocks. `tree` is Forest, `sea` is Island |
 | `deco` | `rock`, `bush`, `flower`, or `null` | `rock` and `bush` block, `flower` doesn't |
 
+## House (`TileMap.house`, decision 010)
+
+7×5 footprint, a 5×3 room and the door in the middle of the bottom wall. Furniture (`FurnitureKind`): `oven`, `cabinet`,
+`bed`, `table`, `shelf`, `plant`, `rug`. Only the `rug` is walkable. The cabinet is drawn with `store/<stage>`.
+Frames: `house/exterior` (roof and front wall, faded out while you're inside), `house/interior` (floor and walls),
+`furniture/<kind>`, `store/<stage>`. Drought overlay: `terrain/cracks-1`.
+
 ## Visual stages (from `visibleView()`; also sprite frame names)
 
 Sprite frames are named `<kind>/<stage>`, e.g. `orchard/fruiting`, `well/stagnant`.
@@ -57,7 +64,8 @@ Sprite frames are named `<kind>/<stage>`, e.g. `orchard/fruiting`, `well/stagnan
 | `reservoir` | `cracked`, `low`, `full` |
 | `well` | `none`, `clear`, `stagnant` |
 | `wild` | `many`, `few`, `none` |
-| `store` (food store sprite) | `full`, `half`, `empty`, `rotting` |
+| `store` (the house cabinet, i.e. the food store) | `full`, `half`, `empty`, `rotting` |
+| `lectern`, `graveyard` | `default` (they always look the same) |
 
 World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground overlay), plus
 `timeOfDay` from 0 to 1.

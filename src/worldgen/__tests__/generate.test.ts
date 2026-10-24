@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest';
 import {
   BLOCKING_DECO,
   buildCollision,
+  entranceOf,
   generateMap,
+  HOUSE_SIZE,
   plotSlots,
   PRESETS,
   resolveOptions,
@@ -55,6 +57,22 @@ function expectValidMap(map: TileMap, label: string): void {
   for (let a = 0; a < map.plots.length; a++) {
     for (let b = a + 1; b < map.plots.length; b++) {
       expect(rectGap(map.plots[a]!, map.plots[b]!), `${label}: ${map.plots[a]!.id} overlaps ${map.plots[b]!.id}`).toBeGreaterThanOrEqual(0);
+    }
+  }
+
+  const house = map.house;
+  if (house) {
+    for (const i of rectTiles(map, house)) {
+      expect(map.layers.boundary[i], `${label}: house on boundary`).toBeNull();
+      expect(map.layers.terrain[i], `${label}: house in water`).not.toBe('water');
+      expect(map.layers.deco[i], `${label}: deco in house`).toBeNull();
+    }
+    for (const plot of map.plots) expect(rectGap(plot, house), `${label}: ${plot.id} overlaps house`).toBeGreaterThanOrEqual(0);
+    const { interior } = house;
+    expect(rectTiles(map, interior), `${label}: spawn inside`).toContain(spawn);
+    for (const kind of ['oven', 'cabinet'] as const) {
+      const f = house.furniture.find((x) => x.kind === kind)!;
+      expect(rectBorder(map, f).some((i) => dist[i]! >= 0), `${label}: ${kind} reachable`).toBe(true);
     }
   }
 }
@@ -127,7 +145,9 @@ describe('generateMap', () => {
           }
         }
         const lectern = map.plots.find((p) => p.kind === 'lectern')!;
-        expect(Math.max(Math.abs(lectern.x - map.spawn.x), Math.abs(lectern.y - map.spawn.y))).toBeLessThanOrEqual(opts.lecternRange);
+        const door = entranceOf(map.house!);
+        expect(Math.max(Math.abs(lectern.x - door.x), Math.abs(lectern.y - door.y))).toBeLessThanOrEqual(opts.lecternRange);
+        for (const p of map.plots) expect(rectGap(p, map.house!)).toBeGreaterThanOrEqual(opts.plotSpacing);
         const wild = map.plots.find((p) => p.kind === 'wild')!;
         const touchesEdge = rectBorder(map, wild).some((i) => map.layers.boundary[i] !== null);
         expect(touchesEdge, `${biome} seed ${seed}`).toBe(true);
@@ -169,10 +189,16 @@ describe('customisation', () => {
     }
   });
 
-  it('honours a custom spawn', () => {
-    const map = generateMap(1, 'forest', { spawn: { x: 10, y: 20 } });
-    expect(map.spawn).toEqual({ x: 10, y: 20 });
-    expectValidMap(map, 'custom spawn');
+  it('honours a custom spawn: the player starts there with no house, near it with one', () => {
+    const outdoors = generateMap(1, 'forest', { spawn: { x: 10, y: 20 }, house: false });
+    expect(outdoors.spawn).toEqual({ x: 10, y: 20 });
+    expect(outdoors.house).toBeNull();
+    expectValidMap(outdoors, 'custom spawn, no house');
+
+    const housed = generateMap(1, 'forest', { spawn: { x: 10, y: 20 } });
+    const e = entranceOf(housed.house!);
+    expect(Math.max(Math.abs(e.x - 10), Math.abs(e.y - 20))).toBeLessThanOrEqual(resolveOptions('forest').houseRange);
+    expectValidMap(housed, 'custom spawn, house');
   });
 
   it('rejects bad options with a WorldgenError', () => {
@@ -181,14 +207,66 @@ describe('customisation', () => {
     expect(() => generateMap(1, 'forest', { boundaryDepth: { min: 4, max: 2 } })).toThrow(WorldgenError);
     expect(() => generateMap(1, 'forest', { pin: { 'field-3': { x: 5, y: 5 } } })).toThrow(/not a plot/);
     expect(() => generateMap(1, 'forest', { pin: { well: { x: 0, y: 0 } } })).toThrow(/boundary/);
-    expect(() => generateMap(1, 'forest', { pin: { well: { x: 6, y: 6 }, wild: { x: 7, y: 7 } } })).toThrow(/overlaps/);
+    expect(() => generateMap(1, 'forest', { pin: { wild: { x: 6, y: 6 }, well: { x: 7, y: 7 } } })).toThrow(/overlaps/);
+    expect(() => generateMap(1, 'forest', { pin: { house: { x: 0, y: 0 } } })).toThrow(/pinned house/);
+    expect(() => generateMap(1, 'forest', { house: false, pin: { house: { x: 9, y: 9 } } })).toThrow(/not a plot/);
     expect(() => generateMap(1, 'forest', { spawn: { x: 0, y: 0 } })).toThrow(/outside the boundary/);
   });
 
   it('fails loudly instead of looping when plots cannot fit', () => {
-    expect(() => generateMap(1, 'island', { width: 16, height: 16, fields: 9, maxAttempts: 3 })).toThrow(
+    expect(() => generateMap(1, 'island', { width: 16, height: 16, fields: 9, maxAttempts: 3, house: false })).toThrow(
       /couldn't place every plot/,
     );
+    expect(() => generateMap(1, 'island', { width: 16, height: 16 })).toThrow(/no room for the house/);
+  });
+});
+
+describe('house', () => {
+  it('is 7×5 with a 5×3 room and the door in the middle of the bottom wall', () => {
+    const { house, spawn } = generateMap(8, 'forest');
+    expect(house).not.toBeNull();
+    const h = house!;
+    expect([h.w, h.h]).toEqual([HOUSE_SIZE.w, HOUSE_SIZE.h]);
+    expect([h.w, h.h]).toEqual([7, 5]);
+    expect(h.interior).toEqual({ x: h.x + 1, y: h.y + 1, w: 5, h: 3 });
+    expect(h.door).toEqual({ x: h.x + 3, y: h.y + 4 });
+    expect(spawn).toEqual({ x: h.door.x, y: h.door.y - 1 });
+    expect(h.furniture.map((f) => f.kind).sort()).toEqual(['bed', 'cabinet', 'oven', 'plant', 'rug', 'shelf', 'table']);
+  });
+
+  it('walls block except the door; furniture blocks except the rug', () => {
+    const map = generateMap(8, 'island');
+    const grid = buildCollision(map);
+    const h = map.house!;
+    const at = (x: number, y: number) => grid[y * map.width + x];
+    expect(at(h.x, h.y)).toBe(1);
+    expect(at(h.x + 6, h.y + 2)).toBe(1);
+    expect(at(h.door.x - 1, h.door.y)).toBe(1);
+    expect(at(h.door.x, h.door.y)).toBe(0);
+    for (const f of h.furniture) expect(at(f.x, f.y), f.kind).toBe(f.kind === 'rug' ? 0 : 1);
+    expect(at(h.x + 2, h.y + 2)).toBe(0); // in front of the oven
+  });
+
+  it('the path network starts at the front door', () => {
+    for (let seed = 0; seed < 30; seed++) {
+      const map = generateMap(seed, 'forest');
+      const e = entranceOf(map.house!);
+      expect(map.layers.terrain[e.y * map.width + e.x], `seed ${seed}`).toBe('path');
+    }
+  });
+
+  it('can be pinned or turned off', () => {
+    const pinned = generateMap(4, 'forest', { pin: { house: { x: 6, y: 6 } } });
+    expect(pinned.house).toMatchObject({ x: 6, y: 6 });
+    expectValidMap(pinned, 'pinned house');
+    expect(generateMap(4, 'forest', { house: false }).house).toBeNull();
+  });
+});
+
+describe('plot sizes', () => {
+  it('match the art direction by default', () => {
+    const sizes = Object.fromEntries(generateMap(2, 'forest').plots.map((p) => [p.kind, [p.w, p.h]]));
+    expect(sizes).toMatchObject({ field: [3, 3], orchard: [2, 2], reservoir: [3, 2], well: [1, 1], wild: [2, 2], lectern: [1, 1] });
   });
 });
 

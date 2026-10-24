@@ -37,7 +37,7 @@ export const CONFIG = {
   fastTrackMultiplier: 2,
 
   // Decay and wear
-  foodRotPct: 0.3,
+  foodRotPct: 0, // decision 009: stored food (the house cabinet) doesn't rot for now; was 0.3
   waterStagnatePct: 0.2,
   waterStagnateStagnantWellPct: 0.4,
   wearHalveAt: 2,

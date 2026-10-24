@@ -5,11 +5,14 @@ import type { Plot, PlotId, PlotKind, Point } from './types';
 
 /** Precomputed ground facts the placement, path and deco stages share. */
 export interface Site extends Grid {
-  spawn: Point;
+  /** Outdoor tile the path network starts from: in front of the house door, or spawn with no house. */
+  entrance: Point;
   /** Inside the boundary and not a pond. */
   ground: Uint8Array;
-  /** `ground` tiles reachable from spawn: the only tiles plots and paths may use. */
+  /** `ground` tiles outside the house and reachable from the entrance: the only tiles plots and paths may use. */
   open: Uint8Array;
+  /** Rectangles plots keep `plotSpacing` from (the house). */
+  obstacles: Pick<Plot, 'x' | 'y' | 'w' | 'h'>[];
   /** Steps to the nearest boundary tile. */
   edgeDist: Int32Array;
   /** Steps to the nearest pond (or sea on Island), -1 if the map has no water. */
@@ -20,7 +23,7 @@ export interface Site extends Grid {
 /** Seeded plots are placed in this order: most constrained first. */
 const PLACEMENT_ORDER: PlotKind[] = ['lectern', 'reservoir', 'wild', 'graveyard', 'orchard', 'well', 'field'];
 
-/** Pinned plots must sit on open ground, clear of spawn and of each other. Throws if not. */
+/** Pinned plots must sit on open ground, clear of the entrance and of each other. Throws if not. */
 export function pinnedPlots(site: Site, o: WorldgenOptions): Plot[] {
   const plots: Plot[] = [];
   for (const slot of plotSlots(o)) {
@@ -30,9 +33,9 @@ export function pinnedPlots(site: Site, o: WorldgenOptions): Plot[] {
     const where = `pinned ${slot.id} at (${at.x}, ${at.y})`;
     if (plot.x + plot.w > site.width || plot.y + plot.h > site.height) throw new WorldgenError(`${where} runs off the map`);
     if (!rectTiles(site, plot).every((i) => site.open[i])) {
-      throw new WorldgenError(`${where} overlaps the boundary, a pond or unreachable ground`);
+      throw new WorldgenError(`${where} overlaps the boundary, a pond, the house or unreachable ground`);
     }
-    if (pointRectDistance(site.spawn, plot) < 2) throw new WorldgenError(`${where} is on or next to spawn`);
+    if (pointRectDistance(site.entrance, plot) < 2) throw new WorldgenError(`${where} is on or next to the entrance`);
     const clash = plots.find((p) => rectGap(p, plot) < 0);
     if (clash) throw new WorldgenError(`${where} overlaps pinned ${clash.id}`);
     plots.push(plot);
@@ -67,10 +70,11 @@ export function placePlots(site: Site, o: WorldgenOptions, pinned: Plot[], rng: 
 }
 
 function fits(site: Site, o: WorldgenOptions, plot: Plot, placed: Plot[]): boolean {
-  const near = pointRectDistance(site.spawn, plot);
-  if (near < 2) return false; // keep spawn and the ring around it open
+  const near = pointRectDistance(site.entrance, plot);
+  if (near < 2) return false; // keep the entrance and the ring around it open
   if (plot.kind === 'lectern' && near > o.lecternRange) return false;
   if (placed.some((p) => rectGap(p, plot) < o.plotSpacing)) return false;
+  if (site.obstacles.some((r) => rectGap(r, plot) < o.plotSpacing)) return false;
   const tiles = rectTiles(site, plot);
   if (!tiles.every((i) => site.open[i])) return false;
   // Wild spot sits on the tree edge (Forest) or the shoreline (Island).

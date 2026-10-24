@@ -1,5 +1,6 @@
 import { scatterDeco } from './deco';
-import { bfsDistance } from './grid';
+import { bfsDistance, rectTiles } from './grid';
+import { entranceOf, placeHouse, spawnOf } from './house';
 import { buildMask, edgeDistance } from './mask';
 import { fbm } from './noise';
 import { plotSlots, resolveOptions, WorldgenError, type WorldgenOptions, type WorldgenPreset } from './options';
@@ -7,7 +8,7 @@ import { carvePaths } from './paths';
 import { pinnedPlots, placePlots, type Site } from './plots';
 import { PRESETS, type PresetName } from './presets';
 import { deriveRng, hash } from './rng';
-import type { Biome, BoundaryTile, Plot, TerrainTile, TileMap } from './types';
+import type { Biome, BoundaryTile, House, Plot, TerrainTile, TileMap } from './types';
 
 /**
  * Generates a world map. Pure and deterministic: the same `(seed, biome, preset)` always gives
@@ -19,7 +20,7 @@ import type { Biome, BoundaryTile, Plot, TerrainTile, TileMap } from './types';
 export function generateMap(seed: number, biome: Biome, preset: WorldgenPreset | PresetName = 'default'): TileMap {
   const o = resolveOptions(biome, typeof preset === 'string' ? PRESETS[preset] : preset);
   seed = seed >>> 0;
-  const site = buildSite(seed, biome, o);
+  const { site, house } = buildSite(seed, biome, o);
 
   const pinned = pinnedPlots(site, o);
   const rng = deriveRng(seed, 'plots');
@@ -44,7 +45,8 @@ export function generateMap(seed: number, biome: Biome, preset: WorldgenPreset |
     seed,
     layers: { ...paintTerrain(seed, biome, site, plots, path, o), deco },
     plots,
-    spawn: site.spawn,
+    house,
+    spawn: house ? spawnOf(house) : site.entrance,
   };
 }
 
@@ -53,14 +55,16 @@ export function biomeFromSeed(seed: number): Biome {
   return hash(seed, 'biome') % 2 === 0 ? 'forest' : 'island';
 }
 
-function buildSite(seed: number, biome: Biome, o: WorldgenOptions): Site {
+function buildSite(seed: number, biome: Biome, o: WorldgenOptions): { site: Site; house: House | null } {
   const grid = { width: o.width, height: o.height };
   const size = o.width * o.height;
-  const spawn = o.spawn ?? { x: Math.floor(o.width / 2), y: Math.floor(o.height / 2) };
-  const spawnIndex = spawn.y * o.width + spawn.x;
+  const anchor = o.spawn ?? { x: Math.floor(o.width / 2), y: Math.floor(o.height / 2) };
 
-  const inside = buildMask(seed, o, spawn);
+  const inside = buildMask(seed, o, anchor);
   const edgeDist = edgeDistance(grid, inside);
+  // The house goes down before ponds, so a pond can never block it.
+  const house = o.house ? placeHouse(grid, inside, edgeDist, anchor, o, deriveRng(seed, 'house')) : null;
+  const entrance = house ? entranceOf(house) : anchor;
 
   const elevationNoise = fbm(seed, 'elevation', { frequency: 0.11, octaves: 3 });
   // Pinned plots keep ponds off their footprint and the ring around it, so a pinned preset
@@ -69,6 +73,7 @@ function buildSite(seed: number, biome: Biome, o: WorldgenOptions): Site {
     const at = o.pin[s.id];
     return at ? [{ ...at, ...o.plotSizes[s.kind] }] : [];
   });
+  if (house) pinned.push(house);
   const nearPin = (x: number, y: number) =>
     pinned.some((r) => x >= r.x - 1 && x <= r.x + r.w && y >= r.y - 1 && y <= r.y + r.h);
 
@@ -84,7 +89,7 @@ function buildSite(seed: number, biome: Biome, o: WorldgenOptions): Site {
       if (biome === 'island') waterSources.push(i);
       continue;
     }
-    const nearSpawn = Math.max(Math.abs(x - spawn.x), Math.abs(y - spawn.y)) <= o.spawnClearance;
+    const nearSpawn = Math.max(Math.abs(x - entrance.x), Math.abs(y - entrance.y)) <= o.spawnClearance;
     if (!nearSpawn && !nearPin(x, y) && edgeDist[i]! > o.beachWidth + 1) pondable.push(i);
   }
   // Ponds fill the lowest pondable ground until they cover `pondCoverage` of the interior.
@@ -95,10 +100,13 @@ function buildSite(seed: number, biome: Biome, o: WorldgenOptions): Site {
     waterSources.push(i);
   }
 
-  const reach = bfsDistance(grid, [spawnIndex], (i) => ground[i] === 1);
+  const underHouse = new Uint8Array(size);
+  if (house) for (const i of rectTiles(grid, house)) underHouse[i] = 1;
+  const reach = bfsDistance(grid, [entrance.y * o.width + entrance.x], (i) => ground[i] === 1 && !underHouse[i]);
   const open = Uint8Array.from(reach, (d) => (d >= 0 ? 1 : 0));
   const waterDist = bfsDistance(grid, waterSources, () => true);
-  return { ...grid, spawn, ground, open, edgeDist, waterDist, elevation };
+  const site: Site = { ...grid, entrance, ground, open, obstacles: house ? [house] : [], edgeDist, waterDist, elevation };
+  return { site, house };
 }
 
 function paintTerrain(seed: number, biome: Biome, site: Site, plots: Plot[], path: Uint8Array, o: WorldgenOptions) {

@@ -29,6 +29,8 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Map size | **Configurable** per preset. Default **32×32 including the boundary** ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
 | Fields | **Configurable** per preset. Default **2** ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
 | Map presets | Named presets override any generator option and can **pin plots** to exact tiles ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
+| House | Every world has the player's **7×5 house** (5×3 room, door at the bottom). Each turn **starts inside**. Entering lifts the roof and zooms in. The oven is furniture only for now ([010](../decisions/010-player-house.md)) |
+| Food store | The house's **cabinet** is the food store. **Stored food doesn't rot** for now (`foodRotPct: 0`, [009](../decisions/009-cabinet-food-store-no-rot.md)) |
 | Seeds | Every world is generated from a seed and has a natural **boundary** |
 | Boundaries for hackathon | **Forest (trees)** and **Island (sea)** |
 | Boundary effect | **Small modifiers** to starting values. Rules are the same everywhere. |
