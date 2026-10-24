@@ -114,7 +114,7 @@ generator places **at least one drought** so the reservoir decision always matte
 - [x] **[B]** Decoration scatter
 - [x] **[B]** Collision grid export
 - [x] **[B]** Output a `TileMap` data structure: `{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }` with no Pixi dependency
-- [ ] **[B]** Biome starter state + modifiers wired into `createWorld` *(`founderState()` is built; this waits on A's `createWorld` calling it)*
+- [x] **[B]** Biome starter state + modifiers wired into `createWorld` *(A's `createWorld` builds gen 1 from `founderState()`: starter numbers, wild cap, founder stages and the biome-gated event list. `src/worldgen/__tests__/create-world.test.ts` checks the map, events and modifiers carry through.)*
 - [x] **[B]** Seeded event list (≥1 drought)
 - [x] **[B]** Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps
 - [x] **[B]** Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares. Useful for picking demo seeds. *(Now `#/dev/worldgen`, drawn on a plain canvas, so it doesn't need `04`.)*
