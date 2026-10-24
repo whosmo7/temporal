@@ -43,7 +43,7 @@ temporal/
 - [x] **[A]** `.env.example` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Real values go in GitHub Actions secrets. *(Done by C with the `07` project setup.)*
 - [x] **[A]** `Backend` interface + `LocalBackend` stub, so the frontend and engine can start before Supabase exists
 - [x] **[A]** Path alias `@engine/*` so the Edge Function and the client import the same code
-- [ ] **[A]** Turn on Pages in repo settings (source: GitHub Actions)
+- [x] **[A]** Turn on Pages in repo settings (source: GitHub Actions) *(Live at https://whosmo7.github.io/temporal/. `deploy.yml` also pushes migrations and redeploys `commit-turn` with `SUPABASE_ACCESS_TOKEN`.)*
 
 ## CI / deploy
 
