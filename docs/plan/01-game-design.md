@@ -53,7 +53,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 
 | Resource | Source | Sink | Between-generation rule |
 |---|---|---|---|
-| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [009](../decisions/009-cabinet-food-store-no-rot.md)) |
+| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
 | **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
 | **Labour (stamina)** | Full pool at turn start (reduced if weakened); eating a harvest | Every action | Doesn't carry over |
 
@@ -130,7 +130,7 @@ Generation 1 starts from the starter state exactly: `beginTurn` for gen 1 applie
 
 | Rule | Value |
 |---|---|
-| Food rot | Off for now: stored food is kept in the cabinet ([009](../decisions/009-cabinet-food-store-no-rot.md)) |
+| Food rot | Off for now: stored food is kept in the cabinet ([011](../decisions/011-cabinet-food-store-no-rot.md)) |
 | Water stagnation | −20% of stored water (−40% while the well is stagnant) |
 | Unharvested crops | Rot at end of turn (lost) |
 | Structure wear | +1 per gen on built structures (repaired reservoir, dug well, planted orchard) unless maintained during the previous turn. At wear 2: output halved. At wear 3: broken (orchard dies, reservoir cracks, well stagnates). |
@@ -224,7 +224,7 @@ export const CONFIG = {
   fastTrackMultiplier: 2,
 
   // Decay and wear
-  foodRotPct: 0, // decision 009: stored food doesn't rot for now (was 0.3)
+  foodRotPct: 0, // decision 011: stored food doesn't rot for now (was 0.3)
   waterStagnatePct: 0.2,
   waterStagnateStagnantWellPct: 0.4,
   wearHalveAt: 2,

@@ -17,3 +17,12 @@ export const FIXED_STEP = 1 / 60;
 export const PLAYER_HITBOX = { w: 0.6, h: 0.35 } as const;
 
 export const BACKGROUND = 0x101418;
+
+/** Weakened start (soft fail): the player walks this much slower (`04` › visual state). */
+export const WEAKENED_WALK = 0.75;
+
+/** Radius of the player's light at night, in tiles. */
+export const NIGHT_LIGHT_TILES = 3.5;
+
+/** Night is this much darker outdoors than in the lamp-lit house. */
+export const INDOOR_DARKNESS = 0.3;

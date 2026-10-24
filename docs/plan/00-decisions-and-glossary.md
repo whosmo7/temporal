@@ -30,7 +30,7 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Fields | **Configurable** per preset. Default **2** ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
 | Map presets | Named presets override any generator option and can **pin plots** to exact tiles ([001](../decisions/001-worldgen-map-size-and-presets.md)) |
 | House | Every world has the player's **7×5 house** (5×3 room, door at the bottom). Each turn **starts inside**. Entering lifts the roof and zooms in. The oven is furniture only for now ([010](../decisions/010-player-house.md)) |
-| Food store | The house's **cabinet** is the food store. **Stored food doesn't rot** for now (`foodRotPct: 0`, [009](../decisions/009-cabinet-food-store-no-rot.md)) |
+| Food store | The house's **cabinet** is the food store. **Stored food doesn't rot** for now (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
 | Seeds | Every world is generated from a seed and has a natural **boundary** |
 | Boundaries for hackathon | **Forest (trees)** and **Island (sea)** |
 | Boundary effect | **Small modifiers** to starting values. Rules are the same everywhere. |
@@ -92,7 +92,8 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Journal | One page per player. **Free text + drawing**. **Earlier pages can't be edited.** |
 | Journal text limit | **400 characters** ([009](../decisions/009-journal-character-limit.md)) |
 | Drawing tools | **Single pen, a few colours** (+ eraser) |
-| Journal access | An **in-world object, openable any time** (reading it doesn't use game time) |
+| Journal access | An **in-world object, openable any time** (reading it doesn't use game time: the clock stops, [012](../decisions/012-day-night-clock.md)) |
+| Day/night | A turn is **one in-game day, 6 am to 6 am** ([012](../decisions/012-day-night-clock.md)) |
 | What successors learn | **Only the journal.** The world never explains why it is in its current state. |
 | Gravestone | **Name/initials**, **click to open that player's journal page** |
 | Replay | For each generation: **a snapshot of the world plus that player's diary entry**. The replay is where causes are explained. |

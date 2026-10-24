@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { paintAtlas, paintPlot, PLOT_STAGES } from '../../../render/placeholder-art';
-import { resolveOptions, type Biome, type PlotKind } from '../../../worldgen';
+import { paintAtlas, paintPlot, PLOT_STAGES } from '../../render/placeholder-art';
+import { resolveOptions, type Biome, type PlotKind } from '../../worldgen';
 
 const SCALE = 3;
 

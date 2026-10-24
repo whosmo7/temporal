@@ -60,10 +60,10 @@ biomeFromSeed(seed): Biome             // for callers that want a seed-derived b
 - **Founder state** (`founder.ts`): `founderState(seed, biome, cfg, preset)` returns `{ map, resources, wildStock, wildCap, plots, events }`,
   where each plot starts at its `ids.md` stage (fields and orchard `empty`, reservoir `cracked`, well `none`).
   `createWorld` (A) builds `WorldState` from it. Until `config.ts` exists, `src/worldgen/__fixtures__/founder-config.ts` holds C's numbers.
-- **Debug page:** `npm run dev:worldgen` opens `/dev/worldgen/?seed=123&biome=island&preset=small`. It's a standalone Vite page
+- **Debug page:** `npm run dev:worldgen` opens `#/dev/worldgen?seed=123&biome=island&preset=small` (dev builds only). It's a canvas page
   that draws on a canvas, with controls for seed, biome, preset, generation count and JSON overrides. Its overlays are collision,
   walk distance and grid. It also lists the events, the founder state and the plots, and has a "Copy preset JSON" button for
-  adding a new entry to `presets.ts`. It moves to `#/dev/worldgen` once the `11` app shell exists.
+  adding a new entry to `presets.ts`. `#/dev/sprites` shows every placeholder sprite.
 
 ### Generation outline
 
@@ -117,7 +117,7 @@ generator places **at least one drought** so the reservoir decision always matte
 - [ ] **[B]** Biome starter state + modifiers wired into `createWorld` *(`founderState()` is built; this waits on A's `createWorld` calling it)*
 - [x] **[B]** Seeded event list (≥1 drought)
 - [x] **[B]** Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps
-- [x] **[B]** Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares. Useful for picking demo seeds. *(A standalone canvas page, so it doesn't need `04`.)*
+- [x] **[B]** Debug page `/dev/worldgen?seed=123` that renders the map as coloured squares. Useful for picking demo seeds. *(Now `#/dev/worldgen`, drawn on a plain canvas, so it doesn't need `04`.)*
 
 ## Acceptance
 

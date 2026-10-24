@@ -74,7 +74,7 @@
 - [ ] **[C]** Cost summary screen from `endTurn().summary` (**realised only**)
 - [ ] **[B]** Gravestone placement animation + camera pan
 - [ ] **[B]** Graveyard rendering and interaction (with `04`)
-- [ ] **[B]** Lectern interaction → read-only journal during play
+- [x] **[B]** Lectern interaction → read-only journal during play *(the world's pages are passed in by the play flow, `08`; for now the list is empty)*
 - [ ] **[B]** Hand off to `07` commit; handle a commit failure (retry, keep the local copy)
 - [ ] **[C]** Copywriting pass with Game design (tone: quiet, reflective, no moralising)
 

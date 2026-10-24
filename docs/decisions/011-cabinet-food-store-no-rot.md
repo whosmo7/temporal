@@ -1,4 +1,4 @@
-# 009: The cabinet is the food store, and stored food doesn't rot (for now)
+# 011: The cabinet is the food store, and stored food doesn't rot (for now)
 
 **Status:** accepted (B, 2026-10-24) · **Changes:** `01` › Decay (`foodRotPct` 0.3 → 0) · **Needs:** C to re-check balance
 

@@ -66,7 +66,7 @@ These are layered over the normal sprites, as the `inheritance-assets` skill req
 
 | State | Treatment |
 |---|---|
-| **Day → dusk → night** | Day: no tint. From 80% of the turn, blend a multiply tint toward `peach` (dusk), then toward `plum` at 95–100% (night), with a soft light radius around the player. |
+| **Day → dusk → night** | By in-game hour (a turn is 6 am → 6 am, [012](../decisions/012-day-night-clock.md)). Day: no tint. Dusk 5–7 pm blends toward `peach`, then `plum` night from 9 pm, with a soft light radius around the player. Rose dawn at both ends. |
 | **Weakened (blight)** | Desaturate about 50%, shift toward `dirt` and ochre, and drift a few slow motes. The world looks tired, not dead. |
 | **Drought** | A cracked-ground overlay on grass and dirt, a warm `peach`/`dirt` tint, and the reservoir water level drops (sprite stage). |
 | **Storm (Island)** | Rain particles and a cool `sky-deep` tint. It never shows during the turn it's applied, only its wear in later gens. |

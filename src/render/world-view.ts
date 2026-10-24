@@ -1,8 +1,12 @@
 import { Application, ColorMatrixFilter, Container, Graphics, Rectangle, RenderTexture, Sprite, Texture, TextureSource } from 'pixi.js';
+import { isTimeUp, useGameStore } from '../store/game';
 import { buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
 import { cameraOffset, pickZoom } from './camera';
-import { FIXED_STEP, TILE, VIEW_TILES_INSIDE, WALK_SPEED } from './constants';
+import { FIXED_STEP, INDOOR_DARKNESS, NIGHT_LIGHT_TILES, TILE, VIEW_TILES_INSIDE, WALK_SPEED, WEAKENED_WALK } from './constants';
+import { gameHour, lightAt } from './daylight';
+import { createFx } from './fx';
 import { KeyboardInput } from './input';
+import { nearbyPlot } from './interact';
 import { stepWalker, type CollisionGrid, type Walker } from './movement';
 import { paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
@@ -55,12 +59,15 @@ function defaultStage(p: Plot): string {
 
 /**
  * Builds the playable world into an initialised Pixi `Application`:
- *   world (scaled + camera offset, colour filter for weakened/drought)
+ *   world (scaled + camera offset, colour filter: time of day, weakened, drought)
  *   ├─ ground    terrain, ponds, sea, flowers (+ drought cracks): baked into one RenderTexture
  *   ├─ flat      flat plots (fields, wild spot) and the house floor
  *   ├─ sorted    trees, bushes, rocks, structures, furniture, the house shell and the player,
  *   │            y-sorted by their bottom edge
+ *   ├─ fx        blight motes, rot flies
  *   └─ dim       darkens everything but the house while you're inside
+ *   night        screen-space darkness with a soft light round the player
+ *   frozen       screen-space dim once time is up
  */
 export function createWorldView(
   app: Application,
@@ -78,9 +85,17 @@ export function createWorldView(
   const sorted = new Container({ sortableChildren: true });
   const dim = new Graphics();
   const groundSprite = new Sprite();
-  world.addChild(groundSprite, flat, sorted, dim);
-  app.stage.addChild(world);
+  const fx = createFx();
+  world.addChild(groundSprite, flat, sorted, fx.layer, dim);
+  const lightTexture = Texture.from(paintLightHole());
+  lightTexture.source.scaleMode = 'linear'; // a smooth gradient, the one non-pixel-art texture
+  const night = new Sprite(lightTexture);
+  night.anchor.set(0.5);
+  const frozen = new Graphics();
+  frozen.alpha = 0;
+  app.stage.addChild(world, night, frozen);
   const colour = new ColorMatrixFilter();
+  world.filters = [colour];
 
   // Tall things on the sorted layer, each sorted by its bottom edge.
   const { boundary, deco } = map.layers;
@@ -146,7 +161,9 @@ export function createWorldView(
 
   let groundTexture: RenderTexture | null = null;
   let bakedDrought: boolean | null = null;
-  const setLook = (look: WorldLook) => {
+  let look = initialLook;
+  const setLook = (next: WorldLook) => {
+    look = next;
     if (look.drought !== bakedDrought) {
       groundTexture?.destroy(true);
       groundTexture = bakeGround(app, map, variant, look.drought ? frame('terrain/cracks-1') : null);
@@ -155,13 +172,10 @@ export function createWorldView(
     }
     for (const plot of map.plots) plotSprites.get(plot.id)!.texture = plotTexture(plot, look.plots[plot.id] ?? defaultStage(plot));
     if (cabinet) cabinet.texture = frame(`store/${look.store}`);
-    colour.reset();
-    if (look.weakened) {
-      colour.saturate(-0.5, true);
-      colour.tint(0xf0e0c0, true); // a tired ochre cast
-    }
-    if (look.drought) colour.tint(0xffe6cc, true); // warm, dry light
-    world.filters = look.weakened || look.drought ? [colour] : [];
+    fx.setMotes(look.weakened);
+    const flySpots = map.plots.filter((p) => look.plots[p.id] === 'rotten').map((p) => ({ x: (p.x + p.w / 2) * TILE, y: (p.y + p.h / 2) * TILE }));
+    if (cabinet && look.store === 'rotting') flySpots.push({ x: cabinet.x + TILE / 2, y: cabinet.y - 20 });
+    fx.setFlies(flySpots);
   };
   setLook(initialLook);
 
@@ -173,11 +187,22 @@ export function createWorldView(
   let insideT = house && isInside(house, walker) ? 1 : 0;
   const input = new KeyboardInput();
 
+  let externallyPaused = false;
+  let frozenT = 0;
+
   const update = () => {
     const dt = Math.min(app.ticker.deltaMS / 1000, 0.25);
+    // The game loop owns the clock. It stands still while the journal is open (decision 012).
+    const store = useGameStore.getState();
+    store.advance(dt);
+    const { t, turnSeconds, journalOpen } = useGameStore.getState();
+    const timeUp = isTimeUp({ t, turnSeconds });
+    input.paused = externallyPaused || journalOpen || timeUp;
+    const speed = WALK_SPEED * (look.weakened ? WEAKENED_WALK : 1);
+
     accumulator += dt;
     while (accumulator >= FIXED_STEP) {
-      walker = stepWalker(walker, input.direction(), WALK_SPEED, FIXED_STEP, grid);
+      walker = stepWalker(walker, input.direction(), speed, FIXED_STEP, grid);
       animTime = walker.moving ? animTime + FIXED_STEP : 0;
       accumulator -= FIXED_STEP;
     }
@@ -185,6 +210,7 @@ export function createWorldView(
     player.texture = frame(`player/walk-${walker.facing}-${step}`);
     player.position.set(Math.round(walker.x * TILE), Math.round(walker.y * TILE));
     player.zIndex = walker.y * TILE;
+    store.setNearby(timeUp ? null : nearbyPlot(map, walker));
 
     if (house) {
       const target = isInside(house, walker) ? 1 : 0;
@@ -203,25 +229,71 @@ export function createWorldView(
     const offset = cameraOffset(focus, view, { w: map.width * TILE, h: map.height * TILE }, zoom, dpr);
     world.scale.set(zoom);
     world.position.set(offset.x, offset.y);
+    fx.update(journalOpen ? 0 : dt, focus);
+
+    // Light: the day tint multiplies with the weakened/drought looks; night darkens round a soft light.
+    const light = lightAt(gameHour(t, turnSeconds));
+    colour.reset();
+    if (look.weakened) {
+      colour.saturate(-0.5, true);
+      colour.tint(0xf0e0c0, true); // a tired ochre cast
+    }
+    if (look.drought) colour.tint(0xffe6cc, true); // warm, dry light
+    if (light.tint !== 0xffffff) colour.tint(light.tint, true);
+    const darkness = light.darkness * lerp(1, INDOOR_DARKNESS, insideT);
+    night.visible = darkness > 0.01;
+    night.alpha = darkness;
+    night.tint = light.shade;
+    night.position.set(offset.x + walker.x * TILE * zoom, offset.y + (walker.y - 0.6) * TILE * zoom);
+    night.scale.set((NIGHT_LIGHT_TILES * TILE * zoom) / LIGHT_HOLE_RADIUS);
+
+    // Time up: lock input (above) and dim the world; the end-of-turn flow (05) takes over from here.
+    frozenT = approach(frozenT, timeUp ? 1 : 0, dt / 0.6);
+    if (frozenT > 0) frozen.clear().rect(0, 0, view.w, view.h).fill(0x101418);
+    frozen.alpha = 0.45 * frozenT;
   };
   app.ticker.add(update);
 
   return {
     setLook,
     setInputPaused: (paused) => {
-      input.paused = paused;
+      externallyPaused = paused;
     },
     fps: () => app.ticker.FPS,
     destroy: () => {
       app.ticker.remove(update);
       input.destroy();
+      store().setNearby(null);
       world.destroy({ children: true });
+      night.destroy();
+      frozen.destroy();
+      lightTexture.destroy(true);
       colour.destroy();
       groundTexture?.destroy(true);
       for (const t of plotTextures.values()) t.destroy(true);
       atlas.destroyAll();
     },
   };
+}
+
+const store = () => useGameStore.getState();
+
+/** Radius (canvas px) of the clear hole in the night texture; the texture is 16× wider than it. */
+const LIGHT_HOLE_RADIUS = 64;
+
+/** White everywhere except a soft round hole in the middle, for the night overlay (tinted and faded at runtime). */
+function paintLightHole(): HTMLCanvasElement {
+  const size = LIGHT_HOLE_RADIUS * 32;
+  const c = document.createElement('canvas');
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, LIGHT_HOLE_RADIUS * 0.35, size / 2, size / 2, LIGHT_HOLE_RADIUS * 1.6);
+  g.addColorStop(0, 'rgba(255,255,255,0)');
+  g.addColorStop(1, 'rgba(255,255,255,1)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  return c;
 }
 
 /** Inside = feet in the room or in the doorway, so the roof lifts as you step through. */
