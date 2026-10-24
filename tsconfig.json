@@ -5,17 +5,12 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
 
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "lib": ["ES2022", "DOM"],
-    "types": ["node"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
 
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -27,10 +22,5 @@
       "@engine/*": ["./src/engine/*"]
     }
   },
-  "include": ["src"]
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "noEmit": true
-  },
-  "include": ["src", "scripts", "dev"]
+  "include": ["src", "dev"]
 }
