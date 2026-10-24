@@ -1,0 +1,19 @@
+# dependencies and builds
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# env and secrets (commit .env.example only)
+.env
+.env.*
+!.env.example
+supabase/.temp/
+supabase/.branches/
+
+# editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log

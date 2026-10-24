@@ -60,6 +60,8 @@ npm run typecheck && npm run lint && npm test && npm run build
 - Change `- [ ]` to `- [x]` for the task in its section doc, in the same PR.
 - If you built something differently from the Spec, update the Spec text so the plan stays true.
   Other people's Claude sessions read it as fact.
+- Rebuild `docs/plan/plan.html` with `python3 docs/plan/tools/build_page.py docs/plan docs/plan/plan.html docs/plan/tools/page-template.html`
+  if pandoc is installed; otherwise say in the PR that it needs a rebuild.
 - Don't edit the point estimates in `12-team-split.md` (they're for balancing, not tracking).
 
 ## 7. Open the PR

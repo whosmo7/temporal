@@ -1,0 +1,3085 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inheritance Project Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@500;700&display=swap">
+<style>
+/* Layout: sticky index rail on the left (field-map legend), one readable plan column on the right. */
+:root {
+  --bg: #eef2ea;          /* pale meadow */
+  --surface: #fbfcf8;
+  --sunk: #e3e9dd;
+  --fg: #1c2a20;
+  --muted: #56685a;
+  --line: #cfd8c8;
+  --accent: #2d6a3f;      /* field green */
+  --accent-soft: #d7e7d4;
+  --ph-fg: #8a4f00;       /* harvest amber: placeholders */
+  --ph-bg: #f8e6c6;
+  --open: #a3372b;        /* apple red: open questions */
+  --open-bg: #f6e1dc;
+  --a: #2f5f9c; --a-bg: #dde7f5;
+  --b: #2d6a3f; --b-bg: #d7e7d4;
+  --c: #8a4f00; --c-bg: #f8e6c6;
+  --code-bg: #e5ebdf;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --f-pixel: "Pixelify Sans", "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111712; --surface: #172019; --sunk: #1d281f; --fg: #e2eadf; --muted: #9aac9c; --line: #2b3a2e;
+    --accent: #7fc48f; --accent-soft: #223a28; --ph-fg: #f0b45e; --ph-bg: #3a2a12; --open: #f0907f; --open-bg: #3a1f1a;
+    --a: #8fb4ea; --a-bg: #1d2b40; --b: #7fc48f; --b-bg: #223a28; --c: #f0b45e; --c-bg: #3a2a12; --code-bg: #1f2b22;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111712; --surface: #172019; --sunk: #1d281f; --fg: #e2eadf; --muted: #9aac9c; --line: #2b3a2e;
+  --accent: #7fc48f; --accent-soft: #223a28; --ph-fg: #f0b45e; --ph-bg: #3a2a12; --open: #f0907f; --open-bg: #3a1f1a;
+  --a: #8fb4ea; --a-bg: #1d2b40; --b: #7fc48f; --b-bg: #223a28; --c: #f0b45e; --c-bg: #3a2a12; --code-bg: #1f2b22;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.6 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 40px; max-width: 1180px; margin: 0 auto; padding-block: 32px 80px; }
+@media (max-width: 880px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 20px 60px; } }
+
+/* Rail */
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); align-self: start; max-height: calc(100vh - 32px); overflow: auto; display: flex; flex-direction: column; gap: 20px; padding-right: 4px; }
+@media (max-width: 880px) { .rail { position: static; max-height: none; } }
+.brand { display: flex; flex-direction: column; gap: 4px; }
+.wordmark { font: 700 28px/1 var(--f-pixel); letter-spacing: 0.06em; color: var(--accent); margin: 0; }
+.tagline { font-size: 13px; color: var(--muted); margin: 0; }
+.rail-label { font: 600 11px/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter button {
+  font: 600 13px/1 var(--f-body); padding: 7px 10px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+}
+.filter button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.filter button:focus-visible, .nav a:focus-visible, .task:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.who { display: grid; gap: 6px; font-size: 13px; }
+.who div { display: flex; gap: 8px; align-items: baseline; }
+.who .n { margin-left: auto; font: 12px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.nav { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.nav a { display: flex; gap: 10px; align-items: baseline; padding: 6px 8px; border-radius: 6px; color: var(--fg); text-decoration: none; font-size: 14px; }
+.nav a:hover { background: var(--sunk); }
+.nav a.on { background: var(--accent-soft); }
+.nav-num { font: 600 12px var(--f-mono); color: var(--muted); width: 1.6em; flex: none; }
+.nav-label { min-width: 0; }
+.nav-count { margin-left: auto; font: 11px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+
+/* Content */
+main { min-width: 0; display: flex; flex-direction: column; gap: 56px; }
+.doc { min-width: 0; scroll-margin-top: 16px; }
+.sec-head { display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--fg); padding-bottom: 10px; margin-bottom: 18px; }
+.sec-num { font: 700 15px var(--f-pixel); color: var(--accent); background: var(--accent-soft); padding: 3px 8px; border-radius: 4px; flex: none; }
+.sec-title { font: 700 clamp(24px, 3.2vw, 32px)/1.15 var(--f-display); margin: 0; text-wrap: balance; }
+.progress { display: flex; align-items: center; gap: 12px; margin: -6px 0 18px; font: 12px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { flex: 0 1 220px; height: 6px; background: var(--sunk); border-radius: 3px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+
+.prose { max-width: 74ch; }
+.prose > :first-child { margin-top: 0; }
+.prose h2 { font: 700 21px/1.25 var(--f-display); margin: 32px 0 10px; text-wrap: balance; }
+.prose h3 { font: 700 17px/1.3 var(--f-display); margin: 24px 0 8px; }
+.prose p, .prose ul, .prose ol { margin: 0 0 12px; }
+.prose ul, .prose ol { padding-left: 1.3em; }
+.prose li { margin: 3px 0; }
+.prose a { color: var(--accent); text-underline-offset: 2px; }
+.prose code { font: 0.86em var(--f-mono); background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.prose pre { background: var(--code-bg); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 0 0 14px; font-size: 13px; line-height: 1.5; }
+.prose pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+.prose blockquote { margin: 0 0 14px; padding: 10px 14px; border-left: 3px solid var(--ph-fg); background: var(--surface); border-radius: 0 6px 6px 0; color: var(--fg); }
+.prose blockquote p:last-child { margin: 0; }
+.prose strong { font-weight: 700; }
+.scroll { overflow-x: auto; margin: 0 0 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); max-width: 100%; }
+.prose table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.45; }
+.prose th, .prose td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.prose th { font: 600 12px var(--f-mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--sunk); }
+.prose tr:last-child td { border-bottom: 0; }
+.prose td:last-child:not(:first-child) { font-variant-numeric: tabular-nums; }
+
+.block-open { background: var(--open-bg); border-radius: 10px; padding: 4px 18px 8px; margin-top: 28px; }
+.block-open h2 { color: var(--open); margin-top: 14px; }
+.block-accept { border-left: 3px solid var(--accent); padding-left: 16px; }
+.block-decisions h2::after, .block-open h2::after, .block-accept h2::after, .block-tasks h2::after {
+  font: 600 10px/1 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; margin-left: 10px; vertical-align: 3px;
+  padding: 3px 6px; border-radius: 3px; background: var(--sunk); color: var(--muted);
+}
+.block-decisions h2::after { content: "locked"; }
+.block-open h2::after { content: "undecided"; background: var(--surface); color: var(--open); }
+
+.ph { font: 600 11px/1 var(--f-mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ph-fg); background: var(--ph-bg); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+.owner { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 4px; font: 700 12px/1 var(--f-pixel); flex: none; }
+.o-a { color: var(--a); background: var(--a-bg); }
+.o-b { color: var(--b); background: var(--b-bg); }
+.o-c { color: var(--c); background: var(--c-bg); }
+
+ul.task-list { list-style: none; padding-left: 0; display: grid; gap: 2px; }
+.task-item label { display: flex; gap: 10px; align-items: flex-start; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.task-item label:hover { background: var(--surface); }
+.task-item .owner { margin-top: 2px; }
+.task-item .tt { min-width: 0; }
+.task { width: 17px; height: 17px; margin: 3px 0 0; accent-color: var(--accent); flex: none; }
+.task:checked ~ .tt { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+body[data-filter] .task-item { display: none; }
+body[data-filter="A"] .task-item[data-owner="A"],
+body[data-filter="B"] .task-item[data-owner="B"],
+body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
+.foot { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <aside class="rail" aria-label="Plan index">
+    <div class="brand">
+      <p class="wordmark">INHERITANCE</p>
+      <p class="tagline">Project plan · OxHack, 48 hours · three builders</p>
+    </div>
+    <div>
+      <p class="rail-label">Show tasks for</p>
+      <div class="filter" role="group" aria-label="Filter tasks by owner">
+        <button type="button" id="f-all" data-f="" aria-pressed="true">Everyone</button>
+        <button type="button" id="f-a" data-f="A" aria-pressed="false">A</button>
+        <button type="button" id="f-b" data-f="B" aria-pressed="false">B</button>
+        <button type="button" id="f-c" data-f="C" aria-pressed="false">C</button>
+      </div>
+    </div>
+    <div class="who" aria-label="Owners">
+      <div><span class="owner o-a">A</span>Engine &amp; Backend<span class="n" data-who="A"></span></div>
+      <div><span class="owner o-b">B</span>World &amp; Gameplay<span class="n" data-who="B"></span></div>
+      <div><span class="owner o-c">C</span>Design, Content &amp; Shell<span class="n" data-who="C"></span></div>
+    </div>
+    <nav>
+      <p class="rail-label">Sections</p>
+      <ul class="nav">
+<li><a href="#overview"><span class="nav-num">··</span><span class="nav-label">Overview</span></a></li>
+<li><a href="#s00"><span class="nav-num">00</span><span class="nav-label">Decisions Log &amp; Glossary</span></a></li>
+<li><a href="#s01"><span class="nav-num">01</span><span class="nav-label">Game Design</span><span class="nav-count" data-for="s01"></span></a></li>
+<li><a href="#s02"><span class="nav-num">02</span><span class="nav-label">Simulation Engine</span><span class="nav-count" data-for="s02"></span></a></li>
+<li><a href="#s03"><span class="nav-num">03</span><span class="nav-label">World Generation</span><span class="nav-count" data-for="s03"></span></a></li>
+<li><a href="#s04"><span class="nav-num">04</span><span class="nav-label">World Rendering &amp; In-Game UI (PixiJS + React)</span><span class="nav-count" data-for="s04"></span></a></li>
+<li><a href="#s05"><span class="nav-num">05</span><span class="nav-label">Journal, End-of-Turn Flow, Graveyard</span><span class="nav-count" data-for="s05"></span></a></li>
+<li><a href="#s06"><span class="nav-num">06</span><span class="nav-label">Replay &amp; Gallery</span><span class="nav-count" data-for="s06"></span></a></li>
+<li><a href="#s07"><span class="nav-num">07</span><span class="nav-label">Backend &amp; Async Multiplayer (Supabase)</span><span class="nav-count" data-for="s07"></span></a></li>
+<li><a href="#s08"><span class="nav-num">08</span><span class="nav-label">App Shell</span><span class="nav-count" data-for="s08"></span></a></li>
+<li><a href="#s09"><span class="nav-num">09</span><span class="nav-label">Art &amp; Audio</span><span class="nav-count" data-for="s09"></span></a></li>
+<li><a href="#s10"><span class="nav-num">10</span><span class="nav-label">Demo World &amp; Demo Moment</span><span class="nav-count" data-for="s10"></span></a></li>
+<li><a href="#s11"><span class="nav-num">11</span><span class="nav-label">Repo Setup, Workflow, Testing, Deploy</span><span class="nav-count" data-for="s11"></span></a></li>
+<li><a href="#s12"><span class="nav-num">12</span><span class="nav-label">Team Split (3 people)</span></a></li>
+      </ul>
+    </nav>
+  </aside>
+  <main>
+<section id="overview" class="doc" data-key="overview"><header class="sec-head"><h2 class="sec-title">Project plan</h2></header><div class="prose">
+<blockquote>
+<p><em>What would responsibility mean if the people affected by your choices could never reward you?</em></p>
+</blockquote>
+<p>A browser-based, async-multiplayer farming game for OxHack (48h, team of 3–4). Each player governs a small seeded world for one timed turn (one <strong>generation</strong>). They inherit what earlier players left: resources, structures, consequences already in motion, and a shared journal. Some actions pay off right away. Others only mature after the player has left. When a world reaches its final generation, a replay shows what each player actually caused.</p>
+<p>This folder is the plan. It is split by area so each person can own a section. It is <strong>not</strong> a build-everything-in-one-go spec. Each doc has:</p>
+<ul>
+<li><strong>Decisions</strong>: what the team has already chosen (from the planning Q&amp;A)</li>
+<li><strong>Spec</strong>: how it should work</li>
+<li><strong>Tasks</strong>: checklists, roughly in dependency order</li>
+<li><strong>Acceptance</strong>: how you know the section is done</li>
+<li><strong>Open questions</strong>: things still to decide. Nothing here has been assumed.</li>
+</ul>
+<p>Values marked <span class="ph">placeholder</span> are suggested starting numbers for the game designer to tune. They are not decisions.</p>
+<div class="block block-plain"><h2 id="overview-sections">Sections</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Doc</th>
+<th>Owner role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>00</td>
+<td><a href="#s00">Decisions log &amp; glossary</a></td>
+<td>Everyone, read first</td>
+</tr>
+<tr class="even">
+<td>01</td>
+<td><a href="#s01">Game design: resources, actions, rules</a></td>
+<td>Game design</td>
+</tr>
+<tr class="odd">
+<td>02</td>
+<td><a href="#s02">Simulation engine: turn engine, action log, causality</a></td>
+<td>Engine</td>
+</tr>
+<tr class="even">
+<td>03</td>
+<td><a href="#s03">World generation: seeds, biomes, plots</a></td>
+<td>Engine</td>
+</tr>
+<tr class="odd">
+<td>04</td>
+<td><a href="#s04">World rendering &amp; in-game UI (PixiJS)</a></td>
+<td>Frontend</td>
+</tr>
+<tr class="even">
+<td>05</td>
+<td><a href="#s05">Journal, end-of-turn flow, graveyard</a></td>
+<td>Frontend</td>
+</tr>
+<tr class="odd">
+<td>06</td>
+<td><a href="#s06">Replay &amp; gallery</a></td>
+<td>Frontend + Engine</td>
+</tr>
+<tr class="even">
+<td>07</td>
+<td><a href="#s07">Backend &amp; async multiplayer (Supabase)</a></td>
+<td>Engine / Backend</td>
+</tr>
+<tr class="odd">
+<td>08</td>
+<td><a href="#s08">App shell: screens, auth, onboarding, admin</a></td>
+<td>Frontend</td>
+</tr>
+<tr class="even">
+<td>09</td>
+<td><a href="#s09">Art &amp; audio</a></td>
+<td>Design/art/audio</td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td><a href="#s10">Demo world &amp; demo moment</a></td>
+<td>Game design / pitch</td>
+</tr>
+<tr class="even">
+<td>11</td>
+<td><a href="#s11">Repo setup, workflow, testing, deploy</a></td>
+<td>Everyone (do first)</td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td><a href="#s12">Team split: who does what</a></td>
+<td>Everyone</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Single-page view:</strong> open <code>plan.html</code> in a browser for the whole plan on one page, with owner filters and tickable tasks. Rebuild it after editing any doc: <code>python3 docs/plan/tools/build_page.py docs/plan docs/plan/plan.html docs/plan/tools/page-template.html</code> (needs pandoc).</p>
+<p><strong>Working with Claude Code:</strong> <code>CLAUDE.md</code> and the project skills in <code>.claude/skills/</code> (<code>inheritance-*</code>) turn this plan into rules Claude follows in every teammate's session. Ask your Claude to "start my next [A]/[B]/[C] task".</p>
+<p>Each task in <code>01</code>–<code>11</code> is tagged <span class="owner o-a">A</span>, <span class="owner o-b">B</span> or <span class="owner o-c">C</span>. These are the three equal workloads in <code>12</code>: <strong>A</strong> = Engine &amp; Backend, <strong>B</strong> = World &amp; Gameplay, <strong>C</strong> = Design, Content &amp; App Shell.</p>
+</div><div class="block block-plain"><h2 id="overview-suggested-critical-path-dependencies-not-a-schedule">Suggested critical path (dependencies, not a schedule)</h2>
+<pre><code>11 repo setup ──► 02 engine core ──► 01 balance config ──► 04 world render + HUD
+                   │                                        │
+                   ├──► 03 worldgen ────────────────────────┤
+                   │                                        ▼
+                   └──► 07 backend (schema, claim/commit) ──► 05 journal/end flow ──► 06 replay/gallery
+                                                                                          │
+                                                 09 art/audio (parallel throughout) ──────┤
+                                                                                          ▼
+                                                                         08 shell/admin ──► 10 demo world</code></pre>
+<p>Your first milestone should be a playable hot-seat loop: inherit → act → freeze → journal → gravestone → next player, running locally with placeholder squares and no backend. Every later section plugs into that loop.</p>
+</div></div></section>
+<section id="s00" class="doc" data-key="s00"><header class="sec-head"><span class="sec-num">00</span><h2 class="sec-title">Decisions Log &amp; Glossary</h2></header><div class="prose">
+<p>Everything the team has decided so far, so nobody re-argues it at hour 30.</p>
+<div class="block block-plain"><h2 id="s00-project-constraints">Project constraints</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Topic</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Event</td>
+<td>OxHack, <strong>48-hour</strong> build window</td>
+</tr>
+<tr class="even">
+<td>Team</td>
+<td><strong>3–4 people</strong>, mixed experience with the stack; roles: engine/sim, frontend/UI, design/art/audio, game design/narrative/pitch</td>
+</tr>
+<tr class="odd">
+<td>Repo</td>
+<td><code>whosmo7/temporal</code></td>
+</tr>
+<tr class="even">
+<td>Stack</td>
+<td><strong>React + TypeScript + Vite</strong></td>
+</tr>
+<tr class="odd">
+<td>World renderer</td>
+<td><strong>PixiJS</strong> (canvas/WebGL) inside React; React draws UI overlays</td>
+</tr>
+<tr class="even">
+<td>Hosting</td>
+<td><strong>GitHub Pages</strong></td>
+</tr>
+<tr class="odd">
+<td>Backend</td>
+<td><strong>Supabase</strong> (async online play)</td>
+</tr>
+<tr class="even">
+<td>Devices</td>
+<td><strong>Desktop/laptop only</strong> (keyboard + mouse)</td>
+</tr>
+<tr class="odd">
+<td>Workflow</td>
+<td><strong>GitHub Issues + PRs</strong> (the team creates the issues from these docs)</td>
+</tr>
+<tr class="even">
+<td>Testing</td>
+<td><strong>Vitest unit tests on the engine</strong></td>
+</tr>
+<tr class="odd">
+<td>Scheduling</td>
+<td>The team plans its own time. These docs give tasks by section, not a timetable.</td>
+</tr>
+<tr class="even">
+<td>Pitch deliverables (slides, video, write-up)</td>
+<td>Out of scope for these docs. The team handles them.</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s00-world--setting">World &amp; setting</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Topic</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Tone</td>
+<td>Simple farming life, Minecraft-like simplicity</td>
+</tr>
+<tr class="even">
+<td>View</td>
+<td><strong>2D with a Stardew Valley-style angle</strong> (top-down ¾ view)</td>
+</tr>
+<tr class="odd">
+<td>Map</td>
+<td><strong>~32×32 tiles</strong> (needs a camera that follows the player)</td>
+</tr>
+<tr class="even">
+<td>Seeds</td>
+<td>Every world is generated from a seed and has a natural <strong>boundary</strong></td>
+</tr>
+<tr class="odd">
+<td>Boundaries for hackathon</td>
+<td><strong>Forest (trees)</strong> and <strong>Island (sea)</strong></td>
+</tr>
+<tr class="even">
+<td>Boundary effect</td>
+<td><strong>Small modifiers</strong> to starting values. Rules are the same everywhere.</td>
+</tr>
+<tr class="odd">
+<td>Placement</td>
+<td><strong>Pre-defined plots</strong> (fixed sites for fields, orchard, reservoir, well, fishing/hunting spot)</td>
+</tr>
+<tr class="even">
+<td>Population</td>
+<td><strong>No NPC villagers.</strong> The player is the only person alive in the world. The <strong>graveyard</strong> of past players is the visible population.</td>
+</tr>
+<tr class="odd">
+<td>World health visuals</td>
+<td><strong>Strong</strong>: withered crops, cracked reservoir, murky water, blight. The world never explains itself, so it has to be readable by eye.</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s00-resources--player">Resources &amp; player</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Topic</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Resources</td>
+<td><strong>Food, Water, Labour</strong></td>
+</tr>
+<tr class="even">
+<td>Labour</td>
+<td>The <strong>player's energy/stamina</strong>. Actions spend it.</td>
+</tr>
+<tr class="odd">
+<td>Personal needs</td>
+<td><strong>Player must meet food + water upkeep</strong> at end of turn</td>
+</tr>
+<tr class="even">
+<td>Failure</td>
+<td><strong>Soft fail</strong>: if upkeep isn't met, the successor gets a <strong>weakened start</strong> (low stamina, visibly blighted world)</td>
+</tr>
+<tr class="odd">
+<td>Decay</td>
+<td><strong>Resource decay + infrastructure wear</strong> (crops rot, water stagnates, structures wear unless maintained)</td>
+</tr>
+<tr class="even">
+<td>Delayed-effect visibility</td>
+<td><strong>Partly hidden</strong>: you can see something is growing or decaying, but not the exact numbers</td>
+</tr>
+<tr class="odd">
+<td>Random events</td>
+<td><strong>Seeded</strong> (deterministic from the world seed)</td>
+</tr>
+<tr class="even">
+<td>Borrowing</td>
+<td><strong>None</strong></td>
+</tr>
+<tr class="odd">
+<td>Scoring</td>
+<td><strong>No score.</strong> The replay is the ending.</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s00-actions-8">Actions (8)</h2>
+<ol type="1">
+<li><strong>Harvest</strong>: collect from ripe fields or orchards (farmed food)</li>
+<li><strong>Plant Crops</strong>: quick crops that can ripen within the same turn</li>
+<li><strong>Plant Orchard</strong>: slow; matures in a later generation</li>
+<li><strong>Repair Reservoir</strong>: protects future water; tuned to be costly (see dilemma below)</li>
+<li><strong>Dig Well</strong>: quick water, but must be <strong>maintained</strong> or its water stagnates</li>
+<li><strong>Fish/Hunt</strong>: wild food from a commons that depletes and recovers slowly</li>
+<li><strong>Maintain</strong>: repair wear on structures (well, reservoir, orchard)</li>
+<li><strong>Fast Track</strong>: pull any pending effect forward to now at <strong>double cost, paid by the current player</strong>. Works on effects <strong>other players</strong> started too.</li>
+</ol>
+<p>The <strong>reservoir dilemma is designed in on purpose</strong>: the numbers are tuned so one player can't fully repair the reservoir <em>and</em> comfortably meet their own upkeep in the same turn.</p>
+</div><div class="block block-plain"><h2 id="s00-turn-flow">Turn flow</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Topic</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Turn length</td>
+<td><strong>Configurable</strong> per world (default chosen by the game designer)</td>
+</tr>
+<tr class="even">
+<td>Generations per world</td>
+<td><strong>Configurable</strong> (not fixed at 4)</td>
+</tr>
+<tr class="odd">
+<td>Actions per turn</td>
+<td><strong>Unlimited</strong> within the time limit (stamina and resources still apply)</td>
+</tr>
+<tr class="even">
+<td>In-turn time</td>
+<td><strong>Day/night cycle</strong> plays out across the turn</td>
+</tr>
+<tr class="odd">
+<td>Movement</td>
+<td><strong>Walk with WASD/arrows</strong></td>
+</tr>
+<tr class="even">
+<td>When the timer ends</td>
+<td><strong>Time freezes</strong>. The player reads and writes in the shared journal.</td>
+</tr>
+<tr class="odd">
+<td>End flow</td>
+<td><strong>Freeze → journal → cost summary → gravestone</strong></td>
+</tr>
+<tr class="even">
+<td>Cost summary</td>
+<td>Shows <strong>only what has been realised now</strong> (costs paid, immediate gains). Pending benefits are left out on purpose, which sets up the demo moment.</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s00-journal-graveyard-replay">Journal, graveyard, replay</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Topic</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Journal</td>
+<td>One page per player. <strong>Free text + drawing</strong>. <strong>Earlier pages can't be edited.</strong></td>
+</tr>
+<tr class="even">
+<td>Drawing tools</td>
+<td><strong>Single pen, a few colours</strong> (+ eraser)</td>
+</tr>
+<tr class="odd">
+<td>Journal access</td>
+<td>An <strong>in-world object, openable any time</strong> (reading it doesn't use game time)</td>
+</tr>
+<tr class="even">
+<td>What successors learn</td>
+<td><strong>Only the journal.</strong> The world never explains why it is in its current state.</td>
+</tr>
+<tr class="odd">
+<td>Gravestone</td>
+<td><strong>Name/initials</strong>, <strong>click to open that player's journal page</strong></td>
+</tr>
+<tr class="even">
+<td>Replay</td>
+<td>For each generation: <strong>a snapshot of the world plus that player's diary entry</strong>. The replay is where causes are explained.</td>
+</tr>
+<tr class="odd">
+<td>Replay audience</td>
+<td><strong>Anyone</strong>, through a public <strong>gallery</strong> of completed worlds</td>
+</tr>
+<tr class="even">
+<td>Sharing/export</td>
+<td><strong>No</strong>, in-app only</td>
+</tr>
+<tr class="odd">
+<td>Moderation</td>
+<td><strong>None</strong> for the hackathon (logged as a risk)</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s00-multiplayer">Multiplayer</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Topic</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mode</td>
+<td><strong>Async online</strong>: each generation is played by whoever is assigned next, on their own device</td>
+</tr>
+<tr class="even">
+<td>Assignment</td>
+<td><strong>Weighted random</strong> between inheriting an unlocked in-progress world and getting a new one; <strong>ratio configurable</strong></td>
+</tr>
+<tr class="odd">
+<td>Concurrency</td>
+<td><strong>Only one player can hold a world at a time</strong> (lock)</td>
+</tr>
+<tr class="even">
+<td>Abandon mid-turn</td>
+<td><strong>Turn voided</strong>: the lock expires, the world stays as it was before the turn, no gravestone</td>
+</tr>
+<tr class="odd">
+<td>Identity</td>
+<td><strong>Username + password</strong> (security isn't the focus)</td>
+</tr>
+<tr class="even">
+<td>Repeat play</td>
+<td><strong>Allowed</strong>: the same person can play several generations of one world</td>
+</tr>
+<tr class="odd">
+<td>New world (Gen 1)</td>
+<td><strong>Seeded starter state</strong> (some food/water, damaged reservoir, wild stock, empty plots, biome modifier)</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s00-screens">Screens</h2>
+<p>Landing/title · Sign up/Log in · Onboarding/tutorial · Game · Gallery of completed worlds · Admin tools: <strong>force-assign a world, configure turn length/generations, skip to replay</strong>.</p>
+</div><div class="block block-plain"><h2 id="s00-demo">Demo</h2>
+<p><strong>Pre-seeded demo world</strong>: teammates play the earlier generations before judging (one plants the orchard and sees only its cost). The judge is force-assigned the generation where it is flourishing. The slot is <strong>5 minutes</strong>.</p>
+<hr />
+</div><div class="block block-plain"><h2 id="s00-glossary">Glossary</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>World</strong></td>
+<td>One seeded map with its own history, journal and graveyard</td>
+</tr>
+<tr class="even">
+<td><strong>Generation / Turn</strong></td>
+<td>One player's timed session in a world. Turn index <code>n</code> = generation <code>n</code>.</td>
+</tr>
+<tr class="odd">
+<td><strong>Seed</strong></td>
+<td>The integer that deterministically produces the map, biome, starter state and events</td>
+</tr>
+<tr class="even">
+<td><strong>Plot</strong></td>
+<td>A pre-defined site where an action can be done (field, orchard plot, reservoir, well, fishing/hunting spot)</td>
+</tr>
+<tr class="odd">
+<td><strong>Action</strong></td>
+<td>A player's choice, recorded in the append-only action log</td>
+</tr>
+<tr class="even">
+<td><strong>Effect</strong></td>
+<td>A state change produced by an action, event or rule. It has a <em>due</em> time.</td>
+</tr>
+<tr class="odd">
+<td><strong>Pending effect</strong></td>
+<td>An effect committed but not yet due (e.g. an orchard maturing at gen n+2)</td>
+</tr>
+<tr class="even">
+<td><strong>Transition</strong></td>
+<td>One recorded state change, with its <strong>causes</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Cause</strong></td>
+<td>A reference to the action, event or rule (decay, wear, upkeep) behind a transition</td>
+</tr>
+<tr class="even">
+<td><strong>Upkeep</strong></td>
+<td>Food + water the player must have at end of turn</td>
+</tr>
+<tr class="odd">
+<td><strong>Weakened start</strong></td>
+<td>Soft-fail penalty given to the successor after missed upkeep</td>
+</tr>
+<tr class="even">
+<td><strong>Lock</strong></td>
+<td>A server-side claim that one player holds a world for the length of their turn</td>
+</tr>
+</tbody>
+</table></div>
+</div></div></section>
+<section id="s01" class="doc" data-key="s01"><header class="sec-head"><span class="sec-num">01</span><h2 class="sec-title">Game Design: Resources, Actions, Rules</h2></header><div class="progress" data-for="s01"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Game design (with Engine)<br />
+<strong>Depends on:</strong> nothing. This feeds <code>02-engine</code> (as <code>config.ts</code>) and <code>04</code>/<code>05</code> (what to show).</p>
+<div class="block block-decisions"><h2 id="s01-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li>Resources: <strong>Food, Water, Labour (= player stamina)</strong>.</li>
+<li>Eight actions: Harvest, Plant Crops, Plant Orchard, Repair Reservoir, Dig Well, Fish/Hunt, Maintain, Fast Track.</li>
+<li>Unlimited actions within a configurable turn length. Stamina and resources are the real limits.</li>
+<li>End-of-turn <strong>upkeep</strong> (food + water). Missing it = <strong>weakened start</strong> for the successor.</li>
+<li><strong>Decay</strong> (food rots, water stagnates) + <strong>infrastructure wear</strong> (structures degrade unless maintained).</li>
+<li><strong>Partly hidden</strong> delayed effects: players see growth or decay visually, never the exact numbers or due dates.</li>
+<li><strong>Seeded events</strong> only (e.g. a drought). No borrowing, no score.</li>
+<li>The <strong>reservoir dilemma is tuned in on purpose</strong>.</li>
+<li>Biome (Forest / Island) gives <strong>small modifiers</strong> only.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s01-design-goal-avoid-a-morality-game">Design goal: avoid a morality game</h2>
+<p>Every action has to be something a reasonable person would choose. There is no "good" button. The tension comes from:</p>
+<ol type="1">
+<li><strong>Your own survival vs. the future.</strong> Upkeep is real, and failing it hurts your successor.</li>
+<li><strong>Cashing in vs. preserving.</strong> Fast Track lets you take a predecessor's gift early, at double cost.</li>
+<li><strong>Quick fixes with a tail.</strong> The well gives water now, but it obliges every later player to maintain it.</li>
+<li><strong>Commons depletion.</strong> Fish/Hunt stock is shared across generations and recovers slowly.</li>
+<li><strong>Invisible protection.</strong> Repairing the reservoir does nothing you can see in your own turn. It only matters when the seeded drought arrives.</li>
+</ol>
+<p>Self-check for every balance change: <em>could a thoughtful player defend each option?</em></p>
+</div><div class="block block-plain"><h2 id="s01-core-loop-one-generation">Core loop (one generation)</h2>
+<ol type="1">
+<li><strong>Inherit.</strong> Spawn in the world. Resources, structures and graveyard are as the previous player left them, after decay, wear, due effects and events have been applied. The journal is on a lectern and openable any time.</li>
+<li><strong>Act.</strong> The timer runs and day turns to night. Walk to plots and act. Each action costs stamina (and sometimes water or food).</li>
+<li><strong>Freeze.</strong> The timer hits 0, the world freezes, and input locks.</li>
+<li><strong>Journal.</strong> Write or draw your page. Earlier pages are read-only.</li>
+<li><strong>Cost summary.</strong> Shows only what was <strong>realised</strong> this turn. Pending benefits are left out.</li>
+<li><strong>Upkeep check.</strong> Food/water are deducted. A shortfall marks the successor as weakened.</li>
+<li><strong>Gravestone.</strong> Your stone is placed in the graveyard. The turn is committed.</li>
+<li><strong>Between turns (engine).</strong> Decay, wear, due effects, seeded events and wild stock regrowth are applied for the next generation.</li>
+</ol>
+<blockquote>
+<p>Open: should upkeep be checked <em>before</em> the journal, so the player knows whether they've failed while writing? The current order has the cost summary after the journal.</p>
+</blockquote>
+</div><div class="block block-plain"><h2 id="s01-resources">Resources</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Resource</th>
+<th>Source</th>
+<th>Sink</th>
+<th>Between-generation rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Food</strong></td>
+<td>Harvest (crops, orchard), Fish/Hunt</td>
+<td>Upkeep, Fast Track costs</td>
+<td><strong>Rots</strong>: loses <code>foodRotPct</code> per generation</td>
+</tr>
+<tr class="even">
+<td><strong>Water</strong></td>
+<td>Reservoir income, Well, starter stock</td>
+<td>Upkeep, Plant Crops/Orchard, Fast Track</td>
+<td><strong>Stagnates</strong>: loses <code>waterStagnatePct</code>; well water stagnates faster when unmaintained</td>
+</tr>
+<tr class="odd">
+<td><strong>Labour (stamina)</strong></td>
+<td>Full pool at turn start (reduced if weakened)</td>
+<td>Every action</td>
+<td>Doesn't carry over</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s01-structures--plots-pre-defined-sites">Structures &amp; plots (pre-defined sites)</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Plot</th>
+<th>States (visual)</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Field(s) ×N</td>
+<td>empty → sown → growing → ripe → rotten</td>
+<td>Quick crops can ripen within one turn</td>
+</tr>
+<tr class="even">
+<td>Orchard plot</td>
+<td>empty → sapling → young → fruiting → (worn → dead)</td>
+<td>Matures at gen +<code>orchardMatureGens</code></td>
+</tr>
+<tr class="odd">
+<td>Reservoir</td>
+<td>cracked → repaired → (wear)</td>
+<td>Sets water income and drought protection</td>
+</tr>
+<tr class="even">
+<td>Well site</td>
+<td>none → dug → (stagnant if unmaintained)</td>
+<td>Instant + ongoing water, needs upkeep</td>
+</tr>
+<tr class="odd">
+<td>Fishing spot / hunting ground</td>
+<td>stock level (visual abundance)</td>
+<td>Island → fishing, Forest → hunting (open: confirm)</td>
+</tr>
+<tr class="even">
+<td>Lectern (journal)</td>
+<td>—</td>
+<td>Always available</td>
+</tr>
+<tr class="odd">
+<td>Graveyard</td>
+<td>one stone per completed turn</td>
+<td>Click a stone to open that player's page</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s01-actions">Actions</h2>
+<p>All numbers are <span class="ph">placeholder</span> values for <code>src/engine/config.ts</code>.</p>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Action</th>
+<th>Target</th>
+<th>Immediate</th>
+<th>Delayed / tail</th>
+<th>Proposed cost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><strong>Harvest</strong></td>
+<td>ripe field or fruiting orchard</td>
+<td>+food (crop: 6, orchard: 15)</td>
+<td>—</td>
+<td>5 stamina</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><strong>Plant Crops</strong></td>
+<td>empty field</td>
+<td>—</td>
+<td>Ripens after <code>cropRipenSeconds</code> (≈25% of turn) <strong>in the same turn</strong>. Rots at end of turn if not harvested.</td>
+<td>8 stamina, 2 water</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><strong>Plant Orchard</strong></td>
+<td>orchard plot</td>
+<td>—</td>
+<td>Fruits from gen +2; yields each later gen while maintained</td>
+<td>25 stamina, 5 water</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><strong>Repair Reservoir</strong></td>
+<td>reservoir</td>
+<td>—</td>
+<td>From gen +1: water income rises (e.g. 4 → 12/gen) and drought penalty is cancelled</td>
+<td><strong>55 stamina</strong> (the dilemma)</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><strong>Dig Well</strong></td>
+<td>well site</td>
+<td>+8 water</td>
+<td>+4 water/gen <strong>while maintained</strong>; unmaintained → stagnates and gives 0, and stored water decays faster</td>
+<td>20 stamina</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><strong>Fish/Hunt</strong></td>
+<td>fishing/hunting spot</td>
+<td>+5 food</td>
+<td>Wild stock −1; regrows +1/gen up to a cap</td>
+<td>6 stamina</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><strong>Maintain</strong></td>
+<td>well, reservoir, orchard</td>
+<td>Wear on that structure reset to 0</td>
+<td>Prevents stagnation/decline</td>
+<td>10 stamina</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td><strong>Fast Track</strong></td>
+<td>any pending effect (anyone's)</td>
+<td>That effect resolves <strong>now</strong></td>
+<td>It no longer happens later</td>
+<td><strong>2× the original action's cost</strong>, paid now</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s01-why-the-reservoir-dilemma-works-with-placeholder-numbers">Why the reservoir dilemma works (with placeholder numbers)</h3>
+<ul>
+<li>Starting stamina 100. Upkeep 10 food + 10 water.</li>
+<li>Repair = 55 stamina. That leaves 45, enough for about 4 Fish/Hunt (+20 food) or 2 crop cycles.</li>
+<li>If the player inherits low food, repairing means risking upkeep. Skipping it means the seeded drought hits a successor.</li>
+<li><strong>Tuning target:</strong> a player who inherits a "medium" world can either repair <em>or</em> comfortably feed themselves, not both.</li>
+</ul>
+<h3 id="s01-fast-track-details">Fast Track details</h3>
+<ul>
+<li>Shows every pending effect in the world, including other players' (e.g. "Orchard planted, Gen 1").</li>
+<li>Cost = 2× the original cost (stamina + resources), paid by the current player.</li>
+<li>Fast-tracking an orchard brings it to fruiting now. <strong>Open:</strong> does a rushed orchard yield less long-term?</li>
+<li>It records its own action and its own cause chain, so the replay can say <em>"MO rushed AL's orchard"</em>.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s01-decay--wear-between-generations">Decay &amp; wear (between generations)</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Rule</th>
+<th><span class="ph">placeholder</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Food rot</td>
+<td>−30% of stored food</td>
+</tr>
+<tr class="even">
+<td>Water stagnation</td>
+<td>−20% of stored water (−40% if the well is stagnant)</td>
+</tr>
+<tr class="odd">
+<td>Unharvested crops</td>
+<td>Rot at end of turn (lost)</td>
+</tr>
+<tr class="even">
+<td>Structure wear</td>
+<td>+1 wear level per gen. At wear 2: output halved. At wear 3: broken (orchard dies, reservoir cracks, well stagnates).</td>
+</tr>
+<tr class="odd">
+<td>Wild stock regrowth</td>
+<td>+1 per gen, cap 8</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s01-upkeep--soft-fail">Upkeep &amp; soft fail</h2>
+<ul>
+<li>End of turn: deduct <code>upkeepFood</code> (10) and <code>upkeepWater</code> (10).</li>
+<li>Shortfall ratio <code>s</code> = missing ÷ required (0–1, averaged over food and water).</li>
+<li>Successor's starting stamina = <code>baseStamina × (1 − s × weakenFactor)</code>, floored at 40%. <span class="ph">placeholder</span></li>
+<li>The world shows <strong>blight visuals</strong> for that generation (see <code>04</code>).</li>
+<li>The world never fully ends. The weakened player can always still act.</li>
+</ul>
+<blockquote>
+<p>Open: can the player <strong>eat</strong> mid-turn to restore stamina (spending food)? That would be a strong extra tension: eat now vs. leave food. It isn't decided yet.</p>
+</blockquote>
+</div><div class="block block-plain"><h2 id="s01-seeded-events">Seeded events</h2>
+<ul>
+<li>Derived from the world seed at creation, so they're fully deterministic and replayable.</li>
+<li>Hackathon set (suggested, needs confirming):
+<ul>
+<li><strong>Drought</strong> at gen <code>D</code> (e.g. second-to-last gen): reservoir income −70% unless the reservoir is repaired and wear &lt; 2.</li>
+<li><strong>Good harvest</strong>: +50% crop yield in one gen.</li>
+<li><strong>Storm</strong> (Island only?): +1 wear on all structures.</li>
+</ul></li>
+<li><strong>Events are never announced to the player.</strong> They only show up through visuals (cracked earth, rain) and in the replay.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s01-biome-modifiers-small">Biome modifiers (small)</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Biome</th>
+<th><span class="ph">placeholder</span> modifier</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Forest</strong></td>
+<td>Hunting ground; wild stock cap +2; water start −10%</td>
+</tr>
+<tr class="even">
+<td><strong>Island</strong></td>
+<td>Fishing spot; water start +10%; storm event eligible</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s01-configurable-per-world">Configurable per world</h2>
+<p><code>turnSeconds</code>, <code>generationCount</code>, plus the admin-set global <code>inheritRatio</code> (see <code>07</code>). <strong>Default values: game designer to decide.</strong></p>
+</div><div class="block block-tasks"><h2 id="s01-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Confirm the action table (costs, yields, delays) and record it as <code>config.ts</code> values with the engine dev</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Decide defaults for <code>turnSeconds</code> and <code>generationCount</code></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t4"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the <strong>"medium world" tuning scenario</strong> and check the dilemma holds (use the engine's simulated playthrough script from <code>02</code>)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t5"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write 3 balance test scenarios as Vitest fixtures: <em>hoarder</em>, <em>planter</em>, <em>quick-fixer</em>. Check no single strategy dominates over N gens.</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t7"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the founder/Gen-0 starter conditions per biome (see <code>03</code>)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Hand <code>05</code> the cost-summary wording ("You spent… You gathered…") with no mention of future yields</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s01-acceptance">Acceptance</h2>
+<ul>
+<li>Every action has a cost, an immediate effect, a delayed effect (or none), and a visual state defined.</li>
+<li>A simulated "all-selfish" run ends in a visibly worse final world than a "mixed" run. A "pure sacrifice" run causes upkeep failures along the way, so no single strategy is obviously right.</li>
+<li>All tunables live in one config file.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s01-open-questions-recap">Open questions (recap)</h2>
+<ol type="1">
+<li>Upkeep check before or after the journal?</li>
+<li>Can the player eat mid-turn to restore stamina?</li>
+<li>Does a fast-tracked orchard have reduced long-term yield?</li>
+<li>Final seeded event list and timing.</li>
+<li>Forest = hunt / Island = fish, or both available everywhere?</li>
+<li>Defaults for turn length and generation count.</li>
+<li>How many fields per map?</li>
+</ol>
+</div></div></section>
+<section id="s02" class="doc" data-key="s02"><header class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">Simulation Engine: Turn Engine, Action Log, Causality</h2></header><div class="progress" data-for="s02"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Engine/simulation dev<br />
+<strong>Depends on:</strong> <code>11</code> (repo scaffold). Consumes <code>01</code> config. Consumed by <code>04</code>, <code>05</code>, <code>06</code>, <code>07</code>.</p>
+<p>This is the brief's technical core: <strong>an authoritative turn engine and an append-only action log. Every action stores the turn it was committed and the turn it is due. Every state transition records its contributing causes.</strong></p>
+<div class="block block-decisions"><h2 id="s02-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li>TypeScript, <strong>pure and deterministic</strong>: same seed + same action log = same state, every time.</li>
+<li>Unit-tested with <strong>Vitest</strong>.</li>
+<li>Delayed effects are <strong>partly hidden</strong> from the UI. The engine knows everything. The UI asks for a <em>visual</em> view.</li>
+<li>Causes are <strong>not shown to players during play</strong>. They are only used by the replay (<code>06</code>).</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s02-design-principles">Design principles</h2>
+<ol type="1">
+<li><strong>No React or Pixi imports in <code>src/engine/</code>.</strong> It must run in the browser, in Vitest, and in a Supabase Edge Function (Deno).</li>
+<li><strong>Pure reducers</strong>: <code>(state, input) → { state, transitions }</code>. No <code>Math.random()</code> or <code>Date.now()</code> inside. Use a seeded PRNG and pass time in explicitly.</li>
+<li><strong>Append-only log.</strong> Never mutate or delete log entries. State can always be rebuilt by replaying the log.</li>
+<li><strong>Two time scales</strong>: <code>turn</code> (generation index) and <code>t</code> (seconds into the turn, for quick crops and day/night).</li>
+</ol>
+</div><div class="block block-plain"><h2 id="s02-core-types-sketch">Core types (sketch)</h2>
+<pre class="ts"><code>type ResourceKey = &#39;food&#39; | &#39;water&#39; | &#39;stamina&#39;;
+type PlotId = string; // e.g. &#39;field-1&#39;, &#39;orchard-1&#39;, &#39;reservoir&#39;, &#39;well&#39;, &#39;wild&#39;
+
+interface TimePoint { turn: number; t?: number }        // t = seconds into turn (omit = start of turn)
+
+interface ActionEntry {
+  id: string;                 // ulid
+  worldId: string;
+  actorId: string;            // player profile id
+  type: ActionType;           // &#39;harvest&#39; | &#39;plantCrops&#39; | ... | &#39;fastTrack&#39;
+  plotId?: PlotId;
+  targetEffectId?: string;    // for fastTrack
+  committedAt: TimePoint;     // when it was taken
+  dueAt: TimePoint;           // when its main effect lands (== committedAt for immediate)
+}
+
+interface ScheduledEffect {
+  id: string;
+  sourceActionId?: string;    // or sourceEventId / rule
+  sourceEventId?: string;
+  dueAt: TimePoint;
+  kind: EffectKind;           // &#39;orchardMature&#39; | &#39;reservoirRepaired&#39; | &#39;cropRipe&#39; | ...
+  payload: Record&lt;string, number | string&gt;;
+  status: &#39;pending&#39; | &#39;resolved&#39; | &#39;cancelled&#39; | &#39;fastTracked&#39;;
+}
+
+type Cause =
+  | { kind: &#39;action&#39;; actionId: string; actorId: string; committedTurn: number }
+  | { kind: &#39;event&#39;; eventId: string }
+  | { kind: &#39;rule&#39;; rule: &#39;foodRot&#39; | &#39;waterStagnate&#39; | &#39;wear&#39; | &#39;upkeep&#39; | &#39;regrow&#39; | &#39;weakened&#39; };
+
+interface Transition {
+  id: string;
+  at: TimePoint;
+  target: { resource: ResourceKey } | { plot: PlotId; field: string };
+  before: number | string;
+  after: number | string;
+  delta?: number;
+  causes: Cause[];            // &gt;= 1, always
+}
+
+interface WorldState {
+  worldId: string; seed: number; biome: &#39;forest&#39; | &#39;island&#39;;
+  turn: number; generationCount: number; turnSeconds: number;
+  resources: Record&lt;ResourceKey, number&gt;;
+  plots: Record&lt;PlotId, PlotState&gt;;
+  pending: ScheduledEffect[];
+  wildStock: number;
+  weakened: number;           // 0..1 shortfall carried from previous gen
+  events: SeededEvent[];      // all events for the world&#39;s life, from seed
+}</code></pre>
+</div><div class="block block-plain"><h2 id="s02-engine-api">Engine API</h2>
+<pre class="ts"><code>createWorld(seed, opts): { state, transitions }                 // Gen 0 starter state (uses 03)
+beginTurn(state, actorId): { state, transitions }               // applies between-gen rules for this turn
+applyAction(state, action, t): { state, transitions, error? }   // validates cost/target and schedules effects
+tick(state, t): { state, transitions }                          // resolves intra-turn due effects (crops)
+endTurn(state): { state, transitions, summary }                 // freeze, rot crops, upkeep, realised summary
+replay(seed, opts, log): Snapshot[]                             // rebuilds every gen from the log (06)
+explain(transitions, filter): CauseSummary                      // aggregates causes for a resource/turn (06)
+visibleView(state): VisibleWorld                                // partly hidden, for the UI (no numbers on pending)</code></pre>
+<h3 id="s02-between-generation-order-inside-beginturn--must-be-fixed-and-documented">Between-generation order (inside <code>beginTurn</code>) — must be fixed and documented</h3>
+<ol type="1">
+<li>Resolve pending effects due at <code>{turn: n}</code></li>
+<li>Apply seeded events for turn <code>n</code></li>
+<li>Structure wear +1 (unless maintained last turn)</li>
+<li>Food rot, water stagnation</li>
+<li>Resource income (reservoir, well), reduced by wear and events</li>
+<li>Wild stock regrowth</li>
+<li>Set starting stamina, applying <code>weakened</code></li>
+</ol>
+<p>Each step emits <code>Transition</code>s with the right <code>causes</code>. A shortage must always trace back to its causes, e.g. <em>"Water −18: drought (event) + reservoir cracked (wear; last maintained by AL in Gen 1)"</em>.</p>
+<h3 id="s02-multi-cause-transitions">Multi-cause transitions</h3>
+<p>When a value comes from several factors (e.g. reservoir income lowered by both wear and drought), emit <strong>one transition with multiple causes</strong>, and give each cause its share where possible (<code>causes[i].share?: number</code>) so the replay can say "−12 from drought, −6 from wear".</p>
+</div><div class="block block-plain"><h2 id="s02-authority-async-online">Authority (async online)</h2>
+<p>The engine must be authoritative, so the client can't be trusted to write the final world state.</p>
+<p><strong>Recommended:</strong> the client runs the engine locally for instant feedback and buffers the turn's <code>ActionEntry[]</code>. At end of turn it sends the log to a <strong>Supabase Edge Function <code>commit-turn</code></strong>. That function imports the same <code>src/engine</code> package, re-simulates from the stored state, validates the log, appends the action log + transitions + a snapshot, and releases the lock, all in one transaction (see <code>07</code>).</p>
+<p><strong>Fallback if the Edge Function eats too much time:</strong> a Postgres RPC that accepts the client-computed result but still only appends. Record this choice as an open question for the engine + backend devs.</p>
+</div><div class="block block-plain"><h2 id="s02-determinism">Determinism</h2>
+<ul>
+<li>Seeded PRNG (e.g. <code>mulberry32</code> or <code>sfc32</code>). Each turn's random stream is derived from <code>hash(seed, turn)</code>, so the order of actions within a turn doesn't shift later generations' events.</li>
+<li>IDs: either generated by the engine from <code>(worldId, turn, sequence)</code> or a ULID supplied by the caller. Never random inside the reducer.</li>
+<li>In-turn time <code>t</code> is passed in by the game loop and clamped to <code>[0, turnSeconds]</code>.</li>
+</ul>
+</div><div class="block block-tasks"><h2 id="s02-tasks">Tasks</h2>
+<p><strong>Core</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t1"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>src/engine/</code> package with no DOM dependencies; set up the path alias</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t2"><span class="owner o-a" title="Owner A">A</span><span class="tt">Seeded PRNG + hash utilities</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t3"><span class="owner o-a" title="Owner A">A</span><span class="tt">Types above (<code>types.ts</code>), <code>config.ts</code> loaded from <code>01</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t4"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>createWorld</code> (calls the worldgen from <code>03</code> for the plot layout + starter state)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t5"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>applyAction</code> for each of the 8 actions, with validation (stamina, resources, plot state, target exists)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t6"><span class="owner o-a" title="Owner A">A</span><span class="tt">Scheduler: insert, resolve, cancel and fast-track <code>ScheduledEffect</code>s</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t7"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>tick</code> for intra-turn effects (quick crops ripen at <code>t</code>)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t8"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>endTurn</code>: unharvested crops rot, upkeep, weakened calculation, <strong>realised-only summary</strong></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t9"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>beginTurn</code>: the between-generation pipeline in the fixed order above</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t10"><span class="owner o-a" title="Owner A">A</span><span class="tt">Transition + cause recording in every state change (helper: <code>emit(target, before, after, causes)</code>)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t11"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>visibleView</code>: turns pending effects into visual stages only (e.g. orchard <code>sapling</code> / <code>young</code>), no numbers or due turns</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>replay(seed, opts, log)</code> → per-generation <code>Snapshot { state, transitions, actions }</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t13"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>explain()</code> aggregates causes per resource per turn for the replay</span></label></li>
+</ul>
+<p><strong>Tests (Vitest)</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t14"><span class="owner o-a" title="Owner A">A</span><span class="tt">Determinism: same seed + log → deep-equal state (property test over random logs)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t15"><span class="owner o-a" title="Owner A">A</span><span class="tt">Each action: cost deducted, effect scheduled with the correct <code>dueAt</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t16"><span class="owner o-a" title="Owner A">A</span><span class="tt">Orchard planted at gen 1 fruits at gen 3; replay explains gen 3 food with a cause pointing to the gen 1 action and actor</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t17"><span class="owner o-a" title="Owner A">A</span><span class="tt">Fast Track on another player's orchard: double cost, effect resolves now, original pending effect marked <code>fastTracked</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t18"><span class="owner o-a" title="Owner A">A</span><span class="tt">Unmaintained well stagnates after N gens; Maintain resets it</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t19"><span class="owner o-a" title="Owner A">A</span><span class="tt">Drought with vs without reservoir repair</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t20"><span class="owner o-a" title="Owner A">A</span><span class="tt">Upkeep shortfall → successor's stamina reduced, with transition cause <code>rule: weakened</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t21"><span class="owner o-a" title="Owner A">A</span><span class="tt">Every transition has ≥1 cause (invariant test)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t22"><span class="owner o-a" title="Owner A">A</span><span class="tt">Append-only: no API mutates past log entries</span></label></li>
+</ul>
+<p><strong>Tooling</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s02-t23"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>scripts/simulate.ts</code>: plays N generations with scripted strategies and prints a resource table (used by game design for balancing)</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s02-acceptance">Acceptance</h2>
+<ul>
+<li>The full 8-action loop runs headless in Vitest for a configurable number of generations.</li>
+<li><code>replay()</code> rebuilds identical states to the live run.</li>
+<li>For any resource change in any generation, <code>explain()</code> names the actions (with actor + generation), events or rules behind it.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s02-open-questions">Open questions</h2>
+<ol type="1">
+<li>Edge Function re-simulation vs RPC trusting the client (see Authority).</li>
+<li>Store full state snapshots per gen (fast replay) or re-simulate on demand? Recommendation: store a snapshot per gen, which is small at 32×32 with only a few plots.</li>
+<li>Effect IDs: engine-derived or ULID?</li>
+</ol>
+</div></div></section>
+<section id="s03" class="doc" data-key="s03"><header class="sec-head"><span class="sec-num">03</span><h2 class="sec-title">World Generation: Seeds, Biomes, Plots</h2></header><div class="progress" data-for="s03"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Engine dev (with Art for tile mapping)<br />
+<strong>Depends on:</strong> <code>02</code> PRNG. Consumed by <code>04</code> (rendering) and <code>02</code> (<code>createWorld</code>).</p>
+<div class="block block-decisions"><h2 id="s03-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li>Every world comes from a <strong>seed</strong>. The same seed always gives the same world.</li>
+<li><strong>~32×32 tile</strong> map, Stardew-style ¾ top-down.</li>
+<li>A natural <strong>boundary</strong> encloses the farmable area. Hackathon biomes: <strong>Forest</strong> (tree ring) and <strong>Island</strong> (sea).</li>
+<li><strong>Pre-defined plots</strong> for every action (no free placement).</li>
+<li><strong>Small modifiers</strong> per biome (see <code>01</code>).</li>
+<li>New worlds start from a <strong>seeded starter state</strong>.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s03-spec">Spec</h2>
+<h3 id="s03-layers">Layers</h3>
+<ol type="1">
+<li><strong>Terrain layer</strong>: grass, dirt, sand, water (sea/pond), path.</li>
+<li><strong>Boundary layer</strong>: dense trees (Forest) or shoreline + sea (Island). It can't be walked through, and it frames the map.</li>
+<li><strong>Decoration layer</strong>: rocks, bushes, flowers, chosen by the seed. Purely visual and walkable around.</li>
+<li><strong>Plot layer</strong>: fixed sites placed by the seeded generator inside the boundary, always reachable by path.</li>
+<li><strong>Collision grid</strong>: derived from layers 1–4 for WASD movement.</li>
+</ol>
+<h3 id="s03-generation-outline">Generation outline</h3>
+<pre><code>rng = prng(seed)
+biome = seed-derived or chosen (&#39;forest&#39; | &#39;island&#39;)
+mask = radial falloff + noise(seed) → inside/outside boundary
+  Forest: outside = tree tiles (2–3 tiles deep)
+  Island: outside = sand ring → sea
+place plots via rng on a coarse grid inside mask, with min spacing:
+  fields ×N, orchard plot ×1, reservoir ×1 (near water/low ground), well site ×1,
+  wild spot ×1 (Island: shoreline/pier; Forest: tree edge), lectern ×1 (near spawn), graveyard ×1
+carve paths spawn → each plot (BFS on grid) so everything is reachable
+scatter decoration avoiding paths/plots</code></pre>
+<p>Use a small value-noise or simplex implementation seeded by our PRNG (no global randomness).</p>
+<h3 id="s03-starter-state-gen-1-all-placeholder">Starter state (Gen 1), all <span class="ph">placeholder</span></h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th></th>
+<th>Forest</th>
+<th>Island</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Food</td>
+<td>20</td>
+<td>20</td>
+</tr>
+<tr class="even">
+<td>Water</td>
+<td>18</td>
+<td>22</td>
+</tr>
+<tr class="odd">
+<td>Reservoir</td>
+<td>cracked (wear 3)</td>
+<td>cracked (wear 3)</td>
+</tr>
+<tr class="even">
+<td>Wild stock</td>
+<td>8 (cap 10)</td>
+<td>8 (cap 8), fish</td>
+</tr>
+<tr class="odd">
+<td>Fields</td>
+<td>empty</td>
+<td>empty</td>
+</tr>
+<tr class="even">
+<td>Orchard plot</td>
+<td>empty</td>
+<td>empty</td>
+</tr>
+<tr class="odd">
+<td>Well</td>
+<td>not dug</td>
+<td>not dug</td>
+</tr>
+<tr class="even">
+<td>Graveyard</td>
+<td>empty (open: founders' stone?)</td>
+<td>empty</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s03-seeded-events">Seeded events</h3>
+<p>Generated at world creation from the seed (event list stored in state, see <code>02</code>/<code>01</code>). The generator places <strong>at least one drought</strong> so the reservoir decision always matters.</p>
+</div><div class="block block-tasks"><h2 id="s03-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t1"><span class="owner o-b" title="Owner B">B</span><span class="tt">Seeded noise util (value noise is enough)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t2"><span class="owner o-b" title="Owner B">B</span><span class="tt">Boundary mask for Forest and Island</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t3"><span class="owner o-b" title="Owner B">B</span><span class="tt">Plot placement with spacing + reachability guarantee (re-roll if unreachable)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Path carving (BFS/A*)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t5"><span class="owner o-b" title="Owner B">B</span><span class="tt">Decoration scatter</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t6"><span class="owner o-b" title="Owner B">B</span><span class="tt">Collision grid export</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t7"><span class="owner o-b" title="Owner B">B</span><span class="tt">Output a <code>TileMap</code> data structure: <code>{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }</code> with no Pixi dependency</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t8"><span class="owner o-b" title="Owner B">B</span><span class="tt">Biome starter state + modifiers wired into <code>createWorld</code></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t9"><span class="owner o-b" title="Owner B">B</span><span class="tt">Seeded event list (≥1 drought)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t10"><span class="owner o-b" title="Owner B">B</span><span class="tt">Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t11"><span class="owner o-b" title="Owner B">B</span><span class="tt">Debug page <code>/dev/worldgen?seed=123</code> that renders the map as coloured squares (needs <code>04</code> basic renderer). Useful for picking demo seeds.</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s03-acceptance">Acceptance</h2>
+<ul>
+<li>Any seed gives a valid, fully reachable map for both biomes in &lt; 50 ms.</li>
+<li>The map looks clearly Forest or Island at a glance once the tiles from <code>09</code> are applied.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s03-open-questions">Open questions</h2>
+<ol type="1">
+<li>Is biome picked randomly from the seed, or chosen 50/50 at assignment?</li>
+<li>Number of fields (1, 2 or 3)?</li>
+<li>Should Gen 1 include a "founders" gravestone/journal page for flavour, or start with an empty graveyard?</li>
+<li>Exact map size: 32×32 including the boundary, or a 32×32 interior?</li>
+</ol>
+</div></div></section>
+<section id="s04" class="doc" data-key="s04"><header class="sec-head"><span class="sec-num">04</span><h2 class="sec-title">World Rendering &amp; In-Game UI (PixiJS + React)</h2></header><div class="progress" data-for="s04"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Frontend/UI dev<br />
+<strong>Depends on:</strong> <code>02</code> (<code>visibleView</code>, <code>applyAction</code>, <code>tick</code>), <code>03</code> (<code>TileMap</code>), <code>09</code> (assets).</p>
+<div class="block block-decisions"><h2 id="s04-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li><strong>PixiJS</strong> draws the world. <strong>React</strong> draws the HUD, journal and menus as DOM overlays.</li>
+<li><strong>2D Stardew-style angle</strong>, ~32×32 tiles, camera follows the player.</li>
+<li><strong>WASD/arrow</strong> movement, desktop only.</li>
+<li><strong>Day/night</strong> cycle across the turn.</li>
+<li><strong>Stardew-like HUD</strong>: resource counters top-left, stamina bar, clock top-right, action hotbar bottom.</li>
+<li><strong>Strong visual world state</strong>: the world never explains itself, so visuals carry all the information.</li>
+<li><strong>Partly hidden</strong> pending effects: show growth stages, never numbers or due dates.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s04-architecture">Architecture</h2>
+<pre><code>&lt;GameScreen&gt;
+  ├─ &lt;PixiStage&gt;             // owns Pixi Application; mounts once
+  │    ├─ TilemapLayer       // terrain/boundary/deco (static, cached as texture)
+  │    ├─ PlotLayer          // plot sprites by visual stage
+  │    ├─ ActorLayer         // player avatar, y-sorted with tall objects (trees)
+  │    ├─ FxLayer            // particles: water splash, harvest pop, blight motes
+  │    └─ LightingLayer      // day/night tint + night darkness overlay
+  ├─ &lt;Hud/&gt;                  // React DOM overlay
+  ├─ &lt;InteractPrompt/&gt;       // &quot;E: Plant Orchard (25⚡ 5💧)&quot; near a plot
+  ├─ &lt;FastTrackMenu/&gt;        // list of pending effects (anyone&#39;s), no due dates
+  └─ &lt;JournalModal/&gt; (05)    // opened from the lectern. The timer still runs during play (open: confirm)</code></pre>
+<ul>
+<li>Keep game state in a small store (e.g. <strong>Zustand</strong>) that holds the engine <code>WorldState</code> + local action buffer. Pixi reads from the store every frame. React subscribes to the slices it needs.</li>
+<li>Use <code>@pixi/react</code> or a manual <code>useEffect</code> mount. <strong>Recommendation:</strong> manual mount for control and fewer version issues.</li>
+<li>Fixed-timestep game loop: movement at 60 fps, engine <code>tick(t)</code> at ~4 Hz for intra-turn effects.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s04-interaction-model">Interaction model</h2>
+<ul>
+<li>Walk next to a plot and an <strong>interact prompt</strong> appears showing the valid action(s) and costs.</li>
+<li><code>E</code> / <code>Space</code> does the default action. Number keys <code>1–8</code> pick a hotbar action when several are valid. Invalid actions are greyed out with a reason ("Not enough stamina").</li>
+<li><strong>Fast Track</strong>: from a pending plot (e.g. a sapling), prompt "F: Fast Track (cost ×2)". The menu also lists every pending effect.</li>
+<li><strong>Harvesting/planting animations</strong> are short (~0.5s) and <strong>use real turn time</strong>, so walking and acting cost time.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s04-visual-state-mapping-what-the-successor-reads">Visual state mapping (what the successor "reads")</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Thing</th>
+<th>Healthy</th>
+<th>Warning</th>
+<th>Bad</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Field</td>
+<td>green rows / golden ripe</td>
+<td>wilting</td>
+<td>brown rot, flies</td>
+</tr>
+<tr class="even">
+<td>Orchard</td>
+<td>sapling → young → fruiting tree</td>
+<td>fewer fruit, yellow leaves (wear 2)</td>
+<td>dead stump (wear 3)</td>
+</tr>
+<tr class="odd">
+<td>Reservoir</td>
+<td>full blue, intact wall</td>
+<td>lower water, hairline cracks</td>
+<td>cracked dry bed</td>
+</tr>
+<tr class="even">
+<td>Well</td>
+<td>clear water sparkle</td>
+<td>—</td>
+<td>green murky water (stagnant)</td>
+</tr>
+<tr class="odd">
+<td>Wild spot</td>
+<td>many fish/deer sprites</td>
+<td>few</td>
+<td>empty</td>
+</tr>
+<tr class="even">
+<td>Food store</td>
+<td>full crate/granary sprite</td>
+<td>half</td>
+<td>nearly empty, flies (rot)</td>
+</tr>
+<tr class="odd">
+<td>Weakened start</td>
+<td>—</td>
+<td>—</td>
+<td>desaturated filter + slow player walk + blight motes</td>
+</tr>
+<tr class="even">
+<td>Drought (event)</td>
+<td>—</td>
+<td>—</td>
+<td>cracked ground tiles, yellow tint, no rain</td>
+</tr>
+</tbody>
+</table></div>
+<p>These visuals should be enough to inherit the world without reading anything. No text explains causes.</p>
+</div><div class="block block-plain"><h2 id="s04-hud">HUD</h2>
+<ul>
+<li><strong>Top-left:</strong> Food 🍎 / Water 💧 counts (current, <strong>numeric</strong>. Resources are visible, pending effects aren't).</li>
+<li><strong>Stamina bar</strong> under the resources.</li>
+<li><strong>Top-right:</strong> clock / sun-moon dial + seconds left. Tint shifts with day/night.</li>
+<li><strong>Bottom:</strong> hotbar with 8 action icons + key hints.</li>
+<li><strong>Generation badge:</strong> "Generation 3 of 5" + world name/seed.</li>
+<li><strong>Upkeep reminder:</strong> a small "Needed by nightfall: 10🍎 10💧" (open: confirm it's shown).</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s04-daynight">Day/night</h2>
+<ul>
+<li><code>t / turnSeconds</code> maps to the time of day. Dawn at 0%, noon at 40%, dusk at 80%, night at 95–100%.</li>
+<li><code>ColorMatrixFilter</code> or a tinted overlay. Night darkens around the player (soft radial light).</li>
+<li>At 100%: freeze → <code>05</code> end flow.</li>
+</ul>
+</div><div class="block block-tasks"><h2 id="s04-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t1"><span class="owner o-b" title="Owner B">B</span><span class="tt">Pixi app mount/unmount inside React. Handle resize and devicePixelRatio. Use nearest-neighbour scaling for pixel art.</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t2"><span class="owner o-b" title="Owner B">B</span><span class="tt">Tilemap renderer from <code>03</code> <code>TileMap</code>, cached to a RenderTexture</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t3"><span class="owner o-b" title="Owner B">B</span><span class="tt">Camera follow + clamp to map bounds</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Player avatar: 4-direction walk animation, collision against the grid</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t5"><span class="owner o-b" title="Owner B">B</span><span class="tt">Y-sorting for trees/structures vs the player</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t6"><span class="owner o-b" title="Owner B">B</span><span class="tt">Plot sprites driven by <code>visibleView()</code> stages</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t7"><span class="owner o-b" title="Owner B">B</span><span class="tt">Interact prompt + key handling + hotbar</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t8"><span class="owner o-b" title="Owner B">B</span><span class="tt">Wire actions → engine <code>applyAction</code> → store → re-render. Show an invalid-action reason.</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t9"><span class="owner o-b" title="Owner B">B</span><span class="tt">Fast Track menu (lists pending effects, with the originating player's name, no due dates)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t10"><span class="owner o-b" title="Owner B">B</span><span class="tt">Day/night lighting + timer</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t11"><span class="owner o-b" title="Owner B">B</span><span class="tt">Freeze at time-up (lock input, dim world) → hand off to the <code>05</code> flow</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t12"><span class="owner o-b" title="Owner B">B</span><span class="tt">Visual-state variants for all rows in the table above</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t13"><span class="owner o-b" title="Owner B">B</span><span class="tt">FX: harvest pop, splash, rot flies, blight motes</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t14"><span class="owner o-b" title="Owner B">B</span><span class="tt">HUD components (React) styled to match the pixel art</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t15"><span class="owner o-b" title="Owner B">B</span><span class="tt">Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (<code>05</code>)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t16"><span class="owner o-b" title="Owner B">B</span><span class="tt">Lectern: interact opens the journal</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t17"><span class="owner o-b" title="Owner B">B</span><span class="tt">Perf check: 60 fps on a mid laptop at 32×32</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s04-acceptance">Acceptance</h2>
+<ul>
+<li>A player can walk around, do all 8 actions, watch day turn to night, and hit freeze, in a local hot-seat build.</li>
+<li>A teammate shown screenshots of two worlds (healthy vs neglected) can tell which is which and name what's wrong, without any text.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s04-open-questions">Open questions</h2>
+<ol type="1">
+<li>Does the turn timer <strong>keep running</strong> while the journal is open during play? ("Openable any time" vs "time freezes only at end".)</li>
+<li>Show the upkeep reminder in the HUD, or let players discover it?</li>
+<li>Show numeric Food/Water counts, or only diegetic visuals (crate fill, reservoir level)? The current decision is the Stardew-like HUD with counters.</li>
+<li>Can the player sprint (more stamina, less time)?</li>
+</ol>
+</div></div></section>
+<section id="s05" class="doc" data-key="s05"><header class="sec-head"><span class="sec-num">05</span><h2 class="sec-title">Journal, End-of-Turn Flow, Graveyard</h2></header><div class="progress" data-for="s05"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Frontend/UI dev (wording from Game design)<br />
+<strong>Depends on:</strong> <code>02</code> (<code>endTurn</code> summary), <code>04</code> (freeze, lectern, graveyard sprites), <code>07</code> (persistence).</p>
+<div class="block block-decisions"><h2 id="s05-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li>One shared <strong>world journal</strong>. <strong>One page per player turn.</strong> Earlier pages <strong>can't be edited</strong>.</li>
+<li>Pages hold <strong>free text + a drawing</strong> (single pen, a few colours, eraser).</li>
+<li>The journal is an <strong>in-world object (lectern), openable any time</strong>.</li>
+<li>The journal is the <strong>only</strong> information successors get about the past. The world never explains causes.</li>
+<li><strong>End flow: Freeze → Journal (write) → Cost summary → Gravestone.</strong></li>
+<li><strong>Cost summary shows only realised outcomes</strong>: costs paid and immediate gains. <strong>Pending benefits are left out.</strong></li>
+<li><strong>Gravestone</strong>: name/initials, click to open that player's journal page.</li>
+<li>No moderation for the hackathon.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s05-end-of-turn-flow">End-of-turn flow</h2>
+<pre><code>[Timer hits 0]
+   │  world freezes (04), input locked, world dimmed
+   ▼
+[Journal: Write your page]
+   - Read previous pages (left/back)
+   - Your blank page (right): text area + drawing canvas
+   - Character limit [PLACEHOLDER 400]
+   - &quot;Seal page&quot; button → irreversible confirm
+   - (Time limit for writing: team to define; see open questions)
+   ▼
+[Cost summary: &quot;What you gave&quot;]
+   - Stamina spent, food/water spent, food/water gathered this turn
+   - Upkeep: met / short by X
+   - Planted / built: listed as COST ONLY (&quot;Orchard: −25⚡ −5💧&quot;). No mention of what it will become.
+   ▼
+[Gravestone]
+   - Camera pans to the graveyard; your stone rises with your name
+   - &quot;Generation N is over.&quot; → Continue
+   ▼
+[Commit turn to server] (07) → back to landing / &quot;Play again&quot;</code></pre>
+<blockquote>
+<p>The demo moment depends on this: the orchard planter's last screen says <em>"Orchard: −25⚡ −5💧"</em> and nothing else. Don't add any "this will pay off" hint here.</p>
+</blockquote>
+<blockquote>
+<p>Note: the commit to the server should happen <strong>at "Seal page"</strong> or at the end of the flow, at the latest before the lock TTL runs out (see <code>07</code>). Keep the cost summary + gravestone cosmetic, so a closed tab after sealing doesn't void the turn. <strong>Open:</strong> which step counts as "committed"?</p>
+</blockquote>
+</div><div class="block block-plain"><h2 id="s05-journal-ui">Journal UI</h2>
+<ul>
+<li>Styled as an open book, using a pixel-art/paper texture from <code>09</code>.</li>
+<li><strong>Pages:</strong> each shows author name, generation number and text + drawing. No auto-generated content (the world doesn't explain itself).</li>
+<li><strong>Navigation:</strong> previous/next, page index by generation.</li>
+<li><strong>Drawing canvas:</strong> fixed size (e.g. 320×200 logical px), pen width 2–3, <strong>3–4 colours</strong> + eraser + clear.</li>
+<li><strong>Storage format:</strong> recommend saving <strong>strokes as JSON</strong> (<code>{color, points: [x,y][]}[]</code>). It's small, re-renders crisply at any scale, and could be animated in the replay. Alternative: a PNG data URL. See <code>07</code>.</li>
+<li><strong>Read-only enforcement:</strong> client UI + server (a page can only be inserted once per turn, never updated). See <code>07</code> RLS.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s05-graveyard">Graveyard</h2>
+<ul>
+<li>One gravestone per <strong>committed</strong> turn (voided turns get none).</li>
+<li>Stone shows name/initials (and optionally "Gen N", open question). Hover → name. Click → opens the journal at that page.</li>
+<li>Repeat players get several stones.</li>
+<li>Stones fill a fixed graveyard plot in rows. Plan for overflow if generations are configured high (smaller stones or a second row).</li>
+</ul>
+</div><div class="block block-tasks"><h2 id="s05-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Journal modal (book layout, page flip, prev/next)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Text input with limit + counter</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Drawing canvas: pen, colours, eraser, clear; serialise strokes</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t4"><span class="owner o-c" title="Owner C">C</span><span class="tt">Stroke renderer (reused by the replay <code>06</code> and gallery thumbnails)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t5"><span class="owner o-c" title="Owner C">C</span><span class="tt">"Seal page" confirmation; locks the page client-side</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Cost summary screen from <code>endTurn().summary</code> (<strong>realised only</strong>)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s05-t7"><span class="owner o-b" title="Owner B">B</span><span class="tt">Gravestone placement animation + camera pan</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s05-t8"><span class="owner o-b" title="Owner B">B</span><span class="tt">Graveyard rendering and interaction (with <code>04</code>)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s05-t9"><span class="owner o-b" title="Owner B">B</span><span class="tt">Lectern interaction → read-only journal during play</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s05-t10"><span class="owner o-b" title="Owner B">B</span><span class="tt">Hand off to <code>07</code> commit; handle a commit failure (retry, keep the local copy)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">Copywriting pass with Game design (tone: quiet, reflective, no moralising)</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s05-acceptance">Acceptance</h2>
+<ul>
+<li>A player can read all earlier pages, write and draw their own, seal it, see a cost-only summary and watch their stone appear.</li>
+<li>After sealing, the page can't be edited from the UI or the API.</li>
+<li>Clicking any stone opens the right page.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s05-open-questions">Open questions</h2>
+<ol type="1">
+<li>Time limit for journal writing at end of turn? (You said "we will define".) Affects the lock TTL in <code>07</code>.</li>
+<li>Is reading the journal <em>during</em> play free (timer paused) or does it use time?</li>
+<li>Character limit for text?</li>
+<li>Gravestone: show the generation number as well as the name?</li>
+<li>Which step commits the turn: "Seal page" or the end of the gravestone animation?</li>
+<li>Can a player skip writing (empty page)? If so, what does their page show ("They left no words")?</li>
+</ol>
+</div></div></section>
+<section id="s06" class="doc" data-key="s06"><header class="sec-head"><span class="sec-num">06</span><h2 class="sec-title">Replay &amp; Gallery</h2></header><div class="progress" data-for="s06"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Frontend dev + Engine dev (<code>replay</code>, <code>explain</code>)<br />
+<strong>Depends on:</strong> <code>02</code> (snapshots, transitions, causes), <code>04</code> (renderer, read-only), <code>05</code> (page renderer), <code>07</code> (gallery queries).</p>
+<div class="block block-decisions"><h2 id="s06-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li>The replay runs once a world reaches its <strong>final generation</strong> (the generation count is configurable).</li>
+<li>For <strong>each generation</strong>, it shows a <strong>snapshot of the world</strong> and <strong>that player's diary entry</strong>.</li>
+<li><strong>The replay is the only place causes are explained</strong> (during play the world never explains itself).</li>
+<li>Audience: <strong>anyone</strong>, through a public <strong>gallery</strong> of completed worlds. In-app only, no export.</li>
+<li>No score.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s06-replay-structure">Replay structure</h2>
+<pre><code>[Title card]  World name · biome · N generations · &quot;Everyone who lived here is gone.&quot;
+   ▼
+For each generation g = 1..N:
+ ┌───────────────────────────────────────────────┬──────────────────────────┐
+ │  World snapshot at END of gen g               │  Journal page of gen g   │
+ │  (read-only Pixi render of the map)           │  author · text · drawing │
+ │                                               │                          │
+ │  Highlights: plots changed this gen glow;     ├──────────────────────────┤
+ │  click a plot → its history                   │  &quot;What actually changed&quot; │
+ │                                               │  Food  +32               │
+ │                                               │   +30 Orchard ← AL, Gen 1│
+ │                                               │   +12 Fished  ← MO, Gen 3│
+ │                                               │   −10 Rot                │
+ │                                               │  Water −14               │
+ │                                               │   −10 Drought (event)    │
+ │                                               │   −4  Well stagnant ← no │
+ │                                               │       maintenance since  │
+ │                                               │       Gen 2              │
+ └───────────────────────────────────────────────┴──────────────────────────┘
+ [◀ prev gen]   ● ● ● ○ ○  timeline   [next gen ▶]
+   ▼
+[Legacy view, optional/stretch]: for each player, &quot;What you caused after you left&quot;
+   e.g. &quot;AL planted an orchard in Gen 1. It fed Gen 3, Gen 4 and Gen 5.&quot;</code></pre>
+<ul>
+<li>The cause lines come from <code>engine.explain(transitions, { turn: g, resource })</code>, which groups <code>Transition.causes</code> by source action → actor → committed generation.</li>
+<li><strong>Key line for the demo:</strong> a cause whose <code>committedTurn</code> is earlier than the current generation shows as <strong>"← planted by AL in Gen 1"</strong>. That is the reveal.</li>
+<li>Plot click → a mini timeline of that plot across generations (stage + who acted on it).</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s06-gallery">Gallery</h2>
+<ul>
+<li>Grid of completed worlds: thumbnail (snapshot of the final gen), world name, biome, generation count, player names (from gravestones).</li>
+<li>Sort: newest first. Filter by biome (stretch).</li>
+<li>Click → replay.</li>
+<li>"Your worlds" filter for the signed-in user (worlds they contributed to). This is optional, since repeat play and identity exist.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s06-data">Data</h2>
+<ul>
+<li>Prefer <strong>stored per-generation snapshots</strong> (from <code>commit-turn</code>, see <code>07</code>) for quick loading.</li>
+<li>Fallback / verification: <code>engine.replay(seed, opts, log)</code> from the action log. The two should match, and a Vitest test checks this.</li>
+</ul>
+</div><div class="block block-tasks"><h2 id="s06-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>explain()</code> output → human sentences (templating with actor names + generations)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t2"><span class="owner o-b" title="Owner B">B</span><span class="tt">Replay screen layout: snapshot panel + journal panel + causes panel + timeline</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t3"><span class="owner o-b" title="Owner B">B</span><span class="tt">Read-only Pixi render of a snapshot (reuse <code>04</code> layers, no avatar, no input)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Highlight changed plots per generation (diff vs the previous snapshot)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t5"><span class="owner o-b" title="Owner B">B</span><span class="tt">Plot history popover</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t6"><span class="owner o-b" title="Owner B">B</span><span class="tt">Generation stepping (buttons + arrow keys) + optional auto-play</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t7"><span class="owner o-c" title="Owner C">C</span><span class="tt">Title card + ending card</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Gallery grid + thumbnails (render the snapshot to a small texture or a stored image)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t9"><span class="owner o-c" title="Owner C">C</span><span class="tt">Route <code>/#/world/:id/replay</code> and <code>/#/gallery</code></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t10"><span class="owner o-c" title="Owner C">C</span><span class="tt">Admin "skip to replay" hook (<code>08</code>)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">(Stretch) Legacy view per player</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t12"><span class="owner o-b" title="Owner B">B</span><span class="tt">(Stretch) Animate drawing strokes in the journal panel</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s06-acceptance">Acceptance</h2>
+<ul>
+<li>For the demo world, the gen where the orchard fruits shows a food line naming the planter and the generation they planted it in.</li>
+<li>Every resource change shown sums correctly to the displayed delta.</li>
+<li>The gallery lists every completed world and opens its replay.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s06-open-questions">Open questions</h2>
+<ol type="1">
+<li>Should the replay show the <strong>start</strong> or the <strong>end</strong> of each generation, or both (before/after slider)?</li>
+<li>Should the final player watch the replay straight away, or be sent to the gallery?</li>
+<li>Is the legacy view in scope?</li>
+<li>Should incomplete worlds also be viewable (spectate-in-progress), or only completed ones?</li>
+</ol>
+</div></div></section>
+<section id="s07" class="doc" data-key="s07"><header class="sec-head"><span class="sec-num">07</span><h2 class="sec-title">Backend &amp; Async Multiplayer (Supabase)</h2></header><div class="progress" data-for="s07"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Engine/backend dev<br />
+<strong>Depends on:</strong> <code>02</code> (engine runs server-side), <code>11</code> (Supabase project). <strong>Consumed by:</strong> <code>05</code> (commit), <code>06</code> (gallery/replay), <code>08</code> (auth, admin).</p>
+<div class="block block-decisions"><h2 id="s07-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li><strong>Supabase</strong> (Postgres + Auth + Edge Functions), with the frontend static on <strong>GitHub Pages</strong>.</li>
+<li><strong>Async online</strong>: each generation can be played by anyone, on their own device.</li>
+<li><strong>Random assignment, weighted</strong> between inheriting an existing world and creating a new one. The <strong>ratio is configurable</strong>.</li>
+<li><strong>One player per world at a time</strong> (exclusive lock).</li>
+<li><strong>Abandon mid-turn = turn voided</strong>: the lock expires, nothing is committed, no gravestone.</li>
+<li><strong>Username + password</strong> auth. Security isn't the focus.</li>
+<li><strong>Repeat play allowed.</strong></li>
+<li><strong>Append-only</strong> action log.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s07-auth-username--password-on-supabase">Auth: username + password on Supabase</h2>
+<p>Supabase Auth is email-based. Use <strong>synthetic emails</strong>: <code>username@players.temporal.local</code>, with <strong>email confirmation turned off</strong> in the project settings. Store the display username in <code>profiles</code>. Usernames must be unique (lower-cased).</p>
+</div><div class="block block-plain"><h2 id="s07-schema-sketch">Schema (sketch)</h2>
+<pre class="sql"><code>profiles (
+  id uuid pk references auth.users,
+  username text unique not null,
+  is_admin boolean default false,
+  created_at timestamptz default now()
+)
+
+settings (                          -- single row, admin-editable
+  id int pk default 1,
+  inherit_ratio numeric default 0.7,  -- [PLACEHOLDER] P(inherit) when an unlocked world exists
+  default_turn_seconds int,           -- game designer decides
+  default_generation_count int
+)
+
+worlds (
+  id uuid pk,
+  name text,                         -- generated from seed, e.g. &quot;Hollow Elm&quot;
+  seed bigint not null,
+  biome text check (biome in (&#39;forest&#39;,&#39;island&#39;)),
+  turn_seconds int not null,
+  generation_count int not null,
+  current_turn int not null default 1, -- next generation to be played
+  status text check (status in (&#39;open&#39;,&#39;complete&#39;)) default &#39;open&#39;,
+  locked_by uuid null references profiles,
+  lock_expires_at timestamptz null,
+  forced_for uuid null references profiles,   -- admin force-assign
+  created_at timestamptz default now(),
+  completed_at timestamptz null
+)
+
+turns (                            -- one row per COMMITTED generation (append-only)
+  id uuid pk,
+  world_id uuid references worlds,
+  turn int not null,
+  player_id uuid references profiles,
+  committed_at timestamptz default now(),
+  unique (world_id, turn)
+)
+
+actions (                          -- append-only action log
+  id text pk,                      -- engine id / ulid
+  world_id uuid, turn int,
+  actor_id uuid,
+  type text, plot_id text null, target_effect_id text null,
+  committed_turn int, committed_t real,
+  due_turn int, due_t real null,
+  seq int                          -- order within turn
+)
+
+transitions (                      -- causal records (append-only)
+  id text pk, world_id uuid, turn int, t real null,
+  target jsonb, before jsonb, after jsonb, delta real null,
+  causes jsonb not null
+)
+
+snapshots (                        -- state at end of each gen (fast replay/gallery)
+  world_id uuid, turn int, state jsonb, primary key (world_id, turn)
+)
+
+journal_pages (                    -- one per committed turn, never updated
+  world_id uuid, turn int, author_id uuid,
+  text text, drawing jsonb,        -- strokes JSON (see 05)
+  created_at timestamptz default now(),
+  primary key (world_id, turn)
+)</code></pre>
+<p>Gravestones are derived from <code>turns</code> + <code>profiles.username</code> (no separate table needed).</p>
+<h3 id="s07-row-level-security">Row-level security</h3>
+<ul>
+<li><code>SELECT</code> for everyone (including anon) on worlds, turns, journal_pages, snapshots, actions and transitions <strong>of completed worlds</strong>. For open worlds, only the lock holder can read the full state (open question: is that worth enforcing?).</li>
+<li><strong>No <code>UPDATE</code>/<code>DELETE</code></strong> policies on <code>actions</code>, <code>transitions</code>, <code>turns</code>, <code>journal_pages</code>, <code>snapshots</code> (append-only, read-only pages).</li>
+<li>All writes go through <strong>RPC / Edge Function</strong> with <code>security definer</code>. Clients never insert directly.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s07-server-operations">Server operations</h2>
+<h3 id="s07-claim_world-postgres-rpc-security-definer"><code>claim_world()</code> (Postgres RPC, <code>security definer</code>)</h3>
+<pre><code>1. If the caller holds an unexpired lock → return that world (resume after refresh).
+2. If any world has forced_for = caller and is unlocked → lock and return it (admin force-assign).
+3. Expire stale locks: lock_expires_at &lt; now() → clear (turn voided).
+4. With probability settings.inherit_ratio, pick a random OPEN, UNLOCKED world
+   (SELECT … FOR UPDATE SKIP LOCKED ORDER BY random() LIMIT 1).
+   If none / coin says &quot;new&quot; → create a world with a random seed + biome + defaults.
+5. Set locked_by = caller, lock_expires_at = now() + turn_seconds + journal_allowance + grace.
+6. Return world + latest snapshot (or null for gen 1) + journal pages + gravestones.</code></pre>
+<p><code>SKIP LOCKED</code> + the single-row update guarantees <strong>only one player per world</strong>.</p>
+<h3 id="s07-heartbeatworld_id-optional"><code>heartbeat(world_id)</code> (optional)</h3>
+<p>Extends the lock by a small amount while the client is in the journal/summary phase. It is capped so a player can't hold a world forever. Needed only if the journal-writing time isn't fixed.</p>
+<h3 id="s07-commit-turn-edge-function-recommended-see-02-authority"><code>commit-turn</code> (Edge Function, recommended; see <code>02</code> Authority)</h3>
+<pre><code>input: world_id, actions[], journal { text, drawing }
+1. Verify caller holds the lock and it hasn&#39;t expired.
+2. Load latest snapshot (or createWorld(seed) for gen 1).
+3. engine.beginTurn → apply each action in seq order (validate) → endTurn.
+   Reject if any action is invalid.
+4. In one transaction:
+   insert actions, transitions, snapshot(turn), journal_page, turns row;
+   worlds.current_turn += 1; clear lock;
+   if current_turn &gt; generation_count → status = &#39;complete&#39;, completed_at = now().
+5. Return ok + summary.</code></pre>
+<p><strong>Turn voided</strong> happens naturally: if the client never calls <code>commit-turn</code> before the lock expires, nothing was ever written.</p>
+<blockquote>
+<p>Fallback if the Edge Function is too slow to build: a <code>commit_turn</code> RPC that accepts client-computed transitions + snapshot and does steps 1 and 4 only.</p>
+</blockquote>
+</div><div class="block block-plain"><h2 id="s07-client-data-layer">Client data layer</h2>
+<ul>
+<li><code>src/api/</code> wraps <code>supabase-js</code>: <code>signUp</code>, <code>signIn</code>, <code>claimWorld</code>, <code>commitTurn</code>, <code>listCompletedWorlds</code>, <code>getReplay(worldId)</code>, admin calls.</li>
+<li>Env: <code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_ANON_KEY</code> (the anon key is safe in a static bundle when RLS is on).</li>
+<li><strong>Offline/hot-seat mode</strong> (build first, and keep as a demo fallback): the same interface, backed by <code>localStorage</code>, so the game can be developed before the backend exists.</li>
+</ul>
+</div><div class="block block-tasks"><h2 id="s07-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t1"><span class="owner o-a" title="Owner A">A</span><span class="tt">Create the Supabase project. Turn email confirmation off. Add the env vars to the repo secrets + <code>.env.example</code>.</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t2"><span class="owner o-a" title="Owner A">A</span><span class="tt">SQL migrations for the schema above (<code>supabase/migrations/</code>)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t3"><span class="owner o-a" title="Owner A">A</span><span class="tt">RLS policies (read-public for completed worlds, no update/delete)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t4"><span class="owner o-a" title="Owner A">A</span><span class="tt">Username signup/login with synthetic emails + <code>profiles</code> insert trigger</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t5"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>claim_world</code> RPC with weighted assignment, <code>SKIP LOCKED</code>, stale-lock expiry, force-assign</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t6"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>commit-turn</code> Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t7"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>heartbeat</code> RPC (if needed)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t8"><span class="owner o-a" title="Owner A">A</span><span class="tt">Admin RPCs: set <code>settings</code>, set a world's <code>turn_seconds</code>/<code>generation_count</code>, force-assign, mark complete (skip to replay)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t9"><span class="owner o-a" title="Owner A">A</span><span class="tt">Gallery + replay read queries</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t10"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>LocalBackend</code> implementation of the same interface (hot-seat)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t11"><span class="owner o-a" title="Owner A">A</span><span class="tt">Concurrency test: 2 clients call <code>claim_world</code> at once → different worlds</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt">Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t13"><span class="owner o-a" title="Owner A">A</span><span class="tt">Seed script for the demo world (<code>10</code>)</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s07-acceptance">Acceptance</h2>
+<ul>
+<li>Two browsers on two machines: A finishes Gen 1, B is assigned the same world (with inheritance forced) and sees A's page, stone and world state.</li>
+<li>A closed tab mid-turn never corrupts a world.</li>
+<li>Past pages can't be changed through any API.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s07-open-questions">Open questions</h2>
+<ol type="1">
+<li>Edge Function (authoritative) vs RPC (trust client) for commit?</li>
+<li>Journal writing time allowance → lock TTL.</li>
+<li>Can a player be assigned the world they just played (repeat play is allowed, but straight away)?</li>
+<li>Should players be able to <em>choose</em> to start a new world, or is assignment always random?</li>
+<li>Hide open-world state from non-holders, or don't bother?</li>
+<li>How are world names generated (word lists from the seed)?</li>
+</ol>
+</div></div></section>
+<section id="s08" class="doc" data-key="s08"><header class="sec-head"><span class="sec-num">08</span><h2 class="sec-title">App Shell: Screens, Auth, Onboarding, Admin</h2></header><div class="progress" data-for="s08"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Frontend/UI dev<br />
+<strong>Depends on:</strong> <code>07</code> (auth, claim, admin RPCs), <code>04</code>/<code>05</code>/<code>06</code> (game, journal, replay screens).</p>
+<div class="block block-decisions"><h2 id="s08-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li>Screens: <strong>Landing/title</strong>, <strong>Sign up / Log in</strong>, <strong>Onboarding/tutorial</strong>, <strong>Game</strong>, <strong>Gallery</strong> (+ Replay).</li>
+<li><strong>Admin tools</strong>: force-assign a world, configure turn length/generations, skip to replay.</li>
+<li>Desktop only.</li>
+<li>Hosted on GitHub Pages, so use <strong>hash routing</strong> (<code>/#/…</code>) to avoid 404s on refresh.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s08-routes">Routes</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Route</th>
+<th>Screen</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>/#/</code></td>
+<td>Landing: title, one-line premise, <strong>Play</strong>, <strong>Gallery</strong>, Log in/Sign up</td>
+</tr>
+<tr class="even">
+<td><code>/#/auth</code></td>
+<td>Username + password, toggle between sign up and log in</td>
+</tr>
+<tr class="odd">
+<td><code>/#/tutorial</code></td>
+<td>Onboarding (first visit, or from a link on the landing page)</td>
+</tr>
+<tr class="even">
+<td><code>/#/play</code></td>
+<td>Calls <code>claimWorld</code> → loading/"You are inheriting…" → Game</td>
+</tr>
+<tr class="odd">
+<td><code>/#/gallery</code></td>
+<td>Completed worlds</td>
+</tr>
+<tr class="even">
+<td><code>/#/world/:id/replay</code></td>
+<td>Replay</td>
+</tr>
+<tr class="odd">
+<td><code>/#/admin</code></td>
+<td>Admin panel (only if <code>profiles.is_admin</code>)</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s08-landing">Landing</h2>
+<ul>
+<li>Pixel-art title "INHERITANCE", an ambient animated world in the background (a random seed, rendered by <code>04</code>, no avatar).</li>
+<li>Premise line, e.g. <em>"You have one day. What you plant, someone else will harvest."</em> (copy: Game design)</li>
+<li>Buttons: Play · Gallery · (Log in / username shown)</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s08-you-are-inheriting-interstitial">"You are inheriting…" interstitial</h2>
+<ul>
+<li>Shows: world name, biome, "Generation N of M", the names on existing gravestones. <strong>No numbers about the world's state.</strong></li>
+<li>Variant for a new world: "No one has lived here before."</li>
+<li>Variant for a weakened start: "You wake up tired." (no explanation)</li>
+<li>Button: Begin. <strong>The timer starts when the player presses Begin.</strong></li>
+</ul>
+</div><div class="block block-plain"><h2 id="s08-onboardingtutorial">Onboarding/tutorial</h2>
+<p>Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, nothing saved.</p>
+<ol type="1">
+<li>Move with WASD.</li>
+<li>Walk to the field → plant crops → watch them ripen → harvest.</li>
+<li>See the orchard plot. Planting it shows "This will take longer than you have." (open: is this hint allowed, given hidden effects?)</li>
+<li>The lectern: "Those before you left words here."</li>
+<li>The graveyard: "When your day ends, you join them."</li>
+<li>Explain upkeep: "Before night falls, keep enough food and water to survive."</li>
+<li>→ Play.</li>
+</ol>
+</div><div class="block block-plain"><h2 id="s08-admin-panel">Admin panel</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Tool</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Force-assign world</strong></td>
+<td>Pick a world + a username → sets <code>worlds.forced_for</code>. That user's next Play gets that world.</td>
+</tr>
+<tr class="even">
+<td><strong>Configure world</strong></td>
+<td>Edit <code>turn_seconds</code>, <code>generation_count</code> on a world; edit global defaults + <code>inherit_ratio</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Skip to replay</strong></td>
+<td>Open any world's replay. Optionally mark an open world <code>complete</code>.</td>
+</tr>
+<tr class="even">
+<td>World list</td>
+<td>All worlds with status, current gen, lock holder, lock expiry, and a "clear lock" button</td>
+</tr>
+</tbody>
+</table></div>
+<p>(Reset demo world isn't required. See <code>10</code> for the seed script.)</p>
+</div><div class="block block-tasks"><h2 id="s08-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the <code>09</code> style)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Landing page with a background world</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Auth screen + session persistence + logout + username display</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s08-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Play flow: claim → interstitial → game → end flow → back to landing / "Play another"</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s08-t5"><span class="owner o-b" title="Owner B">B</span><span class="tt">Resume: if the user refreshes while holding a lock, put them back in (or void; open question)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Tutorial scene</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t7"><span class="owner o-c" title="Owner C">C</span><span class="tt">Gallery + replay routes (screens from <code>06</code>)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Admin panel + guard</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s08-t9"><span class="owner o-b" title="Owner B">B</span><span class="tt">Error states: no network, claim failed, commit failed (retry + local backup)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t10"><span class="owner o-c" title="Owner C">C</span><span class="tt">Audio toggle (mute) in the shell (<code>09</code>)</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s08-acceptance">Acceptance</h2>
+<ul>
+<li>A new visitor can sign up, finish the tutorial, play a generation and see their gravestone, with no help.</li>
+<li>An admin can force-assign the demo world to a judge's account in under 15 seconds.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s08-open-questions">Open questions</h2>
+<ol type="1">
+<li>Is the tutorial mandatory on first play, or skippable?</li>
+<li>Is the "this will take longer than you have" hint OK, given pending effects are partly hidden?</li>
+<li>Refresh mid-turn: resume with the time remaining, or void?</li>
+<li>Can anonymous visitors view the gallery without logging in? (Recommended: yes.)</li>
+</ol>
+</div></div></section>
+<section id="s09" class="doc" data-key="s09"><header class="sec-head"><span class="sec-num">09</span><h2 class="sec-title">Art &amp; Audio</h2></header><div class="progress" data-for="s09"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Design/art/audio<br />
+<strong>Depends on:</strong> <code>03</code> (tile list), <code>04</code> (sprite stages), <code>01</code> (actions).</p>
+<div class="block block-decisions"><h2 id="s09-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li><strong>Free asset packs</strong> for art. Stardew-style ¾ top-down pixel art.</li>
+<li><strong>Music + SFX</strong>.</li>
+<li>Strong visual states for world health (see the <code>04</code> table). The art has to make every state readable.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s09-art">Art</h2>
+<h3 id="s09-asset-pack-sourcing-check-every-licence-before-use">Asset pack sourcing (check every licence before use)</h3>
+<p>Candidates to evaluate (confirm current licence terms. Some free tiers are non-commercial only):</p>
+<ul>
+<li><strong>Kenney.nl</strong> top-down / RPG packs (CC0)</li>
+<li><strong>Sprout Lands</strong> (Cup Nooble, itch.io): Stardew-like farming</li>
+<li><strong>Ninja Adventure</strong> pack (CC0): characters, tiles, UI, also has music/SFX</li>
+<li>OpenGameArt farming tilesets</li>
+</ul>
+<p><strong>Rule:</strong> one pack family for terrain + characters, so the pixel scale and palette match. Record every asset and its licence in <code>ASSETS.md</code> (credit requirements).</p>
+<h3 id="s09-sprite-list-must-have">Sprite list (must-have)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Sprites / states</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Terrain</td>
+<td>grass, dirt, path, sand, shallow + deep water, shoreline transitions</td>
+</tr>
+<tr class="even">
+<td>Boundary</td>
+<td>Forest: dense tree tiles; Island: sea + waves</td>
+</tr>
+<tr class="odd">
+<td>Deco</td>
+<td>rocks, bushes, flowers, stumps</td>
+</tr>
+<tr class="even">
+<td>Player</td>
+<td>4-direction walk + idle; action pose (one generic "work" frame is enough)</td>
+</tr>
+<tr class="odd">
+<td>Field</td>
+<td>empty, sown, growing, ripe, rotten</td>
+</tr>
+<tr class="even">
+<td>Orchard</td>
+<td>empty plot, sapling, young tree, fruiting tree, worn (yellow), dead stump</td>
+</tr>
+<tr class="odd">
+<td>Reservoir</td>
+<td>cracked/dry, low, full; crack overlay</td>
+</tr>
+<tr class="even">
+<td>Well</td>
+<td>empty site, dug (clear), stagnant (green)</td>
+</tr>
+<tr class="odd">
+<td>Wild spot</td>
+<td>fish/deer abundance: many, few, none</td>
+</tr>
+<tr class="even">
+<td>Food store</td>
+<td>full / half / empty / rotting (flies)</td>
+</tr>
+<tr class="odd">
+<td>Lectern + open book</td>
+<td>in-world object</td>
+</tr>
+<tr class="even">
+<td>Graveyard</td>
+<td>fence, gravestone variants (3–4 shapes for variety)</td>
+</tr>
+<tr class="odd">
+<td>Weather/event</td>
+<td>drought cracked-ground overlay, rain particles</td>
+</tr>
+<tr class="even">
+<td>FX</td>
+<td>harvest pop, splash, flies, blight motes</td>
+</tr>
+<tr class="odd">
+<td>UI</td>
+<td>pixel panel/frame, buttons, icons for food/water/stamina + 8 action icons, clock dial</td>
+</tr>
+<tr class="even">
+<td>Journal</td>
+<td>book spread background, paper texture</td>
+</tr>
+<tr class="odd">
+<td>Fonts</td>
+<td>a pixel font for UI (e.g. a free OFL pixel font) + a handwriting-style font for journal text (check the licence)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s09-visual-identity">Visual identity</h3>
+<ul>
+<li>Palette: warm, earthy, storybook. Blight = desaturation + yellow-brown shift (done as a filter so no extra sprites are needed).</li>
+<li>Logo/title: "INHERITANCE" in a pixel display font, maybe with a sapling/gravestone motif.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s09-audio">Audio</h2>
+<h3 id="s09-music">Music</h3>
+<ul>
+<li><strong>Day loop</strong>: gentle acoustic/lo-fi farming loop.</li>
+<li><strong>Night/ending sting</strong>: softer, as time runs out (crossfade at dusk).</li>
+<li><strong>Journal/graveyard theme</strong>: quiet, reflective (piano/music box).</li>
+<li><strong>Replay theme</strong>: can reuse the journal theme.</li>
+</ul>
+<h3 id="s09-sfx-list">SFX list</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>SFX</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Footsteps (grass/dirt)</td>
+<td>Walking</td>
+</tr>
+<tr class="even">
+<td>Dig / plant</td>
+<td>Plant Crops, Plant Orchard, Dig Well</td>
+</tr>
+<tr class="odd">
+<td>Harvest pop</td>
+<td>Harvest</td>
+</tr>
+<tr class="even">
+<td>Splash / reel</td>
+<td>Fish (Island)</td>
+</tr>
+<tr class="odd">
+<td>Rustle / bow</td>
+<td>Hunt (Forest)</td>
+</tr>
+<tr class="even">
+<td>Hammer / stone</td>
+<td>Repair Reservoir, Maintain</td>
+</tr>
+<tr class="odd">
+<td>Whoosh / chime</td>
+<td>Fast Track</td>
+</tr>
+<tr class="even">
+<td>Denied buzz</td>
+<td>Invalid action</td>
+</tr>
+<tr class="odd">
+<td>Clock tick / bell</td>
+<td>Last 10 seconds / time-up freeze</td>
+</tr>
+<tr class="even">
+<td>Page turn</td>
+<td>Journal</td>
+</tr>
+<tr class="odd">
+<td>Pen scratch</td>
+<td>Drawing / typing in the journal</td>
+</tr>
+<tr class="even">
+<td>Seal thud</td>
+<td>"Seal page"</td>
+</tr>
+<tr class="odd">
+<td>Stone rise</td>
+<td>Gravestone placement</td>
+</tr>
+<tr class="even">
+<td>UI click</td>
+<td>Buttons</td>
+</tr>
+</tbody>
+</table></div>
+<p>Sources: Kenney audio packs (CC0), Freesound (check CC-BY attribution), OpenGameArt, the Ninja Adventure pack.</p>
+<h3 id="s09-implementation-notes">Implementation notes</h3>
+<ul>
+<li>Use <strong>Howler.js</strong> (or Web Audio) with an audio sprite sheet for SFX.</li>
+<li>Browsers block autoplay: start music on the first user interaction (Play button).</li>
+<li>A global mute toggle that persists in <code>localStorage</code>.</li>
+</ul>
+</div><div class="block block-tasks"><h2 id="s09-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Evaluate 2–3 packs and pick one family. Write <code>ASSETS.md</code> with licences.</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Build the Pixi spritesheet/atlas (TexturePacker free / <code>free-tex-packer</code>) + JSON</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Map <code>03</code> tile types → atlas frames (agree the names with the engine dev)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t4"><span class="owner o-c" title="Owner C">C</span><span class="tt">Map <code>04</code> visual states → frames</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t5"><span class="owner o-c" title="Owner C">C</span><span class="tt">Gravestone variants + graveyard layout</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Journal book art + fonts</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t7"><span class="owner o-c" title="Owner C">C</span><span class="tt">UI kit: panel, button, icons (food/water/stamina + 8 actions)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Blight/drought filters (with frontend)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t9"><span class="owner o-c" title="Owner C">C</span><span class="tt">Pick music tracks (day, night, reflective) + licences</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t10"><span class="owner o-c" title="Owner C">C</span><span class="tt">SFX set + audio sprite</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">Title/logo</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s09-t12"><span class="owner o-c" title="Owner C">C</span><span class="tt">Favicon</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s09-acceptance">Acceptance</h2>
+<ul>
+<li>Every plot state in <code>04</code> has a distinct, readable sprite at 1× zoom.</li>
+<li>All assets are licensed for a public hackathon demo, with credits recorded.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s09-open-questions">Open questions</h2>
+<ol type="1">
+<li>Which pack family? (Decide early, because the tile size depends on it: 16×16 vs 32×32.)</li>
+<li>Original music, or licensed free tracks only?</li>
+<li>Should the avatar's appearance vary per player (colour tint by username hash)?</li>
+</ol>
+</div></div></section>
+<section id="s10" class="doc" data-key="s10"><header class="sec-head"><span class="sec-num">10</span><h2 class="sec-title">Demo World &amp; Demo Moment</h2></header><div class="progress" data-for="s10"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Game design / pitch (with the Engine/backend dev for seeding)<br />
+<strong>Depends on:</strong> everything. Prepare this once <code>07</code> and <code>06</code> work.</p>
+<div class="block block-decisions"><h2 id="s10-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li><strong>Pre-seeded demo world</strong>, played in advance by teammates.</li>
+<li><strong>5-minute</strong> slot.</li>
+<li>Admin tools needed: <strong>force-assign</strong>, <strong>configure turn length/generations</strong>, <strong>skip to replay</strong>.</li>
+<li>Pitch deliverables (slides, video, write-up) are handled by the team outside these docs.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s10-the-demo-moment-from-the-brief">The demo moment (from the brief)</h2>
+<blockquote>
+<p>A judge inherits a flourishing orchard and discovers it was planted by someone whose own final screen showed only its cost.</p>
+</blockquote>
+<h3 id="s10-setup-example-with-a-3-generation-demo-world-so-the-judge-plays-gen-3">Setup (example with a 3-generation demo world, so the judge plays Gen 3)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Gen</th>
+<th>Played by</th>
+<th>What they do</th>
+<th>Their cost summary shows</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Teammate A</td>
+<td>Plants the <strong>orchard</strong> (sacrificing comfort), writes a journal page, e.g. <em>"I planted something by the east fence. Look after it."</em></td>
+<td>"Orchard: −25⚡ −5💧"; upkeep barely met</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Teammate B</td>
+<td>Repairs the reservoir, goes hungry → successor weakened? (or not, to taste)</td>
+<td>Costs only</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><strong>Judge</strong></td>
+<td>Spawns next to a <strong>fruiting orchard</strong>. Harvests and lives comfortably. Reads the journal.</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>→</td>
+<td>Admin: <strong>Skip to replay</strong></td>
+<td>Replay shows gen 3: <em>"Food +30 ← Orchard planted by A in Gen 1"</em>, beside A's gen 1 page and <strong>A's gen 1 cost-only summary</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Optional extra beat: show A's actual end-of-turn screen (a screenshot, or a "what they saw" panel in the replay) next to the judge's flourishing orchard.</p>
+<blockquote>
+<p>Open: should the replay include a <strong>"what this player saw"</strong> panel (their realised-only summary)? That would make the demo moment show up without the presenter having to narrate it.</p>
+</blockquote>
+<h3 id="s10-seeding">Seeding</h3>
+<ul>
+<li><strong>Preferred:</strong> teammates actually play the early generations on the live site (so it's real data).</li>
+<li><strong>Backup:</strong> <code>scripts/seed-demo.ts</code> creates the same world from a fixed seed + a fixed action log + fixed journal pages, through the same <code>commit-turn</code> path. Run it the morning of judging, plus a second copy as a spare.</li>
+<li>Choose a seed where the orchard plot is near spawn and clearly visible (use the <code>03</code> worldgen debug page).</li>
+<li>Set a <strong>turn length</strong> the judge can play comfortably in the slot (e.g. 60s). The game designer decides.</li>
+</ul>
+<h3 id="s10-5-minute-run-sheet-draft-for-the-team-to-adapt">5-minute run sheet (draft, for the team to adapt)</h3>
+<ol type="1">
+<li>0:00–0:30 Premise + question ("What would responsibility mean…").</li>
+<li>0:30–1:00 Show the gallery/landing. Admin force-assigns the demo world to the judge.</li>
+<li>1:00–2:30 Judge plays: inherits the orchard, harvests, opens the journal, sees the graveyard.</li>
+<li>2:30–3:30 Freeze → judge writes a line → cost summary → gravestone.</li>
+<li>3:30–4:30 Skip to replay → gen 1: A's page + cost-only summary → gen 3: orchard cause line.</li>
+<li>4:30–5:00 Tech in one breath (append-only log, due-turns, causal transitions) + why it matters (classrooms/workshops).</li>
+</ol>
+</div><div class="block block-tasks"><h2 id="s10-tasks">Tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s10-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Pick the demo seed (orchard visible, nice-looking biome)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s10-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Decide the demo world's generation count + turn length</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s10-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the founder journal pages (natural, not preachy)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s10-t4"><span class="owner o-a" title="Owner A">A</span><span class="tt">Write <code>scripts/seed-demo.ts</code> (+ a spare world)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s10-t5"><span class="owner o-c" title="Owner C">C</span><span class="tt">Create judge accounts (or a shared "judge" account) + admin account</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s10-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Rehearse force-assign → play → replay flow 3+ times on the demo laptop</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s10-t7"><span class="owner o-a" title="Owner A">A</span><span class="tt">Offline fallback: the <code>LocalBackend</code> hot-seat build with the same seed + log baked in, in case the venue Wi-Fi fails</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s10-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Decide on the "what this player saw" replay panel (open question)</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s10-acceptance">Acceptance</h2>
+<ul>
+<li>From a cold browser, the full demo runs in under 5 minutes, three times in a row, without help from the dev console.</li>
+<li>The replay line naming the orchard's planter appears every time.</li>
+</ul>
+</div></div></section>
+<section id="s11" class="doc" data-key="s11"><header class="sec-head"><span class="sec-num">11</span><h2 class="sec-title">Repo Setup, Workflow, Testing, Deploy</h2></header><div class="progress" data-for="s11"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> Everyone (do this first, ideally one person in the first hour)</p>
+<div class="block block-decisions"><h2 id="s11-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li>Repo: <code>whosmo7/temporal</code>. <strong>React + TypeScript + Vite.</strong></li>
+<li><strong>GitHub Issues + PRs.</strong> The team creates issues from the task lists in <code>01</code>–<code>10</code>.</li>
+<li><strong>Vitest</strong> unit tests on the engine.</li>
+<li>Deploy to <strong>GitHub Pages</strong>.</li>
+<li>Team plans its own timeline.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s11-proposed-structure">Proposed structure</h2>
+<pre><code>temporal/
+├─ docs/plan/                # these docs
+├─ public/assets/            # atlases, audio, fonts
+├─ src/
+│  ├─ engine/                # pure TS: types, config, prng, actions, scheduler, replay, explain (02)
+│  ├─ worldgen/              # seeded map gen (03); pure TS
+│  ├─ render/                # Pixi layers, camera, lighting (04)
+│  ├─ ui/                    # React: HUD, journal, summary, gallery, replay, admin, shell (04–08)
+│  ├─ store/                 # Zustand game/session store
+│  ├─ api/                   # Backend interface + SupabaseBackend + LocalBackend (07)
+│  ├─ audio/                 # Howler wrapper (09)
+│  └─ main.tsx
+├─ supabase/
+│  ├─ migrations/            # SQL (07)
+│  └─ functions/commit-turn/ # Edge Function importing src/engine (07)
+├─ scripts/                  # simulate.ts (02), seed-demo.ts (10)
+├─ tests/ or src/**/*.test.ts
+├─ ASSETS.md                 # licences (09)
+└─ .github/workflows/        # ci.yml, deploy.yml</code></pre>
+</div><div class="block block-tasks"><h2 id="s11-setup-tasks">Setup tasks</h2>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t1"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>npm create vite@latest</code> → React + TS. Add ESLint + Prettier.</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t2"><span class="owner o-a" title="Owner A">A</span><span class="tt">Add deps: <code>pixi.js</code>, <code>zustand</code>, <code>@supabase/supabase-js</code>, <code>howler</code>; dev: <code>vitest</code>, <code>@vitest/coverage-v8</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t3"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>vite.config.ts</code>: <code>base: '/temporal/'</code> (or <code>/</code> if using a custom domain)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t4"><span class="owner o-a" title="Owner A">A</span><span class="tt">Hash router (<code>react-router</code> <code>createHashRouter</code>)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t5"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>.env.example</code> with <code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_ANON_KEY</code>. Real values go in GitHub Actions secrets.</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t6"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>Backend</code> interface + <code>LocalBackend</code> stub, so the frontend and engine can start before Supabase exists</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t7"><span class="owner o-a" title="Owner A">A</span><span class="tt">Path alias <code>@engine/*</code> so the Edge Function and the client import the same code</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s11-t8"><span class="owner o-a" title="Owner A">A</span><span class="tt">Turn on Pages in repo settings (source: GitHub Actions)</span></label></li>
+</ul>
+</div><div class="block block-plain"><h2 id="s11-ci--deploy">CI / deploy</h2>
+<ul>
+<li><code>ci.yml</code> (on PR): install → typecheck (<code>tsc --noEmit</code>) → lint → <code>vitest run</code> → <code>vite build</code></li>
+<li><code>deploy.yml</code> (on push to <code>main</code>): build with secrets → <code>actions/upload-pages-artifact</code> → <code>actions/deploy-pages</code></li>
+<li>(Optional) deploy the Edge Function with the <code>supabase</code> CLI from CI, or by hand.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s11-workflow">Workflow</h2>
+<ul>
+<li>One issue per task checkbox (or a small group of them). <strong>Labels per section:</strong> <code>design</code>, <code>engine</code>, <code>worldgen</code>, <code>render</code>, <code>journal</code>, <code>replay</code>, <code>backend</code>, <code>shell</code>, <code>art</code>, <code>audio</code>, <code>demo</code>, <code>infra</code>.</li>
+<li>Short-lived branches <code>feat/&lt;area&gt;-&lt;thing&gt;</code>, PR into <code>main</code>, one quick review, squash merge.</li>
+<li>Keep <code>main</code> deployable. The live Pages build is your demo.</li>
+<li><strong>Contracts first.</strong> Agree on these early, because they connect the sections:
+<ol type="1">
+<li><code>engine/types.ts</code> (WorldState, ActionEntry, Transition, Cause)</li>
+<li><code>worldgen</code> <code>TileMap</code> shape</li>
+<li><code>visibleView()</code> stage names ↔︎ sprite frame names</li>
+<li><code>Backend</code> interface</li>
+</ol></li>
+<li>Add a feature freeze point before judging (the team picks when).</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s11-testing">Testing</h2>
+<ul>
+<li><strong>Engine (Vitest, required):</strong> see the <code>02</code> list: determinism, each action, fast track, decay, drought, upkeep, replay equivalence, every-transition-has-a-cause invariant.</li>
+<li><strong>Worldgen (Vitest):</strong> reachability over many seeds, determinism.</li>
+<li><strong>Backend:</strong> a manual two-browser test script (claim exclusivity, abandon → void, commit → successor sees it). SQL can be checked with the Supabase local stack if time allows.</li>
+<li><strong>UI:</strong> manual playtest checklist per PR (walk, act, freeze, journal, summary, stone).</li>
+<li><strong>Balance:</strong> <code>scripts/simulate.ts</code> runs before tuning changes.</li>
+</ul>
+</div><div class="block block-accept"><h2 id="s11-acceptance">Acceptance</h2>
+<ul>
+<li>A fresh clone → <code>npm i &amp;&amp; npm run dev</code> works. <code>npm test</code> is green. A push to <code>main</code> deploys to Pages.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s11-open-questions">Open questions</h2>
+<ol type="1">
+<li>Pages URL: <code>whosmo7.github.io/temporal</code> or a custom domain?</li>
+<li>Is Supabase local dev (Docker) worth the setup, or should everyone use one shared cloud project?</li>
+<li>Monorepo/workspace for engine sharing, or just relative imports + Deno import map?</li>
+</ol>
+</div></div></section>
+<section id="s12" class="doc" data-key="s12"><header class="sec-head"><span class="sec-num">12</span><h2 class="sec-title">Team Split (3 people)</h2></header><div class="prose">
+<p>Every task from <code>01</code>–<code>11</code>, split into three workloads of about the same size. Each person owns whole areas of the code, so the three of you rarely edit the same files. Put your names next to A, B and C.</p>
+<p><strong>Points are relative effort.</strong> 1 point ≈ one focused hour for someone comfortable with the stack. They are rough and meant only for balancing the split, not for scheduling.</p>
+<div class="block block-plain"><h2 id="s12-summary">Summary</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Person</th>
+<th>Focus</th>
+<th>Owns</th>
+<th>Points (core)</th>
+<th>Points (incl. stretch)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A: Engine &amp; Backend</strong></td>
+<td>Simulation engine, Supabase, repo/CI setup, demo seeding</td>
+<td>02, 07, 10, 11</td>
+<td>69</td>
+<td>69</td>
+</tr>
+<tr class="even">
+<td><strong>B: World &amp; Gameplay</strong></td>
+<td>World generation, PixiJS world and HUD, in-game end-of-turn flow, replay viewer, play loop</td>
+<td>03, 04, 05, 06, 08</td>
+<td>68.5</td>
+<td>70</td>
+</tr>
+<tr class="odd">
+<td><strong>C: Design, Content &amp; App Shell</strong></td>
+<td>Game design and balance, art and audio, journal UI, app screens, gallery, demo prep</td>
+<td>01, 05, 06, 08, 09, 10</td>
+<td>68.5</td>
+<td>70.5</td>
+</tr>
+<tr class="even">
+<td><strong>Total</strong></td>
+<td></td>
+<td></td>
+<td>206</td>
+<td>209.5</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><strong>Scope check:</strong> about 206 core points between three people is more than 48 hours of realistic working time, even allowing for sleep. Agree a cut line before you start. The most self-contained candidates to drop or simplify are: the Edge Function (use the RPC fallback in <code>07</code>), FX particles, plot history popover, heartbeat RPC, tutorial (replace with one instruction card), and all <code>(Stretch)</code> items.</p>
+</blockquote>
+</div><div class="block block-plain"><h2 id="s12-why-its-split-this-way">Why it's split this way</h2>
+<ul>
+<li><strong>A</strong> owns everything that must be correct: the engine is the brief's technical core, and the backend re-runs it, so one person holds the data contracts (<code>types.ts</code>, <code>Backend</code> interface, DB schema).</li>
+<li><strong>B</strong> owns everything that moves on screen in the world: worldgen feeds the renderer directly, and the replay viewer reuses the same Pixi layers.</li>
+<li><strong>C</strong> covers two roles from the original four (design/art/audio and game design/pitch) plus the DOM-only React screens (journal, landing, auth, gallery, admin). None of those touch Pixi or the engine internals.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s12-handoffs-to-agree-in-the-first-hours">Handoffs to agree in the first hours</h2>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>From → To</th>
+<th>What</th>
+<th>Needed for</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A → B, C</td>
+<td><code>engine/types.ts</code>, <code>visibleView()</code> stage names, <code>Backend</code> interface + <code>LocalBackend</code> stub</td>
+<td>Everyone can build against stubs straight away</td>
+</tr>
+<tr class="even">
+<td>B ↔︎ C</td>
+<td><code>TileMap</code> tile names ↔︎ atlas frame names; plot visual stages ↔︎ sprite frames</td>
+<td>Art drops in without code changes</td>
+</tr>
+<tr class="odd">
+<td>C → A</td>
+<td>First <code>config.ts</code> numbers (action costs, yields, delays, decay)</td>
+<td>Engine tests and balance runs</td>
+</tr>
+<tr class="even">
+<td>A → C</td>
+<td><code>scripts/simulate.ts</code></td>
+<td>Balance tuning and the 3 strategy fixtures</td>
+</tr>
+<tr class="odd">
+<td>A → C</td>
+<td><code>explain()</code> output shape</td>
+<td>Cause sentences in the replay</td>
+</tr>
+<tr class="even">
+<td>C → B</td>
+<td>Journal modal + stroke renderer components</td>
+<td>End-of-turn flow and replay journal panel</td>
+</tr>
+<tr class="odd">
+<td>B → C</td>
+<td>Read-only snapshot renderer</td>
+<td>Gallery thumbnails, landing background</td>
+</tr>
+</tbody>
+</table></div>
+<p>Rehearsing the demo (<code>10</code>) is listed under C, but all three of you should be there.</p>
+</div><div class="block block-plain"><h2 id="s12-a-engine--backend-69-core--69-total">A: Engine &amp; Backend (69 core / 69 total)</h2>
+<h3 id="s12-02-simulation-engine-turn-engine-action-log-causality-37-pts"><code>02</code> Simulation Engine: Turn Engine, Action Log, Causality (37 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>src/engine/</code> package with no DOM dependencies; set up the path alias</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>Seeded PRNG + hash utilities</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Types above (<code>types.ts</code>), <code>config.ts</code> loaded from <code>01</code></td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><code>createWorld</code> (calls the worldgen from <code>03</code> for the plot layout + starter state)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td><code>applyAction</code> for each of the 8 actions, with validation (stamina, resources, plot state, target exists)</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>Scheduler: insert, resolve, cancel and fast-track <code>ScheduledEffect</code>s</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td><code>tick</code> for intra-turn effects (quick crops ripen at <code>t</code>)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td><code>endTurn</code>: unharvested crops rot, upkeep, weakened calculation, <strong>realised-only summary</strong></td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td><code>beginTurn</code>: the between-generation pipeline in the fixed order above</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Transition + cause recording in every state change (helper: <code>emit(target, before, after, causes)</code>)</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td><code>visibleView</code>: turns pending effects into visual stages only (e.g. orchard <code>sapling</code> / <code>young</code>), no numbers or due turns</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><code>replay(seed, opts, log)</code> → per-generation <code>Snapshot { state, transitions, actions }</code></td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td><code>explain()</code> aggregates causes per resource per turn for the replay</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Determinism: same seed + log → deep-equal state (property test over random logs)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Each action: cost deducted, effect scheduled with the correct <code>dueAt</code></td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Orchard planted at gen 1 fruits at gen 3; replay explains gen 3 food with a cause pointing to the gen 1 action and actor</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Fast Track on another player's orchard: double cost, effect resolves now, original pending effect marked <code>fastTracked</code></td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Unmaintained well stagnates after N gens; Maintain resets it</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Drought with vs without reservoir repair</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>Upkeep shortfall → successor's stamina reduced, with transition cause <code>rule: weakened</code></td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Every transition has ≥1 cause (invariant test)</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>Append-only: no API mutates past log entries</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td><code>scripts/simulate.ts</code>: plays N generations with scripted strategies and prints a resource table (used by game design for balancing)</td>
+<td>2</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-07-backend--async-multiplayer-supabase-22-pts"><code>07</code> Backend &amp; Async Multiplayer (Supabase) (22 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Create the Supabase project. Turn email confirmation off. Add the env vars to the repo secrets + <code>.env.example</code>.</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>SQL migrations for the schema above (<code>supabase/migrations/</code>)</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>RLS policies (read-public for completed worlds, no update/delete)</td>
+<td>1.5</td>
+</tr>
+<tr class="even">
+<td>Username signup/login with synthetic emails + <code>profiles</code> insert trigger</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td><code>claim_world</code> RPC with weighted assignment, <code>SKIP LOCKED</code>, stale-lock expiry, force-assign</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td><code>commit-turn</code> Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed)</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td><code>heartbeat</code> RPC (if needed)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Admin RPCs: set <code>settings</code>, set a world's <code>turn_seconds</code>/<code>generation_count</code>, force-assign, mark complete (skip to replay)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Gallery + replay read queries</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td><code>LocalBackend</code> implementation of the same interface (hot-seat)</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Concurrency test: 2 clients call <code>claim_world</code> at once → different worlds</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Seed script for the demo world (<code>10</code>)</td>
+<td>1.5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-10-demo-world--demo-moment-4-pts"><code>10</code> Demo World &amp; Demo Moment (4 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Write <code>scripts/seed-demo.ts</code> (+ a spare world)</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Offline fallback: the <code>LocalBackend</code> hot-seat build with the same seed + log baked in, in case the venue Wi-Fi fails</td>
+<td>2</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-11-repo-setup-workflow-testing-deploy-6-pts"><code>11</code> Repo Setup, Workflow, Testing, Deploy (6 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>npm create vite@latest</code> → React + TS. Add ESLint + Prettier.</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>Add deps: <code>pixi.js</code>, <code>zustand</code>, <code>@supabase/supabase-js</code>, <code>howler</code>; dev: <code>vitest</code>, <code>@vitest/coverage-v8</code></td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td><code>vite.config.ts</code>: <code>base: '/temporal/'</code> (or <code>/</code> if using a custom domain)</td>
+<td>0.25</td>
+</tr>
+<tr class="even">
+<td>Hash router (<code>react-router</code> <code>createHashRouter</code>)</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td><code>.env.example</code> with <code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_ANON_KEY</code>. Real values go in GitHub Actions secrets.</td>
+<td>0.25</td>
+</tr>
+<tr class="even">
+<td><code>Backend</code> interface + <code>LocalBackend</code> stub, so the frontend and engine can start before Supabase exists</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Path alias <code>@engine/*</code> so the Edge Function and the client import the same code</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>Turn on Pages in repo settings (source: GitHub Actions)</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td><code>ci.yml</code> + <code>deploy.yml</code> GitHub Actions workflows (listed under CI / deploy)</td>
+<td>1.5</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s12-b-world--gameplay-685-core--70-total">B: World &amp; Gameplay (68.5 core / 70 total)</h2>
+<h3 id="s12-03-world-generation-seeds-biomes-plots-155-pts"><code>03</code> World Generation: Seeds, Biomes, Plots (15.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Seeded noise util (value noise is enough)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Boundary mask for Forest and Island</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Plot placement with spacing + reachability guarantee (re-roll if unreachable)</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Path carving (BFS/A*)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Decoration scatter</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Collision grid export</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Output a <code>TileMap</code> data structure: <code>{ width, height, layers: { terrain, boundary, deco }, plots: {id, x, y, w, h, kind}[], spawn }</code> with no Pixi dependency</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Biome starter state + modifiers wired into <code>createWorld</code></td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Seeded event list (≥1 drought)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Vitest: same seed → identical map; 1000 random seeds → all plots reachable, no overlaps</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Debug page <code>/dev/worldgen?seed=123</code> that renders the map as coloured squares (needs <code>04</code> basic renderer). Useful for picking demo seeds.</td>
+<td>1.5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-04-world-rendering--in-game-ui-pixijs--react-325-pts"><code>04</code> World Rendering &amp; In-Game UI (PixiJS + React) (32.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pixi app mount/unmount inside React. Handle resize and devicePixelRatio. Use nearest-neighbour scaling for pixel art.</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Tilemap renderer from <code>03</code> <code>TileMap</code>, cached to a RenderTexture</td>
+<td>2.5</td>
+</tr>
+<tr class="odd">
+<td>Camera follow + clamp to map bounds</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Player avatar: 4-direction walk animation, collision against the grid</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td>Y-sorting for trees/structures vs the player</td>
+<td>1.5</td>
+</tr>
+<tr class="even">
+<td>Plot sprites driven by <code>visibleView()</code> stages</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Interact prompt + key handling + hotbar</td>
+<td>2.5</td>
+</tr>
+<tr class="even">
+<td>Wire actions → engine <code>applyAction</code> → store → re-render. Show an invalid-action reason.</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Fast Track menu (lists pending effects, with the originating player's name, no due dates)</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Day/night lighting + timer</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Freeze at time-up (lock input, dim world) → hand off to the <code>05</code> flow</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Visual-state variants for all rows in the table above</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td>FX: harvest pop, splash, rot flies, blight motes</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>HUD components (React) styled to match the pixel art</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td>Graveyard rendering: one stone per gravestone record, hover shows the name, click opens the journal page (<code>05</code>)</td>
+<td>1.5</td>
+</tr>
+<tr class="even">
+<td>Lectern: interact opens the journal</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Perf check: 60 fps on a mid laptop at 32×32</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-05-journal-end-of-turn-flow-graveyard-5-pts"><code>05</code> Journal, End-of-Turn Flow, Graveyard (5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gravestone placement animation + camera pan</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Graveyard rendering and interaction (with <code>04</code>)</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Lectern interaction → read-only journal during play</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>Hand off to <code>07</code> commit; handle a commit failure (retry, keep the local copy)</td>
+<td>1.5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-06-replay--gallery-105-pts"><code>06</code> Replay &amp; Gallery (10.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Replay screen layout: snapshot panel + journal panel + causes panel + timeline</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Read-only Pixi render of a snapshot (reuse <code>04</code> layers, no avatar, no input)</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Highlight changed plots per generation (diff vs the previous snapshot)</td>
+<td>1.5</td>
+</tr>
+<tr class="even">
+<td>Plot history popover</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Generation stepping (buttons + arrow keys) + optional auto-play</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>(Stretch) Animate drawing strokes in the journal panel</td>
+<td>1.5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-08-app-shell-screens-auth-onboarding-admin-65-pts"><code>08</code> App Shell: Screens, Auth, Onboarding, Admin (6.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Play flow: claim → interstitial → game → end flow → back to landing / "Play another"</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Resume: if the user refreshes while holding a lock, put them back in (or void; open question)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Error states: no network, claim failed, commit failed (retry + local backup)</td>
+<td>2</td>
+</tr>
+</tbody>
+</table></div>
+</div><div class="block block-plain"><h2 id="s12-c-design-content--app-shell-685-core--705-total">C: Design, Content &amp; App Shell (68.5 core / 70.5 total)</h2>
+<h3 id="s12-01-game-design-resources-actions-rules-115-pts"><code>01</code> Game Design: Resources, Actions, Rules (11.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Confirm the action table (costs, yields, delays) and record it as <code>config.ts</code> values with the engine dev</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Decide defaults for <code>turnSeconds</code> and <code>generationCount</code></td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Write the <strong>"medium world" tuning scenario</strong> and check the dilemma holds (use the engine's simulated playthrough script from <code>02</code>)</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Write 3 balance test scenarios as Vitest fixtures: <em>hoarder</em>, <em>planter</em>, <em>quick-fixer</em>. Check no single strategy dominates over N gens.</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Write the founder/Gen-0 starter conditions per biome (see <code>03</code>)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Hand <code>05</code> the cost-summary wording ("You spent… You gathered…") with no mention of future yields</td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-05-journal-end-of-turn-flow-graveyard-11-pts"><code>05</code> Journal, End-of-Turn Flow, Graveyard (11 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Journal modal (book layout, page flip, prev/next)</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Text input with limit + counter</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Drawing canvas: pen, colours, eraser, clear; serialise strokes</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Stroke renderer (reused by the replay <code>06</code> and gallery thumbnails)</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>"Seal page" confirmation; locks the page client-side</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Cost summary screen from <code>endTurn().summary</code> (<strong>realised only</strong>)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Copywriting pass with Game design (tone: quiet, reflective, no moralising)</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-06-replay--gallery-85-pts"><code>06</code> Replay &amp; Gallery (8.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>explain()</code> output → human sentences (templating with actor names + generations)</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Title card + ending card</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Gallery grid + thumbnails (render the snapshot to a small texture or a stored image)</td>
+<td>2.5</td>
+</tr>
+<tr class="even">
+<td>Route <code>/#/world/:id/replay</code> and <code>/#/gallery</code></td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Admin "skip to replay" hook (<code>08</code>)</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>(Stretch) Legacy view per player</td>
+<td>2</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-08-app-shell-screens-auth-onboarding-admin-135-pts"><code>08</code> App Shell: Screens, Auth, Onboarding, Admin (13.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the <code>09</code> style)</td>
+<td>2.5</td>
+</tr>
+<tr class="even">
+<td>Landing page with a background world</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Auth screen + session persistence + logout + username display</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Tutorial scene</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td>Gallery + replay routes (screens from <code>06</code>)</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>Admin panel + guard</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td>Audio toggle (mute) in the shell (<code>09</code>)</td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-09-art--audio-205-pts"><code>09</code> Art &amp; Audio (20.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Evaluate 2–3 packs and pick one family. Write <code>ASSETS.md</code> with licences.</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Build the Pixi spritesheet/atlas (TexturePacker free / <code>free-tex-packer</code>) + JSON</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Map <code>03</code> tile types → atlas frames (agree the names with the engine dev)</td>
+<td>1.5</td>
+</tr>
+<tr class="even">
+<td>Map <code>04</code> visual states → frames</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Gravestone variants + graveyard layout</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Journal book art + fonts</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>UI kit: panel, button, icons (food/water/stamina + 8 actions)</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Blight/drought filters (with frontend)</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td>Pick music tracks (day, night, reflective) + licences</td>
+<td>1.5</td>
+</tr>
+<tr class="even">
+<td>SFX set + audio sprite</td>
+<td>2.5</td>
+</tr>
+<tr class="odd">
+<td>Title/logo</td>
+<td>1.5</td>
+</tr>
+<tr class="even">
+<td>Favicon</td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s12-10-demo-world--demo-moment-55-pts"><code>10</code> Demo World &amp; Demo Moment (5.5 pts)</h3>
+<div class="scroll"><table>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Pts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pick the demo seed (orchard visible, nice-looking biome)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Decide the demo world's generation count + turn length</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Write the founder journal pages (natural, not preachy)</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Create judge accounts (or a shared "judge" account) + admin account</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>Rehearse force-assign → play → replay flow 3+ times on the demo laptop</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Decide on the "what this player saw" replay panel (open question)</td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table></div>
+</div></div></section>
+    <p class="foot">Built from <code>docs/plan/</code> in <code>whosmo7/temporal</code>. Ticked tasks are saved in this browser only.</p>
+  </main>
+</div>
+
+<script>
+(function () {
+  var KEY = "inheritance-plan-done";
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  var boxes = Array.prototype.slice.call(document.querySelectorAll("input.task"));
+  boxes.forEach(function (b) { if (done[b.id]) b.checked = true; });
+
+  function refresh() {
+    var f = document.body.getAttribute("data-filter") || "";
+    document.querySelectorAll("section.doc").forEach(function (sec) {
+      var key = sec.dataset.key;
+      var items = Array.prototype.slice.call(sec.querySelectorAll(".task-item"))
+        .filter(function (li) { return !f || li.dataset.owner === f; });
+      var n = items.length, d = items.filter(function (li) { return li.querySelector("input").checked; }).length;
+      var p = sec.querySelector(".progress");
+      if (p) {
+        p.querySelector(".bar span").style.width = n ? (100 * d / n) + "%" : "0";
+        p.querySelector(".ptext").textContent = n ? d + " of " + n + " tasks done" + (f ? " for " + f : "") : "No tasks for " + f;
+      }
+      var c = document.querySelector('.nav-count[data-for="' + key + '"]');
+      if (c) c.textContent = n ? d + "/" + n : "–";
+    });
+    ["A", "B", "C"].forEach(function (o) {
+      var all = document.querySelectorAll('.task-item[data-owner="' + o + '"]');
+      var d = Array.prototype.filter.call(all, function (li) { return li.querySelector("input").checked; }).length;
+      var el = document.querySelector('[data-who="' + o + '"]');
+      if (el) el.textContent = d + "/" + all.length;
+    });
+  }
+
+  boxes.forEach(function (b) {
+    b.addEventListener("change", function () {
+      if (b.checked) done[b.id] = 1; else delete done[b.id];
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      refresh();
+    });
+  });
+
+  document.querySelectorAll(".filter button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var f = btn.dataset.f;
+      if (f) document.body.setAttribute("data-filter", f); else document.body.removeAttribute("data-filter");
+      document.querySelectorAll(".filter button").forEach(function (o) { o.setAttribute("aria-pressed", String(o === btn)); });
+      refresh();
+    });
+  });
+
+  var links = {};
+  document.querySelectorAll(".nav a").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          Object.keys(links).forEach(function (k) { links[k].classList.toggle("on", k === en.target.id); });
+        }
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    document.querySelectorAll("section.doc").forEach(function (s) { io.observe(s); });
+  }
+  refresh();
+})();
+</script>
+</body>
+</html>
