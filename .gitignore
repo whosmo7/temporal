@@ -20,3 +20,6 @@ supabase/.branches/
 
 # Raw asset packs: only the packed atlas, fonts and audio we use are committed (see ASSETS.md)
 art/source/
+
+# LLM playthrough traces (scripts/simulate-llm.ts): local developer artifacts
+.sim/

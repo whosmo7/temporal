@@ -884,3 +884,19 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Admin: simulated players (decision 040) */
+.admin__sim {
+  margin-top: calc(var(--px) * 4);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(var(--px) * 5);
+  align-items: start;
+}
+
+.admin__sim-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 3);
+}

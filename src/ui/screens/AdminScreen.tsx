@@ -4,6 +4,7 @@ import { backend, type AdminAction, type AdminWorld, type CompletedWorld, type S
 import { Button, ButtonLink, Dialog, Panel, TextInput } from '../kit';
 import { ScoreTable } from '../scores/ScoreTable';
 import { byTotal, scoreRows } from '../scores/scoresData';
+import { SimulatedPlayers } from './admin/SimulatedPlayers';
 
 const BIOME_NAME: Record<AdminWorld['biome'], string> = { forest: 'Forest', island: 'Island' };
 
@@ -22,7 +23,8 @@ const SCORES = 30;
  * `/admin` (08, decision 036), behind `RequireAdmin`. Force-assign comes first, so handing the demo
  * world to a judge takes one pick, one name and Enter. Then the demo world button, the worlds in
  * progress (clear lock, skip to replay, delete), the defaults for new worlds, the player scores
- * from finished worlds (decision 039) and the recent admin actions.
+ * from finished worlds (decision 039), simulated Gemini players (decision 040) and the recent admin
+ * actions.
  */
 export function AdminScreen() {
   const [worlds, setWorlds] = useState<AdminWorld[] | null>(null);
@@ -85,6 +87,7 @@ export function AdminScreen() {
       <WorldList worlds={worlds} run={run} />
       <Defaults settings={settings} run={run} />
       <PlayerScores worlds={completed} />
+      <SimulatedPlayers />
       <RecentActions actions={actions} />
     </section>
   );
