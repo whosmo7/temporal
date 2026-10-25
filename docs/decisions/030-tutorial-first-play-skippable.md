@@ -1,4 +1,4 @@
-# 029: The tutorial runs before a first Play, can be skipped, and gives no hint about delays
+# 030: The tutorial runs before a first Play, can be skipped, and gives no hint about delays
 
 **Status:** decided 2026-10-25 by the user · **Settles:** `08` open questions 1 and 2
 

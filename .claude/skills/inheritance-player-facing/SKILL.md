@@ -27,7 +27,7 @@ user then chose (2026-10-25) to show **only health and level** beyond what was a
 | **Cost summary** | Costs paid and immediate gains this turn; upkeep met / short by X; what you sowed, watered or built **as a cost** ("Crops sown ×6", "Watered ×6"); seeds used and gathered; the land's health bar and level name **as they stand at day's end** | What anything will become, tiles "still growing", or "your successors will thank you" |
 | **Gravestone** | Name/initials (generation if decided) | Achievements, ratings, score |
 | **Replay (after the final gen)** | Everything: causes, actors, generations, cost-only summaries, journal pages | No restriction (this is where the explanation happens) |
-| **Tutorial** | How to move/act/use the journal; that upkeep exists | Numbers for delayed effects, or any hint of how long something takes ([029](../../../docs/decisions/029-tutorial-first-play-skippable.md)) |
+| **Tutorial** | How to move/act/use the journal; that upkeep exists | Numbers for delayed effects, or any hint of how long something takes ([030](../../../docs/decisions/030-tutorial-first-play-skippable.md)) |
 
 Rule of thumb: **before the replay, a player knows only what a person standing in that field would
 know.**

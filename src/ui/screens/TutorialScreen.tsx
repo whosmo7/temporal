@@ -10,7 +10,7 @@ import { currentStep, markTutorialSeen, STEPS, UPKEEP_TEXT } from '../tutorial/s
 
 /** A fixed forest world, so every tutorial is the same. */
 const SEED = 123;
-/** A short day: crops ripen in a quarter of it (decision 027), so about a minute after watering. */
+/** Longer than the game's two-minute day, so there's time to walk while a watered tile ripens (a minute, decision 028). */
 const TURN_SECONDS = 240;
 const BEFORE = 'Wren';
 const BEFORE_PAGE =
@@ -29,7 +29,7 @@ const MOVE_KEYS = new Set([
 
 /**
  * `#/tutorial` (08): the real game on a fixed world, one hint at a time. No account needed and
- * nothing is saved. Shown before a first Play (decision 029) and linked from the landing page;
+ * nothing is saved. Shown before a first Play (decision 030) and linked from the landing page;
  * Skip is always there. `?then=play` goes on to Play afterwards, otherwise home.
  */
 export function TutorialScreen() {

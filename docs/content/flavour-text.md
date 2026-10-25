@@ -114,7 +114,7 @@ Things deliberately **not** written: no tooltip says what anything becomes or wh
 no line says how to raise the land's health or what the next level brings, nothing explains why a plot looks
 the way it does, and no event (drought, storm, good harvest) is ever named during play.
 
-## Tutorial (08, [029](../decisions/029-tutorial-first-play-skippable.md))
+## Tutorial (08, [030](../decisions/030-tutorial-first-play-skippable.md))
 
 One card at a time at the top of the screen, headed "{n} of 7", with Skip. Built in `src/ui/tutorial/steps.ts`.
 

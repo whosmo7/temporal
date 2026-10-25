@@ -332,24 +332,26 @@ The model doesn't include Harvest and eat yet.
 ## Balance after section 13 (engine run, 2026-10-25)
 
 `npm run simulate -- --gens 6`, seed 1, on the engine as it stands: per-tile farming and watering (027), stamina a
-placeholder at 0, nights taking 12 food and no water, no seeds, health or level yet.
+placeholder at 0, nights taking 12 food and no water, two-minute days with one-minute crops (028), no seeds, health or
+level yet.
 
 | Strategy | Forest food, gen 1 → 6 | Missed upkeep | Final world |
 |---|---|---|---|
-| Hoarder (well, two crop cycles a day) | 72 → 192 | none | reservoir cracked, no orchard |
+| Hoarder (well, crops on every tile) | 36 → 66, +6 a generation | none | reservoir cracked, no orchard |
 | Planter (orchard + reservoir) | 18 → 8 | none | everything standing |
 | Repair first | 36 → 66 | none | reservoir full |
 | Quick-fixer (well + hunting) | 32 → 0 | gen 6 | wild stock 0 |
 
 Island is the same within a few points. **The dilemma doesn't hold.** Hoarding costs the hoarder nothing, investing never
 costs upkeep, and in the medium world one day fits both the repair and comfortable feeding. Nothing in a day binds:
-stamina is 0, and the action times add up to a few seconds of a 600 s day (the simulator doesn't count walking).
+stamina is 0, and even in a two-minute day the actions leave time over (the simulator doesn't count walking, which will
+bind more than it shows).
 
 The fixtures in `scripts/__tests__/balance.test.ts` hold the `01` targets. The three that fail today are marked `it.fails`
 with these gaps, and turn red once the numbers fix them. **Tune after A lands seeds ([022](../decisions/022-seed-stock.md),
 caps sowing) and health and level ([023](../decisions/023-world-health-and-level.md), gives investment a payoff)**, as
 both change this picture (decided 2026-10-25 by the user). Levers then, in order: `seedStart` and `seedsPerCrop`,
-`upkeepFood`, `cropRipenPct` (one crop cycle a day instead of two), `foodRotPct`.
+`upkeepFood`, `cropYield`, `foodRotPct`.
 
 ## Tasks
 

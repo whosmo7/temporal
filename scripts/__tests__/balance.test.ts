@@ -46,7 +46,7 @@ describe.each(BIOMES)('six generations, %s', (biome) => {
   });
 
   // Gap: crops pay 1 food a tile with nothing limiting how many are sown, so the hoarder gains
-  // about 24 food a generation and never misses upkeep. Seeds (022) should cap this.
+  // about 6 food a generation and never misses upkeep. Seeds (022) should cap this.
   it.fails(
     'hoarding has a cost: the hoarder misses upkeep or ends with less food than it started',
     () => {
@@ -56,7 +56,7 @@ describe.each(BIOMES)('six generations, %s', (biome) => {
   );
 
   // Gap: stamina is a placeholder (0 for every action) and action times are a few seconds of a
-  // 600 s day, so investing costs the planter nothing it needed. 01 wants it to cost upkeep.
+  // two-minute day, so investing costs the planter nothing it needed. 01 wants it to cost upkeep.
   it.fails('pure investment costs something: the planter misses upkeep at least once', () => {
     expect(missed(planter)).toBeGreaterThan(0);
   });
