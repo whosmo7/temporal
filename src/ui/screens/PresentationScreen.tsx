@@ -15,7 +15,7 @@ import '../presentation/presentation.css';
 /*
  * THESIS: A live journey through inherited consequences, ending inside the game itself.
  * OWN-WORLD: Inheritance's pixel islands, cream ink, plum night, peach dusk and teal dawn.
- * STORY: Time exposes choices → stewardship → six lives → compete → leave → play.
+ * STORY: Time exposes choices → stewardship → six lives → the trailer → compete → leave → play.
  * FIRST VIEWPORT: Centred three-line pixel headline, four islands flying past its margins;
  * compact chapter rail above, a scroll invitation below. No timed slide advancement.
  * FORM: User-pinned perspective tunnel, followed by a native-scrolling six-chapter story.
@@ -28,10 +28,14 @@ const CHAPTERS = [
   { id: 'inheritance-evidence', name: 'The evidence' },
   { id: 'inheritance-balance', name: 'The balance' },
   { id: 'inheritance-world', name: 'Inheritance' },
+  { id: 'inheritance-trailer', name: 'The trailer' },
   { id: 'inheritance-score', name: 'The temptation' },
   { id: 'inheritance-legacy', name: 'What remains' },
   { id: 'inheritance-home', name: 'Play' },
 ] as const;
+/** The trailer chapter, and the last chapter: the game's own home screen. */
+const TRAILER = 4;
+const HOME = CHAPTERS.length - 1;
 
 function StoryIsland({ stones = 3, className = '' }: { stones?: number; className?: string }) {
   const light = useRef<HTMLDivElement>(null);
@@ -39,6 +43,27 @@ function StoryIsland({ stones = 3, className = '' }: { stones?: number; classNam
     <div className={`story-island ${className}`}>
       <IslandScene lightRef={light} hold={{ light: 0.42, stones }} />
     </div>
+  );
+}
+
+/** The trailer: a screen recording of the game. It only plays when pressed, and pauses when you move on. */
+function Trailer({ active }: { active: boolean }) {
+  const video = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (!active) video.current?.pause();
+  }, [active]);
+  const asset = `${import.meta.env.BASE_URL}assets/video/`;
+  return (
+    <video
+      ref={video}
+      className="trailer-video"
+      src={`${asset}trailer.mp4`}
+      poster={`${asset}trailer-poster.jpg`}
+      controls
+      playsInline
+      preload="metadata"
+      aria-describedby="trailer-note"
+    />
   );
 }
 
@@ -167,7 +192,7 @@ export function PresentationScreen() {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
-        target.closest('input, textarea, select, button, a, [contenteditable="true"]') ||
+        target.closest('input, textarea, select, button, a, video, [contenteditable="true"]') ||
         event.altKey ||
         event.ctrlKey ||
         event.metaKey
@@ -252,7 +277,7 @@ export function PresentationScreen() {
             </p>
             <p>
               These are systems someone built, repaired, and passed on.
-              <br className="desktop-break" /> You inherit their care — or the cost of its absence.
+              <br className="desktop-break" /> 
             </p>
           </div>
           <div className="evidence-scene">
@@ -350,9 +375,28 @@ export function PresentationScreen() {
         </section>
 
         <section
-          id={CHAPTERS[4].id}
+          id={CHAPTERS[TRAILER].id}
           ref={(el) => {
-            sections.current[4] = el;
+            sections.current[TRAILER] = el;
+          }}
+          className="story-section story-trailer"
+          aria-labelledby="trailer-title"
+        >
+          <h2 id="trailer-title">
+            Two minutes.
+            <br />
+            <em>Six lives.</em>
+          </h2>
+          <Trailer active={active === TRAILER} />
+          <p id="trailer-note" className="presentation-note">
+            Gameplay recorded in the game. Press play to watch.
+          </p>
+        </section>
+
+        <section
+          id={CHAPTERS[5].id}
+          ref={(el) => {
+            sections.current[5] = el;
           }}
           className="story-section story-score"
           aria-labelledby="score-title"
@@ -388,9 +432,9 @@ export function PresentationScreen() {
         </section>
 
         <section
-          id={CHAPTERS[5].id}
+          id={CHAPTERS[6].id}
           ref={(el) => {
-            sections.current[5] = el;
+            sections.current[6] = el;
           }}
           className="story-section story-legacy"
           aria-labelledby="legacy-title"
@@ -416,30 +460,30 @@ export function PresentationScreen() {
             After the sixth generation, the replay reveals who caused what.
             <br className="desktop-break" /> Time tells the story nobody could see while living it.
           </p>
-          <Button variant="primary" onClick={() => go(6)}>
+          <Button variant="primary" onClick={() => go(HOME)}>
             What will you leave?
           </Button>
         </section>
 
         <section
-          id={CHAPTERS[6].id}
+          id={CHAPTERS[HOME].id}
           ref={(el) => {
-            sections.current[6] = el;
+            sections.current[HOME] = el;
           }}
           className="presentation-home"
           aria-label="Inheritance game home"
         >
           <SkyBackdrop />
-          {active === 6 && <LandingScreen showStory={false} />}
+          {active === HOME && <LandingScreen showStory={false} />}
           <button className="presentation-restart" type="button" onClick={() => go(0)}>
             Replay the introduction
           </button>
         </section>
       </main>
-      {active < 6 && (
+      {active < HOME && (
         <footer className="presentation-controls">
           <span>
-            {active + 1} / 6{' '}
+            {active + 1} / {HOME}{' '}
             <span className="presentation-control-label"> · {CHAPTERS[active].name}</span>
           </span>
           <div>
@@ -454,7 +498,7 @@ export function PresentationScreen() {
             <button
               type="button"
               onClick={() => go(active + 1)}
-              aria-label={active === 5 ? 'Open game home' : 'Next chapter'}
+              aria-label={active === HOME - 1 ? 'Open game home' : 'Next chapter'}
             >
               →
             </button>

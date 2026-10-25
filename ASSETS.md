@@ -15,6 +15,7 @@ Art direction: [`docs/art/art-direction.md`](docs/art/art-direction.md).
 | `public/assets/audio/music/day`, `dusk`, `reflective` (`.webm` + `.mp3`) | https://pixel-boy.itch.io/ninja-adventure-asset-pack (`Audio/Musics/5 - Peaceful.ogg`, `9 - Quiet.ogg`, `16 - Melancholia.ogg`) | Pixel-Boy & AAA | CC0 1.0 | No (appreciated) | Re-encoded and loudness-normalised |
 | `public/assets/audio/sfx.webm` + `sfx.mp3` + `src/audio/sfx-sprite.json` (sounds listed in `scripts/audio-manifest.ts`) | https://pixel-boy.itch.io/ninja-adventure-asset-pack (`Audio/Sounds/*`) | Pixel-Boy & AAA | CC0 1.0 | No (appreciated) | Normalised, gain-adjusted and joined into one sprite |
 | `public/assets/journal/cover.png`, `paper.png`, `public/favicon-*.png`, `apple-touch-icon.png` | — | C (this repo) | Same as the repo | No | Drawn in code (`scripts/art/compose.ts`) |
+| `public/assets/video/trailer.mp4`, `trailer-poster.jpg`: the presentation's trailer | — | The team (this repo): a screen recording of the game, so its art and sound are the rows above | Same as the repo | No | Re-encoded for the web (H.264, 6 MB); the poster is a frame at 8 s |
 | `public/assets/fonts/NinjaAdventure-Normal.ttf` (from `Ui/Font/NormalFont.ttf`) | https://pixel-boy.itch.io/ninja-adventure-asset-pack | Pixel-Boy & AAA | CC0 1.0 | No (appreciated) | Renamed only |
 | `public/assets/fonts/PatrickHand-Regular.ttf` (+ `PatrickHand-OFL.txt`) | https://github.com/google/fonts/tree/main/ofl/patrickhand | Patrick Wagesreiter | SIL OFL 1.1 | No (licence file ships with the font) | No |
 

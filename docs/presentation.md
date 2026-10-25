@@ -2,18 +2,21 @@
 
 Open `/temporal/#/presentation`, or choose **Our story** on the home screen.
 
-The six chapters are manually paced. Scroll, use the chapter buttons, or press Left/Right
+The seven chapters are manually paced. Scroll, use the chapter buttons, or press Left/Right
 or Page Up/Page Down. Home restarts; End reaches the game home. Keyboard shortcuts leave
-links, buttons and the scoring slider alone. There is no automatic slide timer or audio.
+links, buttons, the trailer and the scoring slider alone. There is no automatic slide timer, and the only
+audio is the trailer's, once you press play.
 
-## Suggested two-minute introduction
+## Suggested introduction (about two and a half minutes)
 
 1. **Time** (~15 seconds): “We are all victims of time. It exposes the consequences our intentions hide.”
 2. **The evidence** (~15 seconds): “When the tap runs, the lights come on, or food grows in the soil, we rely on systems built and maintained before us. We inherit their care, or the cost of its absence.”
 3. **The balance** (~20 seconds): “We need resources to live. The challenge is leaving the next generation the same possibility.”
 4. **Inheritance** (~20 seconds): “A two-minute life in a shared world. Six generations in sequence. Click the generation buttons: your life ends, the world continues.”
-5. **The temptation** (~35 seconds): Click **Keep the surplus**, then **Empty the store**. “Taking a little can pay. Taking too much costs corruption and the quality of the world you hand over. Your own exit-world bonus locks at death.”
-6. **What remains** (~15 seconds): “The journal passes on. The replay exposes the consequences. What will you leave?”
+5. **The trailer** (32 seconds): press play. It never starts on its own, and it pauses when you move to another
+   chapter. While the video has focus, ← → seek it instead of changing chapter; click outside it to page again.
+6. **The temptation** (~35 seconds): Click **Keep the surplus**, then **Empty the store**. “Taking a little can pay. Taking too much costs corruption and the quality of the world you hand over. Your own exit-world bonus locks at death.”
+7. **What remains** (~15 seconds): “The journal passes on. The replay exposes the consequences. What will you leave?”
 
 The final chapter embeds the real `LandingScreen`: Play, Gallery and How to play retain their
 existing routes. **Enter game** in the header also goes straight to the normal home route.

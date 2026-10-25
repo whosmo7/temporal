@@ -332,6 +332,26 @@
   text-align: center;
   margin-top: 20px;
 }
+.story-trailer {
+  background: var(--ink);
+  align-items: center;
+  text-align: center;
+}
+.story-trailer h2 {
+  margin-bottom: 24px;
+}
+.trailer-video {
+  display: block;
+  width: min(100%, 1120px, calc((100svh - 430px) * 16 / 9));
+  min-width: min(100%, 480px);
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border: 2px solid #53515b;
+}
+.story-trailer .presentation-note {
+  margin: 16px 0 0;
+  color: var(--peach);
+}
 .story-score {
   background: #262a38;
 }
