@@ -138,6 +138,20 @@ flourishing. The slot is **5 minutes**.
 
 ---
 
+## Gameplay rework (13)
+
+| Topic | Decision |
+|---|---|
+| Fields | **Per tile**: each tile is planted, watered, grown and harvested on its own ([019](../decisions/019-per-tile-actions-take-time.md); watering added in [021](../decisions/021-per-tile-farming-and-watering.md)) |
+| Watering | **Plant, then water once** before a tile grows. A **watering can** holds a few pours, filled free at a well, reservoir, pond or sea edge ([021](../decisions/021-per-tile-farming-and-watering.md)) |
+| Unwatered seeds | Carry over, and **wither 2 generations** after planting ([021](../decisions/021-per-tile-farming-and-watering.md)) |
+| Actions | Still **eight**: **Water** replaces Plant Orchard ([021](../decisions/021-per-tile-farming-and-watering.md), [024](../decisions/024-emergent-orchards-and-flowers.md)) |
+| Seeds | **Shared stock** carried between generations; harvest gives some back ([022](../decisions/022-seed-stock.md)) |
+| Health & level | **World health bar + level badge in the HUD**; level only rises. Replaces "No score" ([023](../decisions/023-world-health-and-level.md)) |
+| Orchards & flowers | **Emergent** from the world's level; no planting ([024](../decisions/024-emergent-orchards-and-flowers.md)) |
+| Oven | **Cooks stored food** to refill hunger ([025](../decisions/025-oven-cooks-stored-food.md)) |
+| Explaining the world | The "no due dates, yields or causes during play" rule is **lifted**; what to show is open ([026](../decisions/026-lift-no-explanation-rule.md)) |
+
 ## Glossary
 
 | Term | Meaning |

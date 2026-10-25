@@ -37,6 +37,7 @@ They are not decisions.
 | 10 | [Demo world & demo moment](10-demo.md) | Game design / pitch |
 | 11 | [Repo setup, workflow, testing, deploy](11-workflow-testing-deploy.md) | Everyone (do first) |
 | 12 | [Team split: who does what](12-team-split.md) | Everyone |
+| 13 | [Gameplay mechanics & playing experience](13-gameplay-mechanics.md) | Everyone, split by folder |
 
 **Single-page view:** open `plan.html` in a browser for the whole plan on one page, with owner filters and tickable tasks.
 Rebuild it after editing any doc: `python3 docs/plan/tools/build_page.py docs/plan docs/plan/plan.html docs/plan/tools/page-template.html` (needs pandoc).
