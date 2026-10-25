@@ -52,6 +52,6 @@ function iconFor(type: ActionType, biome: Biome): PixelIconName {
   if (type === 'fishHunt') return `ui/icon-fishHunt-${biome}`;
   // No watering-can icon in the UI atlas yet: the water drop stands in.
   if (type === 'water' || type === 'fillCan') return 'ui/icon-water';
-  if (type === 'eat') return 'ui/icon-food';
+  if (type === 'eat' || type === 'take') return 'ui/icon-food';
   return `ui/icon-${type}`;
 }

@@ -18,7 +18,7 @@ import type {
 } from './types';
 
 export function emptyTally(): TurnTally {
-  return { staminaSpent: 0, waterSpent: 0, foodGained: 0, waterGained: 0, foodEaten: 0 };
+  return { staminaSpent: 0, waterSpent: 0, foodGained: 0, waterGained: 0, foodEaten: 0, productiveFood: 0, overhuntFood: 0, foodTaken: 0 };
 }
 
 /** Reducers work on a copy, so the state they were given is never touched. */

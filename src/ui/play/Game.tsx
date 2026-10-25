@@ -338,7 +338,7 @@ function sfxFor(request: ActionRequest, biome: Biome): SfxName {
   // No sounds of their own yet: a splash for watering, the well's for filling the can, the harvest's for a meal.
   if (request.type === 'water') return 'fishHunt-island';
   if (request.type === 'fillCan') return 'digWell';
-  if (request.type === 'eat') return 'harvest';
+  if (request.type === 'eat' || request.type === 'take') return 'harvest';
   return request.type;
 }
 

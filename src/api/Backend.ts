@@ -102,6 +102,29 @@ export interface AdminWorld {
   createdAt: string | null;
 }
 
+/** What an admin call did, as the admin log records it (decision 036). */
+export type AdminActionKind =
+  | 'forceAssign'
+  | 'configureWorld'
+  | 'clearLock'
+  | 'markComplete'
+  | 'removeWorld'
+  | 'createWorld'
+  | 'createDemoWorld'
+  | 'setSettings';
+
+/** One row of the append-only admin log (decision 036). Newest first when listed. */
+export interface AdminAction {
+  id: string;
+  at: string;
+  /** Username of the admin account that made the call. */
+  admin: string;
+  action: AdminActionKind;
+  worldId: string | null;
+  before: unknown;
+  after: unknown;
+}
+
 export interface SeededWorld {
   seed: number;
   biome: Biome;
@@ -134,7 +157,9 @@ export interface Backend {
   listCompletedWorlds(): Promise<CompletedWorld[]>;
   getReplay(worldId: string): Promise<Replay>;
 
-  // Admin (08). Each throws unless the signed-in user is an admin.
+  // Admin (08, decision 036). Each throws unless the signed-in user is an admin, and each change
+  // writes one row to the admin log.
+  /** Worlds still in progress and not removed. Finished worlds are in the gallery. */
   listWorlds(): Promise<AdminWorld[]>;
   getSettings(): Promise<Settings>;
   setSettings(settings: Partial<Settings>): Promise<void>;
@@ -150,4 +175,13 @@ export interface Backend {
   clearLock(worldId: string): Promise<void>;
   /** A world from a chosen seed (the demo world, 10). Returns its id. */
   createSeededWorld(world: SeededWorld): Promise<string>;
+  /**
+   * Takes a world out of the game: never claimed, listed or replayed again. Its history stays in
+   * the database (rule 2). Refused while someone holds its lock.
+   */
+  removeWorld(worldId: string): Promise<void>;
+  /** Makes the demo world, plays its founder generations and force-assigns the judge (10). Returns its id. */
+  createDemoWorld(): Promise<string>;
+  /** The latest admin log rows, newest first. */
+  listAdminActions(limit?: number): Promise<AdminAction[]>;
 }

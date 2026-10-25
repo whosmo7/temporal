@@ -33,6 +33,7 @@ const HOTBAR_LABEL: Record<ActionType, string> = {
   water: 'Water',
   fillCan: 'Fill',
   eat: 'Eat',
+  take: 'Keep',
 };
 
 /** The interact prompt's words (without the cost, which the prompt adds). */
@@ -61,6 +62,8 @@ export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome): str
       return 'Fill the can';
     case 'eat':
       return FARM_TEXT.cook; // at the oven (decision 029)
+    case 'take':
+      return FARM_TEXT.keep; // at the oven (decision 039)
   }
 }
 
@@ -142,6 +145,7 @@ export const TOOL_TIP: Record<Tool, string> = {
  */
 export const FARM_TEXT = {
   cook: 'Cook and eat',
+  keep: 'Keep some for yourself',
   noSeeds: 'No seeds left',
   storeEmpty: 'The store is empty',
 } as const;

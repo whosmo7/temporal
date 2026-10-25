@@ -2,8 +2,11 @@ import { tallyHistory, worldScore } from '../engine/score';
 import type { Biome } from '../worldgen/types';
 import type { PresetName } from '../worldgen/presets';
 import { worldName } from '../worldgen/names';
+import { seedDemo, type DemoAccounts } from './demo';
 import type {
   ActionEntry,
+  AdminAction,
+  AdminActionKind,
   AdminWorld,
   Backend,
   ClaimedWorld,
@@ -44,6 +47,8 @@ export const LOCK_TIMING = {
 };
 /** Signing up as `admin` makes an admin, standing in for `update profiles set is_admin = true` (07). */
 const ADMIN_USERNAME = 'admin';
+/** Accounts the demo world makes for its founders and judge, as the offline build does (offline.ts). */
+const DEMO_PASSWORD = 'demo';
 const BIOMES: Biome[] = ['forest', 'island'];
 
 interface LocalUser {
@@ -68,6 +73,13 @@ interface LocalWorld {
   forcedFor: string | null;
   createdAt?: string;
   completedAt: string | null;
+  /** Set when an admin removed it from the game (decision 036). Its turns stay. */
+  removedAt?: string | null;
+  removedBy?: string | null;
+}
+
+interface LocalAdminAction extends Omit<AdminAction, 'admin'> {
+  adminId: string;
 }
 
 interface LocalTurn {
@@ -87,6 +99,8 @@ export interface LocalDb {
   settings?: Settings;
   worlds: LocalWorld[];
   turns: LocalTurn[];
+  /** Append-only admin log (decision 036). Absent in stores saved before it. */
+  adminActions?: LocalAdminAction[];
 }
 
 export interface LocalBackendOptions {
@@ -206,7 +220,7 @@ export class LocalBackend implements Backend {
     }
 
     // 2. Admin force-assign.
-    let world = db.worlds.find((w) => w.forcedFor === me.id && w.status === 'open' && !w.lockedBy);
+    let world = db.worlds.find((w) => w.forcedFor === me.id && w.status === 'open' && !w.lockedBy && !w.removedAt);
 
     // 4. The weighted draw (034): a low roll takes the open world furthest along, a middle one any
     // other, else a new world. An empty bucket falls to the other one, then to a new world. Nobody
@@ -217,6 +231,7 @@ export class LocalBackend implements Backend {
         (w) =>
           w.status === 'open' &&
           !w.lockedBy &&
+          !w.removedAt &&
           (w.forcedFor === null || w.forcedFor === me.id) &&
           !db.turns.some((t) => t.worldId === w.id && t.turn === w.currentTurn - 1 && t.playerId === me.id),
       );
@@ -317,7 +332,7 @@ export class LocalBackend implements Backend {
   async listCompletedWorlds(): Promise<CompletedWorld[]> {
     const db = this.load();
     return db.worlds
-      .filter((w) => w.status === 'complete')
+      .filter((w) => w.status === 'complete' && !w.removedAt)
       .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
       .map((w) => ({
         worldId: w.id,
@@ -341,7 +356,7 @@ export class LocalBackend implements Backend {
   async getReplay(worldId: string): Promise<Replay> {
     const db = this.load();
     const world = db.worlds.find((w) => w.id === worldId);
-    if (!world || world.status !== 'complete') throw new Error('World not found');
+    if (!world || world.status !== 'complete' || world.removedAt) throw new Error('World not found');
     const turns = this.turnsOf(db, worldId);
     return {
       worldId: world.id,
@@ -360,7 +375,8 @@ export class LocalBackend implements Backend {
     const db = this.load();
     this.requireAdmin(db);
     const name = (id: string | null) => (id ? this.usernameOf(db, id) : null);
-    return db.worlds.map((w) => ({
+    // In progress only (decision 036): finished worlds are in the gallery, removed ones nowhere.
+    return db.worlds.filter((w) => w.status === 'open' && !w.removedAt).map((w) => ({
       worldId: w.id,
       name: worldName(w.seed, w.biome),
       seed: w.seed,
@@ -383,8 +399,9 @@ export class LocalBackend implements Backend {
 
   async setSettings(patch: Partial<Settings>): Promise<void> {
     const db = this.load();
-    this.requireAdmin(db);
-    const next = { ...this.settings(db), ...patch };
+    const admin = this.requireAdmin(db);
+    const before = this.settings(db);
+    const next = { ...before, ...patch };
     if (!(next.defaultTurnSeconds > 0 && next.defaultGenerationCount > 0)) {
       throw new Error('Must be above 0');
     }
@@ -392,6 +409,7 @@ export class LocalBackend implements Backend {
       throw new Error('Inherit ratio must be between 0 and 1');
     }
     db.settings = next;
+    this.log(db, admin, 'setSettings', null, before, next);
     this.save(db);
   }
 
@@ -400,7 +418,7 @@ export class LocalBackend implements Backend {
     config: { turnSeconds?: number; generationCount?: number },
   ): Promise<void> {
     const db = this.load();
-    this.requireAdmin(db);
+    const admin = this.requireAdmin(db);
     const world = this.worldOf(db, worldId);
     if (world.status === 'complete') throw new Error('This world has ended');
     const { turnSeconds = world.turnSeconds, generationCount = world.generationCount } = config;
@@ -408,29 +426,34 @@ export class LocalBackend implements Backend {
     if (generationCount < world.currentTurn) {
       throw new Error(`At least ${world.currentTurn} generations: that one is being played or next`);
     }
+    const before = { turnSeconds: world.turnSeconds, generationCount: world.generationCount };
     world.turnSeconds = turnSeconds;
     world.generationCount = generationCount;
+    this.log(db, admin, 'configureWorld', worldId, before, { turnSeconds, generationCount });
     this.save(db);
   }
 
   async forceAssign(worldId: string, username: string): Promise<void> {
     const db = this.load();
-    this.requireAdmin(db);
+    const admin = this.requireAdmin(db);
     const world = this.worldOf(db, worldId);
     if (world.status !== 'open') throw new Error('This world has ended');
     const user = db.users.find((u) => u.username === username.trim().toLowerCase());
     if (!user) throw new Error('No player by that name');
+    const before = world.forcedFor ? this.usernameOf(db, world.forcedFor) : null;
     world.forcedFor = user.id;
+    this.log(db, admin, 'forceAssign', worldId, before, user.username);
     this.save(db);
   }
 
   async markComplete(worldId: string): Promise<void> {
     const db = this.load();
-    this.requireAdmin(db);
+    const admin = this.requireAdmin(db);
     const world = this.worldOf(db, worldId);
     if (world.status === 'complete') return;
     const played = this.turnsOf(db, worldId).length;
     if (played === 0) throw new Error('Nobody has played this world yet');
+    this.log(db, admin, 'markComplete', worldId, { generationCount: world.generationCount }, { generationCount: played });
     world.status = 'complete';
     world.generationCount = played;
     world.completedAt = new Date(this.now()).toISOString();
@@ -443,24 +466,108 @@ export class LocalBackend implements Backend {
 
   async clearLock(worldId: string): Promise<void> {
     const db = this.load();
-    this.requireAdmin(db);
+    const admin = this.requireAdmin(db);
     const world = this.worldOf(db, worldId);
+    const before = world.lockedBy ? this.usernameOf(db, world.lockedBy) : null;
     world.lockedBy = null;
     world.lockedAt = null;
     world.lockExpiresAt = null;
+    this.log(db, admin, 'clearLock', worldId, before, null);
     this.save(db);
   }
 
   async createSeededWorld(seeded: SeededWorld): Promise<string> {
     const db = this.load();
-    this.requireAdmin(db);
+    const admin = this.requireAdmin(db);
     const world = this.newWorld(seeded.seed, seeded.biome, this.settings(db));
     world.preset = seeded.preset ?? world.preset;
     world.turnSeconds = seeded.turnSeconds ?? world.turnSeconds;
     world.generationCount = seeded.generationCount ?? world.generationCount;
     db.worlds.push(world);
+    this.log(db, admin, 'createWorld', world.id, null, seeded);
     this.save(db);
     return world.id;
+  }
+
+  async removeWorld(worldId: string): Promise<void> {
+    const db = this.load();
+    const admin = this.requireAdmin(db);
+    const world = this.worldOf(db, worldId);
+    if (this.locked(world)) throw new Error('Someone is playing this world. Clear the lock first.');
+    world.removedAt = new Date(this.now()).toISOString();
+    world.removedBy = admin.id;
+    world.forcedFor = null;
+    this.log(db, admin, 'removeWorld', worldId, null, { removedAt: world.removedAt });
+    this.save(db);
+  }
+
+  /**
+   * Plays the demo world's founders through the normal claim and commit, acting as each in turn,
+   * then hands the session back to the admin. Missing accounts are made with the offline password.
+   */
+  async createDemoWorld(): Promise<string> {
+    const admin = this.requireAdmin(this.load());
+    const become = (id: string) => {
+      const db = this.load();
+      db.session = id;
+      this.save(db);
+      return this;
+    };
+    const accounts: DemoAccounts = {
+      as: async (username) => {
+        const db = this.load();
+        let user = db.users.find((u) => u.username === username);
+        if (!user) {
+          user = { id: crypto.randomUUID(), username, password: DEMO_PASSWORD };
+          db.users.push(user);
+          this.save(db);
+        }
+        return become(user.id);
+      },
+      admin: async () => become(admin.id),
+    };
+    // One log row for the whole demo, as the server function writes (decision 036).
+    this.quiet = true;
+    let worldId: string;
+    try {
+      worldId = await seedDemo(accounts);
+    } finally {
+      this.quiet = false;
+      become(admin.id);
+    }
+    const db = this.load();
+    this.log(db, admin, 'createDemoWorld', worldId, null, { worldId });
+    this.save(db);
+    return worldId;
+  }
+
+  async listAdminActions(limit = 20): Promise<AdminAction[]> {
+    const db = this.load();
+    this.requireAdmin(db);
+    return [...(db.adminActions ?? [])]
+      .reverse()
+      .slice(0, limit)
+      .map(({ adminId, ...row }) => ({ ...row, admin: this.usernameOf(db, adminId) }));
+  }
+
+  private quiet = false;
+
+  /** Appends one admin log row (decision 036). Rows are never changed or removed. */
+  private log(db: LocalDb, admin: LocalUser, action: AdminActionKind, worldId: string | null, before: unknown, after: unknown): void {
+    if (this.quiet) return;
+    (db.adminActions ??= []).push({
+      id: crypto.randomUUID(),
+      at: new Date(this.now()).toISOString(),
+      adminId: admin.id,
+      action,
+      worldId,
+      before: before ?? null,
+      after: after ?? null,
+    });
+  }
+
+  private locked(world: LocalWorld): boolean {
+    return world.lockedBy !== null && (world.lockExpiresAt ?? 0) > this.now();
   }
 
   private newWorld(seed: number, biome: Biome, settings: Settings): LocalWorld {
@@ -483,7 +590,7 @@ export class LocalBackend implements Backend {
   }
 
   private worldOf(db: LocalDb, worldId: string): LocalWorld {
-    const world = db.worlds.find((w) => w.id === worldId);
+    const world = db.worlds.find((w) => w.id === worldId && !w.removedAt);
     if (!world) throw new Error('No such world');
     return world;
   }

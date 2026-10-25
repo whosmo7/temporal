@@ -28,6 +28,7 @@ same PR as any change.
 | `water` | Water | a `sown` field tile; takes a pour from the can (decision 027) |
 | `fillCan` | Fill the can (an interaction, not on the hotbar) | `well`, `reservoir`, or no plot for a pond or the sea edge |
 | `eat` | Cook and eat: one food from the store (decision 029; at the oven, not on the hotbar) | no plot |
+| `take` | Keep some for yourself: one food leaves the store for the player's score (decision 039; at the oven, not on the hotbar) | no plot |
 
 ## Plot kinds and plot IDs
 
@@ -101,7 +102,8 @@ World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground 
 | `rule` | `rule` | one of the rules below |
 
 Rules: `foodRot`, `waterStagnate`, `wear`, `upkeep`, `regrow`, `weakened`, `income`, `newTurn`
-(stamina refilled at the start of a generation), `hunger` (the drop at the start of a generation), `wither` (a sown tile nobody watered).
+(stamina refilled at the start of a generation), `hunger` (the drop at the start of a generation), `wither` (a sown tile nobody watered), `overnight` (a crop growing on after the day ends), `assessed` (a generation's score
+locked at its end, decision 039; its transition targets `{ world: 'score' }`).
 
 ## Events (`SeededEvent.kind`)
 

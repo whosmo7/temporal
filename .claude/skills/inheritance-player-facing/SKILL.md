@@ -42,7 +42,9 @@ The tone is quiet, plain and observational, like a field notebook or a parish re
 - **No score language:** no "win", "lose", "points", "achievement", "level up". The land level is shown by its
   **name** ("The land is Green"), never as "Level 3", and it's never announced as a reward. **One exception**
   ([037](../../../docs/decisions/037-world-score-and-leaderboard.md)): a *finished* world's score ("Score 12") on its
-  gallery card, the gallery's sort and the replay's ending card. Never during play.
+  gallery card, the gallery's sort and the replay's ending card; and each player's locked score
+  ([039](../../../docs/decisions/039-competitive-scoring.md)) on the replay's ending card and the signed-in Scores page, under
+  plain labels. Never during play.
 - **Address the player as "you", in the present tense,** briefly. One line where one line will do.
 - **Name things the way a farmer would**: field, orchard, reservoir, well, store. Never system terms
   like "effect", "transition", "turn engine" or "stamina pool". "Stamina" and the ⚡ icon are fine.

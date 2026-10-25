@@ -5,6 +5,7 @@ import { asDrawing, StrokeRenderer } from '../journal';
 import { Button, ButtonLink, Panel } from '../kit';
 import { tallyHistory, worldScore, type PlotId } from '../../engine';
 import { ReplayWorld } from '../replay';
+import { standings } from '../replay/replayData';
 import { explainGeneration, signed } from '../replay/causeSentences';
 import { DUSK_LIGHT, IslandScene } from '../shell/IslandScene';
 import { PlotPopover } from './replay/PlotPopover';
@@ -257,6 +258,8 @@ function EndingCard({
   const legacy = useMemo(() => legacyOf(replay, nameOf), [replay, nameOf]);
   // The world's score (decision 037), only here and in the gallery, never during play.
   const score = useMemo(() => worldScore(tallyHistory(replay.actions, replay.transitions)), [replay]);
+  // Each player's locked score (decision 039).
+  const ranked = useMemo(() => standings(replay), [replay]);
   return (
     <div className="replay replay--card replay--end">
       <div className="replay__sky" aria-hidden />
@@ -282,6 +285,38 @@ function EndingCard({
           </ul>
         </Panel>
       )}
+      {ranked.length > 0 && (
+        <Panel title="What each one left with" className="replay__standings">
+          <table className="score-table">
+            <thead>
+              <tr>
+                <th scope="col" aria-label="Place" />
+                <th scope="col">Who</th>
+                <th scope="col">Grown and gathered</th>
+                <th scope="col">Kept</th>
+                <th scope="col">Cost of keeping</th>
+                <th scope="col">The world they left</th>
+                <th scope="col">In all</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ranked.map((s) => (
+                <tr key={s.turn}>
+                  <td className="score-table__place">{s.place}</td>
+                  <td className="score-table__name">
+                    {s.name} <span className="score-table__when">Gen {s.turn}</span>
+                  </td>
+                  <td>{fmt(s.productive)}</td>
+                  <td>{fmt(s.extraction)}</td>
+                  <td>{s.corruption > 0 ? `−${fmt(s.corruption)}` : fmt(0)}</td>
+                  <td>{fmt(s.exitBonus)}</td>
+                  <td className="score-table__total">{fmt(s.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Panel>
+      )}
       <div className="replay__actions">
         <Button onClick={onAgain}>Watch again</Button>
         <ButtonLink to="/gallery" variant="primary" autoFocus>
@@ -290,4 +325,9 @@ function EndingCard({
       </div>
     </div>
   );
+}
+
+/** Locked scores carry one decimal; whole numbers show without it. */
+function fmt(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }

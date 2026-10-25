@@ -18,7 +18,7 @@
     "atlas": "tsx scripts/build-atlas.ts",
     "audio": "tsx scripts/build-audio.ts",
     "functions:bundle": "tsx scripts/bundle-engine.ts",
-    "functions:deploy": "npm run functions:bundle && supabase functions deploy commit-turn --use-api",
+    "functions:deploy": "npm run functions:bundle && supabase functions deploy commit-turn --use-api && supabase functions deploy seed-demo --use-api",
     "check:decisions": "tsx scripts/check-decisions.ts"
   },
   "dependencies": {

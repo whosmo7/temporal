@@ -699,6 +699,77 @@
   line-height: 1.4;
 }
 
+/* Scores (decision 039): the replay's ending card and the scores page share the table */
+.replay__standings {
+  width: min(100%, 720px);
+  text-align: left;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-table th {
+  font-weight: normal;
+  opacity: 0.75;
+  text-align: right;
+  padding: 0 calc(var(--px) * 2) calc(var(--px) * 2);
+}
+
+.score-table td {
+  text-align: right;
+  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+}
+
+.score-table th:nth-child(-n + 3),
+.score-table__place,
+.score-table__name {
+  text-align: left;
+}
+
+.score-table td.score-table__place,
+.score-table td.score-table__name {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.score-table__when {
+  opacity: 0.6;
+}
+
+.score-table__total {
+  font-weight: bold;
+}
+
+.score-table__you td {
+  color: var(--highlight);
+}
+
+.scores {
+  width: min(100%, 880px);
+  align-self: start;
+  display: grid;
+  gap: calc(var(--px) * 8);
+}
+
+.scores .gallery__title {
+  margin: 0;
+}
+
+.scores__note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.scores__panel p {
+  margin: 0 0 calc(var(--px) * 4);
+}
+
 /* Admin ------------------------------------------------------------------------------------------ */
 
 .admin {
@@ -787,4 +858,29 @@
   flex-wrap: wrap;
   gap: calc(var(--px) * 2);
   justify-content: flex-end;
+}
+
+/* Admin: demo world, player scores and the admin log (decisions 036, 039) */
+.admin__panel > .kit-button {
+  margin-top: calc(var(--px) * 4);
+  justify-self: start;
+}
+
+.admin__scroll {
+  margin-top: calc(var(--px) * 4);
+  overflow-x: auto;
+}
+
+.admin__log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--px) * 2);
+  font-size: var(--text-sm);
+}
+
+.admin__log time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }

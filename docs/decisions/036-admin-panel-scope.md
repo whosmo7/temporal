@@ -1,6 +1,6 @@
 # 036 — Admin panel: one shared admin account, worlds in progress, delete that keeps history, demo button, action log
 
-**Status:** decided 2026-10-25 by the user (A) · **Changes:** `08` › Admin panel, `07` › Server operations, `10` › Seeding ·
+**Status:** decided 2026-10-25 by the user (A); built 2026-10-25 on `experiment/sandbox` · **Changes:** `08` › Admin panel, `07` › Server operations, `10` › Seeding ·
 **Builds on:** [020](020-claim-and-lock-rules.md), [034](034-weighted-claim-no-back-to-back.md), [035](035-home-releases-the-world.md)
 
 ## Context
@@ -55,3 +55,17 @@ and a world can be ended early with no record of who did it.
   account". Share the admin password only with whoever runs the demo.
 - With one shared account the log can't tell people apart, only that "admin" did it. That's accepted for a weekend
   project.
+
+## As built
+
+- Migration `20261025160000_admin_scope.sql`: `worlds.removed_at` / `removed_by`, the append-only `admin_actions` table
+  (a trigger refuses updates and deletes, even from the service role), `log_admin`, `admin_remove_world`,
+  `admin_recent_actions`, a log row from every `admin_*` RPC, and the removed-world filter in `claim_world`,
+  `admin_force_assign`, `admin_list_worlds` (now open worlds only), `list_completed_worlds` and `get_replay`.
+- Edge Function `seed-demo`. It makes missing founder accounts with a random password. It refuses if the judge account
+  doesn't exist yet, since someone has to sign in as it. The Edge bundle's entry is now `src/api/edge.ts` (`runTurn` plus
+  the demo world), and `npm run functions:deploy` deploys both functions.
+- `LocalBackend.createDemoWorld` plays the founders by switching its own session, then hands it back to the admin. It
+  writes one log row, as the server does.
+- The panel also shows **Player scores** from finished worlds ([039](039-competitive-scoring.md)).
+
