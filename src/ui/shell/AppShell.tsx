@@ -22,9 +22,14 @@ export function AppShell() {
       <SkyBackdrop />
       <header className="shell__header">
         {!isLanding && (
-          <Link to="/" className="shell__wordmark">
-            <Logo />
-          </Link>
+          <div className="shell__home">
+            <ButtonLink to="/" icon="left" variant="quiet" size="sm">
+              Home
+            </ButtonLink>
+            <Link to="/" className="shell__wordmark">
+              <Logo />
+            </Link>
+          </div>
         )}
         <div className="shell__controls">
           {user && (

@@ -73,7 +73,14 @@ export function TutorialScreen() {
 
   return (
     <>
-      <Game map={map} start={start} author="You" save={save} endActions={endActions} />
+      <Game
+        map={map}
+        start={start}
+        author="You"
+        save={save}
+        endActions={endActions}
+        onLeave={() => navigate('/')}
+      />
       {!journalOpen && !over && (
         <div className="tutorial">
           <Panel
