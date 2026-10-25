@@ -13,6 +13,11 @@ model, and press **Run simulation**. It runs on the live site's `llm-simulate` E
 generation as it goes. **Download trace** saves the JSONL described below. Nothing is saved on the server
 ([decision 040](decisions/040-simulated-players-from-the-admin-panel.md)).
 
+**Watch it** opens the finished run in the replay viewer (`#/admin/simulation`, admins only): each generation's world,
+the actions, the causes and the journal pages, labelled as simulated. **Watch a trace file** does the same for a
+downloaded trace or one from `npm run simulate:llm` in `.sim/`. The engine rebuilds the run from its seed and action
+log, in the browser only. Nothing is uploaded, and a refresh clears it.
+
 The rest of this page is the command-line tool, for longer runs or runs without the live site.
 
 ## Set up the key

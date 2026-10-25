@@ -1,8 +1,10 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { backend, type SimJournalPage, type SimulationStep, type WorldState } from '../../../api';
 import type { Biome } from '../../../engine';
 import { Button, Panel, TextInput } from '../../kit';
 import { SIM_PERSONAS } from './simPersonas';
+import { replayOfSim, setWatching, simRunFromTrace, type SimRun } from './simReplay';
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 
 interface RunInfo {
@@ -32,6 +34,41 @@ export function SimulatedPlayers() {
   const [status, setStatus] = useState<{ error: boolean; text: string } | null>(null);
   const [running, setRunning] = useState(false);
   const stop = useRef(false);
+  const navigate = useNavigate();
+
+  /** Rebuilds the run in the replay viewer and opens it. */
+  const watch = (sim: SimRun) => {
+    try {
+      setWatching(replayOfSim(sim));
+      navigate('/admin/simulation');
+    } catch (err) {
+      setStatus({ error: true, text: `Couldn't rebuild that run: ${err instanceof Error ? err.message : 'unknown error'}. It may come from an older version of the game.` });
+    }
+  };
+
+  const watchRun = () => {
+    if (!run) return;
+    watch({
+      seed: run.seed,
+      biome: run.biome,
+      gens: run.gens,
+      log: steps.flatMap((s) => s.log),
+      played: steps.length,
+      personas: steps.map((s) => s.persona.id),
+      pages: steps.flatMap((s) => (s.journalPage ? [{ generation: s.result.generation, text: s.journalPage.text }] : [])),
+    });
+  };
+
+  const watchFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      watch(simRunFromTrace(await file.text()));
+    } catch (err) {
+      setStatus({ error: true, text: err instanceof Error ? err.message : "Couldn't read that file" });
+    }
+  };
 
   const start = async (e: FormEvent) => {
     e.preventDefault();
@@ -157,9 +194,20 @@ export function SimulatedPlayers() {
             </Button>
           )}
           {!running && steps.length > 0 && (
-            <Button type="button" onClick={download}>
-              Download trace
-            </Button>
+            <>
+              <Button type="button" variant="primary" onClick={watchRun}>
+                Watch it
+              </Button>
+              <Button type="button" onClick={download}>
+                Download trace
+              </Button>
+            </>
+          )}
+          {!running && (
+            <label className="kit-button admin__file">
+              Watch a trace file
+              <input type="file" accept=".jsonl,.json,application/x-ndjson" onChange={(e) => void watchFile(e)} />
+            </label>
           )}
         </div>
       </form>

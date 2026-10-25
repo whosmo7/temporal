@@ -7,6 +7,7 @@ import { applyAction, beginTurn, createWorld, replay, visibleView, type Biome } 
 import { candidates, newMemory, observe } from '../llm/observe';
 import { PERSONAS, personasFor } from '../llm/personas';
 import { SIM_PERSONAS } from '../../src/ui/screens/admin/simPersonas';
+import { replayOfSim, simRunFromTrace } from '../../src/ui/screens/admin/simReplay';
 import { DEFAULT_LIMITS, playGeneration, runLlmGame, startingState, worldOptions } from '../llm/play';
 import { choicePrompt, journalPrompt } from '../llm/prompt';
 import { report } from '../llm/report';
@@ -197,3 +198,34 @@ describe('LLM simulator full runs', () => {
     });
   }
 });
+
+describe('watching a simulated run in the replay viewer', () => {
+  it('a trace file rebuilds into the same world, with each player and their page', async () => {
+    const events: Record<string, unknown>[] = [];
+    const opts = { ...base, gens: 3 };
+    const run = await runLlmGame(new FakeDecisionMaker(sensible, (r) => `Page from ${r.you}.`), { ...opts, trace: (e) => events.push(e) });
+    // The same lines the CLI writes: the run header, every event, then the final line.
+    const lines = [
+      { type: 'run', simulated: true, seed: opts.seed, biome: opts.biome, gens: opts.gens, personas: opts.personas.slice(0, 3).map((p, i) => ({ generation: i + 1, id: p.id })) },
+      ...events,
+      { type: 'final', log: run.log, finalState: run.finalState },
+    ];
+    const sim = simRunFromTrace(lines.map((l) => JSON.stringify(l)).join('\n'));
+    expect(sim).toMatchObject({ seed: opts.seed, biome: opts.biome, gens: 3, played: 3 });
+
+    const watched = replayOfSim(sim);
+    expect(watched.snapshots).toHaveLength(3);
+    expect(watched.snapshots.at(-1)).toEqual(run.finalState);
+    expect(watched.actions).toHaveLength(run.log.length);
+    expect(watched.journal.map((p) => p.authorUsername)).toEqual(['Player 1 (pragmatic)', 'Player 2 (cautious)', 'Player 3 (builder)']);
+    expect(watched.journal[1]!.text).toBe('Page from Player 2.');
+    expect(watched.name).toMatch(/^Simulated · /);
+  });
+
+  it('an interrupted or foreign file says why it can’t be watched', () => {
+    expect(() => simRunFromTrace('{"type":"run","simulated":true,"seed":1,"biome":"forest","gens":2}')).toThrow(/interrupted/);
+    expect(() => simRunFromTrace('{"type":"final","log":[]}')).toThrow(/isn't a simulator trace/);
+    expect(() => simRunFromTrace('not json')).toThrow(/isn't JSON/);
+  });
+});
+
