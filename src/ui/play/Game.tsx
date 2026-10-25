@@ -4,7 +4,7 @@ import { playMusic, playSfx, stopMusic, type SfxName } from '../../audio/sound';
 import type { ActionEntry, EndTurnResult, Transition, VisibleWorld, WorldState } from '../../engine';
 import { gameHour, isNight } from '../../render/daylight';
 import { PixiStage } from '../../render/PixiStage';
-import { founderLook, lookIds, type WorldLook, type WorldView } from '../../render/world-view';
+import { founderLook, lookOf, type WorldLook, type WorldView } from '../../render/world-view';
 import { isTimeUp, useGameStore, type ActionRequest } from '../../store/game';
 import type { Biome, TileMap } from '../../worldgen';
 import { plotOptions, waterEdgeOptions, type ActionOption } from '../hud/actionOptions';
@@ -88,7 +88,7 @@ export function Game({
   const look = useMemo(() => {
     if (previewLook) return previewLook;
     const visible = useGameStore.getState().view;
-    return visible ? toLook(map, visible) : founderLook(map);
+    return visible ? lookOf(map, visible) : founderLook(map);
     // lookKey stands in for the parts of the view the look depends on.
   }, [map, previewLook, lookKey]);
 
@@ -302,19 +302,6 @@ function lookSignature(v: VisibleWorld | null): string {
   if (!v) return '';
   const plots = Object.values(v.plots).map((p) => `${p.id}:${p.stage ?? ''}`).join(',');
   return `${plots}|${v.store}|${+v.weakened}${+v.drought}${+v.hungry}`;
-}
-
-function toLook(map: TileMap, v: VisibleWorld): WorldLook {
-  const base = founderLook(map);
-  return {
-    plots: Object.fromEntries(
-      map.plots.flatMap((p) => lookIds(p).map((id) => [id, v.plots[id]?.stage ?? base.plots[id]!])),
-    ),
-    store: v.store,
-    weakened: v.weakened,
-    drought: v.drought,
-    hungry: v.hungry,
-  };
 }
 
 function FpsReadout({ view }: { view: WorldView }) {

@@ -321,6 +321,7 @@ export class LocalBackend implements Backend {
       name: worldName(world.seed, world.biome),
       seed: world.seed,
       biome: world.biome,
+      preset: world.preset,
       snapshots: turns.flatMap((t) => (t.snapshot ? [t.snapshot] : [])),
       actions: turns.flatMap((t) => t.actions),
       transitions: turns.flatMap((t) => t.transitions),

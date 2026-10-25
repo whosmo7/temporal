@@ -77,6 +77,8 @@ export interface ReplayRow {
   world_id: string;
   seed: number;
   biome: Biome;
+  /** Not returned by get_replay yet; the replay falls back to the default preset. */
+  preset?: PresetName;
   snapshots: WorldState[];
   actions: ActionRow[];
   transitions: TransitionRow[];
@@ -177,6 +179,7 @@ export function toReplay(row: ReplayRow): Replay {
     name: worldName(row.seed, row.biome),
     seed: row.seed,
     biome: row.biome,
+    ...(row.preset ? { preset: row.preset } : {}),
     snapshots: row.snapshots,
     actions: row.actions.map(toActionEntry),
     transitions: row.transitions.map(toTransition),

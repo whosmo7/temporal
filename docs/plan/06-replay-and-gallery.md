@@ -83,12 +83,12 @@ Names come from the journal page author of each generation, as in `causeSentence
 - [x] **[C]** `explain()` output → human sentences (templating with actor names + generations) *(`explainGeneration(turn, { actions, transitions, nameOf, biome })` in `src/ui/replay/causeSentences.ts` gives per-resource lines that add up to the net, each flagged `earlier` when it credits an earlier generation; `sentence()` formats one. Wording: `docs/content/replay-causes.md`. Names come from the journal page author of each generation.)*
 **Replay viewer: B (the world and its data)**
 
-- [ ] **[B]** Stub the three exports above with their final types, so C can start (do first)
-- [ ] **[B]** `ReplayWorld`: a read-only `createWorldView` for a snapshot (reuse `04` layers; no avatar, no input, no clock, no music), the look from `visibleView(snapshot.state)`, the graveyard's stones up to that generation, and the camera framing the whole map
-- [ ] **[B]** `changedPlots`: diff each tile and plot's visible stage against the previous generation (the founder look for gen 1), with tests; the changed ones glow in `ReplayWorld`
-- [ ] **[B]** `plotHistory`, from the snapshots and the action log, with tests; clicking a tile or plot in `ReplayWorld` calls `onPlotClick` with its id and screen position
+- [x] **[B]** Stub the three exports above with their final types, so C can start (do first) *(built for real rather than stubbed: `import { ReplayWorld, changedPlots, plotHistory } from '../replay'`. Also exported: `viewAt`, `playerOf`, `stonesAt`, `replayMap`. Bench: `#/dev/replay` in dev, a scripted three-generation world, or `?world=<id>` for a finished one.)*
+- [x] **[B]** `ReplayWorld`: a read-only `createWorldView` for a snapshot (reuse `04` layers; no avatar, no input, no clock, no music), the look from `visibleView(snapshot.state)`, the graveyard's stones up to that generation, and the camera framing the whole map *(`createWorldView(..., { onPlotClick })` replay mode: no player, keyboard, clock or music; midday light with the weakened and drought tints; the whole map at the largest whole-pixel zoom that fits. `Replay` gained an optional `preset` (LocalBackend fills it; `get_replay` doesn't return it yet, so it falls back to `default`, which every claimed world uses).)*
+- [x] **[B]** `changedPlots`: diff each tile and plot's visible stage against the previous generation (the founder look for gen 1), with tests; the changed ones glow in `ReplayWorld` *(a soft pulsing fill and outline; compares visible stages, so a tile sown and harvested the same day isn't counted)*
+- [x] **[B]** `plotHistory`, from the snapshots and the action log, with tests; clicking a tile or plot in `ReplayWorld` calls `onPlotClick` with its id and screen position *(position in CSS px from `ReplayWorld`'s top-left; hurrying a plot's effect counts as acting on it; `actor` is that generation's page author)*
 - [ ] **[B]** Health and level per generation, read from the snapshots (once [023](../decisions/023-world-health-and-level.md) is in the engine), exported for C's panel
-- [ ] **[B]** Check `replay()` rebuilds the stored snapshots for a played world (the Data note above), with a test
+- [x] **[B]** Check `replay()` rebuilds the stored snapshots for a played world (the Data note above), with a test *(LocalBackend, two generations: `src/ui/replay/__tests__/replayData.test.ts`)*
 
 **Replay viewer: C (the screen around it)**
 
