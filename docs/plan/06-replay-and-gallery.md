@@ -55,14 +55,49 @@ For each generation g = 1..N:
 - Prefer **stored per-generation snapshots** (from `commit-turn`, see `07`) for quick loading.
 - Fallback / verification: `engine.replay(seed, opts, log)` from the action log. The two should match, and a Vitest test checks this.
 
+## Replay viewer: who builds what
+
+The generation view is split between **B** (the world and its data) and **C** (the screen around it), by folder so the
+two can work at once: B in `src/render/` and `src/ui/replay/`, C in `src/ui/screens/ReplayScreen.tsx`, `src/ui/kit/`
+and `docs/content/`. C's title card, ending card and arrow-key stepping are already built.
+
+**The meeting point**, which B exports from `src/ui/replay/` first, as stubs if need be, so C builds against it straight away:
+
+```ts
+// A read-only world for one generation: the snapshot's map at its end-of-generation look, the
+// stones so far, the changed tiles glowing. No player, no input, no clock. Fills its parent.
+<ReplayWorld replay={replay} turn={n} onPlotClick={(plotId, at: { x: number; y: number }) => …} />
+
+// Field and orchard tiles and whole plots whose stage changed in generation `turn`.
+changedPlots(replay: Replay, turn: number): PlotId[]
+
+// One plot's or tile's story, generation by generation: its stage at the end, and who acted on it.
+plotHistory(replay: Replay, plotId: PlotId): { turn: number; stage: string; acts: { actor: string; type: ActionType }[] }[]
+```
+
+Names come from the journal page author of each generation, as in `causeSentences.ts`. Tiles are ids like
+`field-1:2,0` ([019](../decisions/019-per-tile-actions-take-time.md)).
+
 ## Tasks
 
 - [x] **[C]** `explain()` output → human sentences (templating with actor names + generations) *(`explainGeneration(turn, { actions, transitions, nameOf, biome })` in `src/ui/replay/causeSentences.ts` gives per-resource lines that add up to the net, each flagged `earlier` when it credits an earlier generation; `sentence()` formats one. Wording: `docs/content/replay-causes.md`. Names come from the journal page author of each generation.)*
-- [ ] **[B]** Replay screen layout: snapshot panel + journal panel + causes panel + timeline
-- [ ] **[B]** Read-only Pixi render of a snapshot (reuse `04` layers, no avatar, no input)
-- [ ] **[B]** Highlight changed plots per generation (diff vs the previous snapshot)
-- [ ] **[B]** Plot history popover
-- [ ] **[B]** Generation stepping (buttons + arrow keys) + optional auto-play
+**Replay viewer: B (the world and its data)**
+
+- [ ] **[B]** Stub the three exports above with their final types, so C can start (do first)
+- [ ] **[B]** `ReplayWorld`: a read-only `createWorldView` for a snapshot (reuse `04` layers; no avatar, no input, no clock, no music), the look from `visibleView(snapshot.state)`, the graveyard's stones up to that generation, and the camera framing the whole map
+- [ ] **[B]** `changedPlots`: diff each tile and plot's visible stage against the previous generation (the founder look for gen 1), with tests; the changed ones glow in `ReplayWorld`
+- [ ] **[B]** `plotHistory`, from the snapshots and the action log, with tests; clicking a tile or plot in `ReplayWorld` calls `onPlotClick` with its id and screen position
+- [ ] **[B]** Health and level per generation, read from the snapshots (once [023](../decisions/023-world-health-and-level.md) is in the engine), exported for C's panel
+- [ ] **[B]** Check `replay()` rebuilds the stored snapshots for a played world (the Data note above), with a test
+
+**Replay viewer: C (the screen around it)**
+
+- [ ] **[C]** Generation layout in `ReplayScreen`: `ReplayWorld` on the left; the journal page and "What actually changed" on the right; the timeline underneath. It replaces the dusk-sky stand-in
+- [ ] **[C]** Timeline: one dot per generation with its player's name, the current one marked, click to jump; previous/next buttons beside it (the arrow keys already step)
+- [ ] **[C]** Auto-play: play/pause and a pace, stepping on its own, stopping at the ending card
+- [ ] **[C]** Plot history popover: opened by `onPlotClick`, anchored at the click, listing `plotHistory` generation by generation ("Gen 1 · AL sowed it · Sown"); Esc and clicking away close it
+- [ ] **[C]** Causes panel: make `earlier` lines (the reveal, "← planted by AL in Gen 1") stand out; add the health and level line once B exports it
+- [ ] **[C]** Copy for the popover, timeline and health lines in `docs/content/replay-causes.md`
 - [x] **[C]** Title card + ending card *(`ReplayScreen`: title card ("An island · 6 generations", "Everyone who lived here is gone.", Begin) → each generation → ending card (the dusk island with a stone per generation, "6 generations lived here.", the names in order, Watch again / Gallery). Arrow keys step through. Worlds have no names yet, so the title uses the biome. Until B's layout lands, each generation shows the journal page and the cause lines on a dusk sky.)*
 - [x] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see `docs/art/art-direction.md`) *(`IslandThumb` in `src/ui/gallery/` draws the world's map from the world atlas on a 2D canvas: the area inside the boundary is the island's top, plots at their stage in the last snapshot, a stone per player, a cliff underneath. `CompletedWorld` gained optional `preset` and `finalState` for it (`07`); without them it draws the founder stages on the default preset.)*
 - [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; each card shows its world as a floating island. `ReplayScreen` loads `getReplay`; see the title and ending card task.)*

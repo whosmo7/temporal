@@ -185,12 +185,8 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 - [ ] **[C]** `05` Copywriting pass with Game design (tone: quiet, reflective, no moralising)
 - [ ] **[C]** `08` Tutorial scene (now: plant, water, fill the can, harvest)
 - [ ] **[B]** `08` Error states: no network (claim and commit failed are done)
-- [ ] **[B]** `06` Replay screen layout: snapshot panel + journal panel + causes panel + timeline
-- [ ] **[B]** `06` Read-only Pixi render of a snapshot
-- [ ] **[B]** `06` Highlight changed plots per generation (now per tile)
-- [ ] **[B]** `06` Plot history popover
-- [ ] **[B]** `06` Generation stepping (buttons + arrow keys) + optional auto-play
-- [ ] **[B]** `06` Show health and level per generation in the replay
+- [ ] **[B]** `06` Replay viewer, the world and its data: `ReplayWorld` (read-only snapshot render), `changedPlots` (per tile), `plotHistory` and plot clicks, health and level per generation (split in `06` › Replay viewer: who builds what)
+- [ ] **[C]** `06` Replay viewer, the screen around it: layout, timeline and stepping, auto-play, plot history popover, causes panel, copy (same split)
 - [ ] **[C]** `10` Decide the new demo moment (the planted orchard is gone; see Open questions)
 - [ ] **[C]** `10` Pick the demo seed, generation count and turn length
 - [ ] **[C]** `10` Write the founder journal pages

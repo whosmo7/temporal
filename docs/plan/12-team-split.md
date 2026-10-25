@@ -40,6 +40,7 @@ are rough and meant only for balancing the split, not for scheduling.
 | A → C | `scripts/simulate.ts` | Balance tuning and the 3 strategy fixtures |
 | A → C | `explain()` output shape | Cause sentences in the replay |
 | C → B | Journal modal + stroke renderer components | End-of-turn flow and replay journal panel |
+| B → C | `ReplayWorld`, `changedPlots`, `plotHistory` (`06` › Replay viewer: who builds what) | The replay screen's layout, timeline and plot history popover |
 | B → C | Read-only snapshot renderer | Gallery thumbnails, landing background |
 
 Rehearsing the demo (`10`) is listed under C, but all three of you should be there.
