@@ -11,6 +11,12 @@ import { useHeartbeat } from './heartbeat';
 import { Inheriting } from './Inheriting';
 import { clearUnsaved, keepUnsaved, loadUnsaved, turnStart } from './turnStart';
 
+/** The world just played, to claim back for its next generation (testing). */
+interface Again {
+  worldId: string;
+  turn: number;
+}
+
 type Phase =
   | { kind: 'loading' }
   /** A page sealed last time never reached the backend. */
@@ -34,8 +40,12 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
 
   // One claim at a time (StrictMode runs the first effect twice; a double resend would fail).
   const running = useRef<Promise<void> | null>(null);
-  const claim = useCallback(() => (running.current ??= next().finally(() => (running.current = null))), []);
-  async function next() {
+  const claim = useCallback(
+    (again?: Again) => (running.current ??= next(again).finally(() => (running.current = null))),
+    [],
+  );
+  /** `again`: claim this world back for its next generation, and check that's what came. */
+  async function next(again?: Again) {
     setPhase({ kind: 'loading' });
     saving.current = 'idle';
     setSaved(false);
@@ -49,11 +59,18 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
           return setPhase({ kind: 'unsaved', input: unsaved, error: message(e) });
         }
       }
+      // TODO(B): testing only, remove before the demo. The admin API hands the world back:
+      // claim_world otherwise steers a player away from the world they just played.
+      if (again) await backend.forceAssign(again.worldId, username);
       const claimed = await backend.claimWorld();
+      if (again && (claimed.worldId !== again.worldId || claimed.turn !== again.turn + 1)) {
+        return setPhase({ kind: 'claimFailed', error: `Got generation ${claimed.turn} of another world back, not the one you played.` });
+      }
       const map = generateMap(claimed.seed, claimed.biome, claimed.preset);
       setPhase({ kind: 'inheriting', claim: claimed, map, start: turnStart(claimed) });
     } catch (e) {
-      setPhase({ kind: 'claimFailed', error: message(e) });
+      const error = message(e);
+      setPhase({ kind: 'claimFailed', error: again && error === 'Not allowed' ? 'Only an admin can play the same world again.' : error });
     }
   }
   useEffect(() => void claim(), [claim]);
@@ -89,12 +106,17 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
     clearUnsaved(); // it can never be committed now
     setPhase({ kind: 'voided' });
   });
+  const played = phase.kind === 'playing' ? phase.claim : null;
   const endActions = useMemo(
     () => [
+      // Testing only (see `next`): the same world again, as its next generation, while it has one.
+      ...(played && played.turn < played.generationCount
+        ? [{ label: 'Next generation here (test)', onClick: () => void claim({ worldId: played.worldId, turn: played.turn }) }]
+        : []),
       { label: 'Play another', onClick: () => void claim() },
       { label: 'Home', onClick: () => navigate('/') },
     ],
-    [claim, navigate],
+    [played, claim, navigate],
   );
 
   if (phase.kind === 'playing') {
