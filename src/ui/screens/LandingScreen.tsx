@@ -11,7 +11,7 @@ import { Logo } from '../shell/Logo';
  * generation, one premise line, then Play and Gallery, and Scores once signed in (decision 039).
  * Enter is Play.
  */
-export function LandingScreen() {
+export function LandingScreen({ showStory = true }: { showStory?: boolean }) {
   const light = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const user = useSession((s) => s.user);
@@ -19,7 +19,10 @@ export function LandingScreen() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Only from the page itself, so Enter on a focused button or link keeps its own meaning.
-      if (e.key === 'Enter' && (e.target === document.body || e.target === document.documentElement)) {
+      if (
+        e.key === 'Enter' &&
+        (e.target === document.body || e.target === document.documentElement)
+      ) {
         navigate('/play');
       }
     };
@@ -47,10 +50,16 @@ export function LandingScreen() {
         <ButtonLink to="/tutorial" variant="quiet">
           How to play
         </ButtonLink>
+        {showStory && (
+          <ButtonLink to="/presentation" variant="quiet">
+            Our story
+          </ButtonLink>
+        )}
       </div>
       {/* Kyrise's icons are CC BY 4.0, so the credit has to be visible in the game (ASSETS.md). */}
       <p className="landing__credits">
-        Icons by Kyrise (CC BY 4.0). Art, music and sound from Ninja Adventure by Pixel-Boy &amp; AAA (CC0).
+        Icons by Kyrise (CC BY 4.0). Art, music and sound from Ninja Adventure by Pixel-Boy &amp;
+        AAA (CC0).
       </p>
     </div>
   );
