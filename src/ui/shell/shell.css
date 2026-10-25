@@ -900,3 +900,40 @@
   flex-wrap: wrap;
   gap: calc(var(--px) * 3);
 }
+
+/* The file picker looks like a button; the input itself is hidden but stays keyboard-reachable. */
+.admin__file {
+  position: relative;
+  cursor: pointer;
+}
+
+.admin__file input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.admin__file:focus-within {
+  outline: var(--px) solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Watching a simulated run (decision 040) */
+.sim-watch {
+  display: grid;
+  gap: calc(var(--px) * 4);
+  width: 100%;
+}
+
+.sim-watch__note {
+  margin: 0;
+  justify-self: center;
+  padding: calc(var(--px) * 2) calc(var(--px) * 4);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 3);
+}

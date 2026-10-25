@@ -7,6 +7,7 @@ import { NotFoundScreen } from './screens/NotFoundScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
 import { ScoresScreen } from './screens/ScoresScreen';
+import { SimulationScreen } from './screens/admin/SimulationScreen';
 import { AppShell } from './shell/AppShell';
 import { TutorialScreen } from './tutorial/TutorialScreen';
 import { RequireAdmin } from './shell/RequireAdmin';
@@ -79,6 +80,15 @@ export const router = createHashRouter([
         element: (
           <RequireAdmin>
             <AdminScreen />
+          </RequireAdmin>
+        ),
+      },
+      {
+        // A simulated run in the replay viewer (decision 040)
+        path: 'admin/simulation',
+        element: (
+          <RequireAdmin>
+            <SimulationScreen />
           </RequireAdmin>
         ),
       },
