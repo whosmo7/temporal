@@ -58,6 +58,8 @@ export interface CompletedWorld {
   /** For the gallery thumbnail (06): the map preset, and the state after the last generation. */
   preset?: PresetName;
   finalState?: WorldState | null;
+  /** The world's score (decision 037), from its whole history; null if the backend didn't count it. */
+  score: number | null;
 }
 
 export interface Replay {

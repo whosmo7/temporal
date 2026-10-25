@@ -1,3 +1,4 @@
+import { tallyHistory, worldScore } from '../engine/score';
 import type { Biome } from '../worldgen/types';
 import type { PresetName } from '../worldgen/presets';
 import { worldName } from '../worldgen/names';
@@ -328,6 +329,12 @@ export class LocalBackend implements Backend {
         players: this.turnsOf(db, w.id).map((t) => this.usernameOf(db, t.playerId)),
         preset: w.preset,
         finalState: this.turnsOf(db, w.id).at(-1)?.snapshot ?? null,
+        score: worldScore(
+          tallyHistory(
+            this.turnsOf(db, w.id).flatMap((t) => t.actions),
+            this.turnsOf(db, w.id).flatMap((t) => t.transitions),
+          ),
+        ),
       }));
   }
 

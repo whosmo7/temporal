@@ -46,7 +46,7 @@ For each generation g = 1..N:
 ## Gallery
 
 - Grid of completed worlds: thumbnail (snapshot of the final gen), world name, biome, generation count, player names (from gravestones).
-- Sort: newest first. Filter by biome (stretch).
+- Sort: Most recent (default), Highest score, Lowest score; each card shows the world's score [037](../decisions/037-world-score-and-leaderboard.md). Filter by biome (stretch).
 - Click → replay.
 - "Your worlds" filter for the signed-in user (worlds they contributed to). This is optional, since repeat play and identity exist.
 

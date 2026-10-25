@@ -84,6 +84,15 @@ export const CONFIG = {
   stormWear: 1,
   stormChance: 0.5,
 
+  // World score (decision 037): what each counted thing adds, shown in the gallery and replay only
+  score: {
+    cropHarvested: 1, // a field tile harvested
+    treeHarvested: 3, // an orchard tree harvested
+    catch: 2, // a fish or a hunt
+    cropRotted: -2, // a field tile gone rotten
+    seedWithered: -1, // a sown seed that withered unwatered
+  },
+
   // Biomes: founder starter state
   biomes: {
     forest: { food: 12, water: 16, wildStock: 8, wildCap: 10, storm: false },

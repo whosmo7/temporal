@@ -315,6 +315,30 @@
   color: var(--ink);
 }
 
+/* Title on the left, the sort buttons on the right (decision 037). */
+.gallery__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--px) * 4);
+  margin: 0 0 calc(var(--px) * 8);
+}
+
+.gallery__head .gallery__title {
+  margin: 0;
+}
+
+.gallery__sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+}
+
+.gallery__score {
+  font-size: var(--text-md);
+}
+
 .gallery__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -437,6 +461,12 @@
 .replay__headline {
   font-size: var(--text-xl);
   font-weight: normal;
+}
+
+/* The world's score on the ending card (decision 037). */
+.replay__score {
+  margin: 0;
+  font-size: var(--text-lg);
 }
 
 .replay__actions {

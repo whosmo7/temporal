@@ -356,3 +356,28 @@ describe('backing out to Home (decision 035)', () => {
     expect((await b.claimWorld()).worldId).not.toBe(held.worldId);
   });
 });
+
+describe('world score in the gallery (decision 037)', () => {
+  it('a finished world is listed with its score, counted from its history', async () => {
+    const b = make();
+    await b.signUp('admin', 'pw');
+    await b.setSettings({ defaultGenerationCount: 1 });
+    await b.signUp('alma', 'pw');
+    rolls = [0.99, 0.1, 0.1];
+    const w = await b.claimWorld();
+    const hunt: ActionEntry = {
+      id: 'a-1',
+      worldId: w.worldId,
+      actorId: 'whoever',
+      type: 'fishHunt',
+      plotId: 'wild',
+      committedAt: { turn: 1, t: 10 },
+      dueAt: { turn: 1, t: 10 },
+      seq: 0,
+    };
+    await b.commitTurn({ worldId: w.worldId, actions: [hunt], journal: journal('') });
+    const [listed] = await b.listCompletedWorlds();
+    expect(listed?.worldId).toBe(w.worldId);
+    expect(listed?.score).toBe(2); // one catch
+  });
+});

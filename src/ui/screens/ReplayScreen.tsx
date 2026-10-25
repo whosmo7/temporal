@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { backend, type JournalPage, type Replay } from '../../api';
 import { asDrawing, StrokeRenderer } from '../journal';
 import { Button, ButtonLink, Panel } from '../kit';
-import type { PlotId } from '../../engine';
+import { tallyHistory, worldScore, type PlotId } from '../../engine';
 import { ReplayWorld } from '../replay';
 import { explainGeneration, signed } from '../replay/causeSentences';
 import { DUSK_LIGHT, IslandScene } from '../shell/IslandScene';
@@ -237,6 +237,8 @@ function EndingCard({
   const light = useRef<HTMLDivElement>(null);
   const turns = Array.from({ length: generations }, (_, i) => i + 1);
   const legacy = useMemo(() => legacyOf(replay, nameOf), [replay, nameOf]);
+  // The world's score (decision 037), only here and in the gallery, never during play.
+  const score = useMemo(() => worldScore(tallyHistory(replay.actions, replay.transitions)), [replay]);
   return (
     <div className="replay replay--card replay--end">
       <div className="replay__sky" aria-hidden />
@@ -245,6 +247,7 @@ function EndingCard({
       <h1 className="replay__headline">
         {generations} {generations === 1 ? 'generation' : 'generations'} lived here.
       </h1>
+      <p className="replay__score">Score {score}</p>
       <ol className="replay__names" aria-label="Who lived here">
         {turns.map((turn) => (
           <li key={turn}>
