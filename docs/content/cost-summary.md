@@ -35,7 +35,7 @@ Left in the store: 4🍎 8💧
 | Stamina | You spent {n}⚡. | always (even 0) |
 | Water | You used {spent}💧 and gathered {gained}💧. | always. Drop a half if it's 0 ("You used 6💧."); if both are 0: "You used no water." |
 | Food | You gathered {gained}🍎. | always ("You gathered nothing." if 0) |
-| Eating | You ate {n}🍎. | only if they used Harvest and eat |
+| Eating | You ate {n}🍎. | only if they ate at the oven ([029](../decisions/029-eat-at-the-oven.md)) |
 | Rotted | One tile of crops rotted in the ground. / {n} tiles of crops rotted in the ground. | only if crops were left in the ground at the end (`summary.cropsRotted`, one per field tile, [019](../decisions/019-per-tile-actions-take-time.md)) |
 | Per-action rows | `{label}  −{stamina}⚡  {±water}💧  {+food}🍎` | one row per action type used; group repeats as "×N" |
 | Upkeep met | For the night: {food}🍎 {water}💧 — enough. | upkeep met; the water part only when nights take water (none since [027](../decisions/027-watering-can-tilling-food-only-nights.md)) |
@@ -52,6 +52,7 @@ Row labels (cost-only, past tense, no outcomes):
 | `plantCrops` | Crops sown (×N = tiles sown) |
 | `water` | Crops watered (×N = tiles watered) |
 | `fillCan` | Can filled |
+| `eat` | Meal |
 | `harvest` | Harvest / Harvest, eaten |
 | `repairReservoir` | Reservoir wall |
 | `digWell` | Well |

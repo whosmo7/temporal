@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyAction, beginTurn, createWorld, tick, visibleView, type WorldState } from '../../../engine';
 import type { ActionRequest } from '../../../store/game';
-import { plotOptions, waterEdgeOptions } from '../actionOptions';
+import { ovenOptions, plotOptions, waterEdgeOptions } from '../actionOptions';
 
 const fresh = () => {
   const w = createWorld(7, { worldId: 'w', biome: 'forest' }).state;
@@ -28,13 +28,23 @@ describe('plot options', () => {
     expect(keys(s, 'wild', 'wild')).toEqual(['E Hunt']);
   });
 
-  it('sow, then water, then hurry on F while it grows, then harvest on E and eat on Q', () => {
+  it('sow, then water, then hurry on F while it grows, then harvest on E (eating is at the oven)', () => {
     const act = (state: WorldState, r: ActionRequest, t = 0) => applyAction(state, { ...r, id: `${r.type}-${t}`, actorId: 'AL', seq: 0 }, t).state;
     const sown = act(fresh(), { type: 'plantCrops', plotId: FIELD });
     expect(keys(sown, FIELD, 'field')).toEqual(['E Water (The can is empty)']);
     const watered = act(act(sown, { type: 'fillCan' }), { type: 'water', plotId: FIELD });
     expect(keys(watered, FIELD, 'field')).toEqual(['F Hurry this along']);
-    expect(keys(tick(watered, 200).state, FIELD, 'field', 200)).toEqual(["E Harvest", "Q Harvest and eat (You're not hungry)"]);
+    expect(keys(tick(watered, 200).state, FIELD, 'field', 200)).toEqual(['E Harvest']);
+  });
+
+  it('the oven offers a meal on E, free, and says when the store is empty', () => {
+    const s = fresh();
+    const oven = (state: WorldState) =>
+      ovenOptions(visibleView(state, 0), checker(state)).map((o) => `${o.key} ${o.label}${o.error ? ` (${o.error})` : ''}`);
+    expect(oven(s)).toEqual(['E Cook and eat']);
+    expect(ovenOptions(visibleView(s, 0), checker(s))[0]?.cost).toEqual({ stamina: 0, water: 0 });
+    s.resources.food = 0;
+    expect(oven(s)).toEqual(['E Cook and eat (The store is empty)']);
   });
 
   it('a full can is not offered a fill; a rotten tile offers clearing', () => {

@@ -9,7 +9,7 @@ import { gameHour, lightAt } from './daylight';
 import { createFx } from './fx';
 import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
 import { KeyboardInput } from './input';
-import { facingWater, interactTarget } from './interact';
+import { facedSpot, interactTarget } from './interact';
 import { stepWalker, type CollisionGrid, type Walker } from './movement';
 import { P, paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
@@ -472,7 +472,7 @@ export function createWorldView(
     store.setNearby(
       near,
       near === 'graveyard' && graveyard ? (nearestStone(graveyard, spots, walker)?.stone ?? null) : null,
-      !timeUp && facingWater(map, walker),
+      timeUp ? null : facedSpot(map, walker),
     );
 
     // Outline the tile an action would go to (or is going to), so you can see which one you face.

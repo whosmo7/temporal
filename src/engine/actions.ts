@@ -116,7 +116,7 @@ const harvest: Handler = (ctx) => {
     return 'Nothing to harvest here';
   }
 
-  // Harvest and eat is free, so it needs room to eat; otherwise it would be a free harvest (decision 016).
+  // Harvest and eat (016): only in logs saved before 029, which moved eating to the oven. Free, so it needs room to eat.
   if (input.eat && state.resources.hunger >= CONFIG.hungerMax) return "You're not hungry";
   const cost = input.eat ? CONFIG.harvestEatCost : CONFIG.harvestCost;
   const blocked = cannotAfford(state, cost);
@@ -201,6 +201,20 @@ const fillCan: Handler = (ctx) => {
   }
   if (state.resources.can >= CONFIG.canCapacity) return 'The can is full';
   setResource(state, rec, 'can', CONFIG.canCapacity, [cause]);
+  return at;
+};
+
+/**
+ * A meal at the oven (decision 029): takes `mealFood` from the store and refills hunger, up to
+ * full. Free, and allowed when full, where the food is simply eaten.
+ */
+const eat: Handler = (ctx) => {
+  const { state, rec, cause, at } = ctx;
+  if (state.resources.food < CONFIG.mealFood) return 'The store is empty';
+  setResource(state, rec, 'food', state.resources.food - CONFIG.mealFood, [cause]);
+  const hunger = Math.min(CONFIG.hungerMax, state.resources.hunger + CONFIG.mealFood * CONFIG.hungerPerFoodEaten);
+  if (hunger !== state.resources.hunger) setResource(state, rec, 'hunger', hunger, [cause]);
+  state.tally.foodEaten += CONFIG.mealFood;
   return at;
 };
 
@@ -337,6 +351,7 @@ const HANDLERS: Record<ActionInput['type'], Handler> = {
   fastTrack,
   water,
   fillCan,
+  eat,
 };
 
 function withoutShare(cause: Cause): Cause {

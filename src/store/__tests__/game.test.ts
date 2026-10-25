@@ -70,6 +70,18 @@ describe('play session store', () => {
     expect(store().check({ type: 'harvest', plotId: FIELD })).toBeNull();
   });
 
+  it('a meal at the oven takes half a second, then one food is gone', () => {
+    const food = store().view!.resources.food;
+    expect(CONFIG.actionSeconds.eat).toBe(0.5);
+    expect(store().act({ type: 'eat' }).error).toBeUndefined();
+    expect(store().busyUntil).toBe(0.5);
+    wait(0.3);
+    expect(store().view?.resources.food).toBe(food);
+    wait(0.3);
+    expect(store().view?.resources.food).toBe(food - 1);
+    expect(store().log).toEqual([expect.objectContaining({ type: 'eat', actorId: 'AL' })]);
+  });
+
   it('ends the turn in the engine and hands back the summary; unfinished work is dropped', () => {
     store().act({ type: 'plantCrops', plotId: FIELD });
     wait(SOW + 0.05);

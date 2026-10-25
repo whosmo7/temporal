@@ -86,7 +86,37 @@ describe('applyAction', () => {
     expect(game.state.plots[FIELD]?.stage).toBe('empty');
   });
 
-  it('harvest and eat is free and turns the fresh yield into hunger, up to full', () => {
+  it('a meal at the oven takes one food from the store and refills hunger, as the player', () => {
+    const game = newGame().begin();
+    game.state.resources.hunger = 50;
+    const food = game.state.resources.food;
+    const r = game.act('eat', { t: 10 });
+    expect(r.error).toBeUndefined();
+    expect(game.state.resources.food).toBe(food - CONFIG.mealFood);
+    expect(game.state.resources.hunger).toBe(50 + CONFIG.hungerPerFoodEaten);
+    expect(game.state.tally.foodEaten).toBe(CONFIG.mealFood);
+    for (const t of r.transitions) {
+      expect(t.causes).toEqual([expect.objectContaining({ kind: 'action', actorId: 'AL', committedTurn: 1 })]);
+    }
+  });
+
+  it('a meal is eaten even when full, and hunger stays at full', () => {
+    const game = newGame().begin();
+    const food = game.state.resources.food;
+    expect(game.state.resources.hunger).toBe(CONFIG.hungerMax);
+    expect(game.act('eat', { t: 0 }).error).toBeUndefined();
+    expect(game.state.resources.food).toBe(food - CONFIG.mealFood);
+    expect(game.state.resources.hunger).toBe(CONFIG.hungerMax);
+  });
+
+  it('there is no meal from an empty store', () => {
+    const game = newGame().begin();
+    game.state.resources.food = 0;
+    expect(game.act('eat', { t: 0 }).error).toBe('The store is empty');
+  });
+
+  // Nothing offers harvest-and-eat since decision 029; logs saved before then still re-run the same.
+  it('harvest and eat (old logs) is free and turns the fresh yield into hunger, up to full', () => {
     const game = newGame().begin();
     game.state.resources.hunger = 80;
     // A tree's yield is enough to overfill: plant one and hurry it to fruit.
@@ -104,7 +134,7 @@ describe('applyAction', () => {
     expect(hunger?.causes).toEqual([expect.objectContaining({ kind: 'action', actorId: 'AL' })]);
   });
 
-  it('harvest and eat is refused when the player is not hungry', () => {
+  it('harvest and eat (old logs) is refused when the player is not hungry', () => {
     const game = newGame().begin();
     sowAndWater(game, FIELD, 0);
     expect(game.act('harvest', { plotId: FIELD, t: 65, eat: true }).error).toBe("You're not hungry");

@@ -16,7 +16,6 @@ watering ([021](../decisions/021-per-tile-farming-and-watering.md)), seeds ([022
 | ID | Hotbar label | Interact prompt | Tooltip |
 |---|---|---|---|
 | `harvest` | Harvest | Harvest | Gather what's ripe into the store. |
-| `harvest` + `eat` | Harvest and eat (Q) | Harvest and eat (free, [016](../decisions/016-hunger.md)) | Eat what you gather now. What you can't eat goes to the store. |
 | `plantCrops` | Sow | Sow crops · 1 seed | A seed in the ground. It needs water before it will take. |
 | `water` (`13`) | Water | Water | Wet the soil around the seed. One pour from the can. |
 | ~~`plantOrchard`~~ | — | — | Removed in `13`: trees come up on their own as the land recovers. Kept until the engine drops it: Plant trees · Plant a tree · 1💧 · "A sapling. It takes its time." |
@@ -43,7 +42,7 @@ watering ([021](../decisions/021-per-tile-farming-and-watering.md)), seeds ([022
 For now the hotbar has **Water** on slot 3 and "Fill the can" is the prompt at a source ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
 The held-tool toolbar above (`src/ui/hud/Toolbar.tsx`) replaces slots 1–3 once B adds held-tool state.
 | Fill the can, at a source | — | Fill the can | — |
-| Oven ([025](../decisions/025-oven-cooks-stored-food.md)) | — | Cook and eat | Cook something from the store. |
+| Oven, `eat` ([025](../decisions/025-oven-cooks-stored-food.md), [029](../decisions/029-eat-at-the-oven.md)) | — | Cook and eat | Cook something from the store. |
 
 The can's pours show as small pips beside its icon, filled or empty; screen readers hear "Can, 2 of 3".
 
@@ -86,7 +85,6 @@ Say what's missing, in a few words.
 | Tend the cracked reservoir | It needs repairing first |
 | Tend something already tended this turn | Already seen to today |
 | Hurry with nothing pending | Nothing to hurry |
-| Harvest and eat when not hungry ([016](../decisions/016-hunger.md)) | You're not hungry |
 | Sow with no seeds left (`13`, once seeds exist) | No seeds left |
 | Sow on a rotten or withered tile ([027](../decisions/027-watering-can-tilling-food-only-nights.md)) | Clear it first |
 | Water with an empty can | The can is empty |
@@ -94,7 +92,6 @@ Say what's missing, in a few words.
 | Water what isn't sown | Nothing to water here |
 | Fill a full can | The can is full |
 | Fill where there's no water (an undug well) | There's no water here |
-| Cook and eat when not hungry (`13`, once the oven works) | You're not hungry |
 | Cook and eat with an empty store | The store is empty |
 
 ## HUD and other short lines
@@ -114,7 +111,7 @@ Things deliberately **not** written: no tooltip says what anything becomes or wh
 no line says how to raise the land's health or what the next level brings, nothing explains why a plot looks
 the way it does, and no event (drought, storm, good harvest) is ever named during play.
 
-## Tutorial (08, [030](../decisions/030-tutorial-first-play-skippable.md))
+## Tutorial (08, [031](../decisions/031-tutorial-first-play-skippable.md))
 
 One card at a time at the top of the screen, headed "{n} of 7", with Skip. Built in `src/ui/tutorial/steps.ts`.
 

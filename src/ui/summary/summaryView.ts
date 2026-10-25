@@ -160,6 +160,8 @@ function rowLabel(
       return 'Crops watered';
     case 'fillCan':
       return 'Can filled';
+    case 'eat':
+      return 'Meal';
     case 'fastTrack': {
       const effect = after.pending.find((e) => e.id === action.targetEffectId);
       const kind = (effect?.kind ?? action.targetEffectId?.split(':').pop()) as EffectKind | undefined;

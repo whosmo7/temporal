@@ -20,7 +20,7 @@ import { tutorialSeen } from '../tutorial/steps';
 export function PlayScreen() {
   const [params] = useSearchParams();
   const showFps = params.get('fps') === '1';
-  // A first Play goes through the tutorial, which can be skipped (decision 030).
+  // A first Play goes through the tutorial, which can be skipped (decision 031).
   if (!params.has('seed') && !tutorialSeen()) return <Navigate to="/tutorial?then=play" replace />;
   return params.has('seed') ? <Sandbox params={params} showFps={showFps} /> : <PlayFlow showFps={showFps} />;
 }

@@ -1,4 +1,4 @@
-# 029: Replay viewer: auto-play, timeline names and the legacy view
+# 030: Replay viewer: auto-play, timeline names and the legacy view
 
 **Status:** decided 2026-10-25 by the user · **Settles:** `06` open question 3
 

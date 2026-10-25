@@ -32,13 +32,14 @@ const HOTBAR_LABEL: Record<ActionType, string> = {
   fastTrack: 'Hurry',
   water: 'Water',
   fillCan: 'Fill',
+  eat: 'Eat',
 };
 
 /** The interact prompt's words (without the cost, which the prompt adds). */
-export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome, eat = false): string {
+export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome): string {
   switch (type) {
     case 'harvest':
-      return eat ? 'Harvest and eat' : 'Harvest';
+      return 'Harvest';
     case 'plantCrops':
       return 'Sow crops';
     case 'plantOrchard':
@@ -58,6 +59,8 @@ export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome, eat 
       return 'Water';
     case 'fillCan':
       return 'Fill the can';
+    case 'eat':
+      return FARM_TEXT.cook; // at the oven (decision 029)
   }
 }
 

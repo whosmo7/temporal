@@ -16,6 +16,7 @@ const TYPES: ActionInput['type'][] = [
   'fastTrack',
   'water',
   'fillCan',
+  'eat',
 ];
 // Fields and orchards are acted on per tile (decision 019).
 const PLOTS: PlotId[] = ['field-1:0,0', 'field-1:2,2', 'field-2:1,1', 'orchard-1:0,0', 'orchard-1:1,1', 'reservoir', 'well', 'wild'];

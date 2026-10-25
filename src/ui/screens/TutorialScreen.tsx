@@ -29,7 +29,7 @@ const MOVE_KEYS = new Set([
 
 /**
  * `#/tutorial` (08): the real game on a fixed world, one hint at a time. No account needed and
- * nothing is saved. Shown before a first Play (decision 030) and linked from the landing page;
+ * nothing is saved. Shown before a first Play (decision 031) and linked from the landing page;
  * Skip is always there. `?then=play` goes on to Play afterwards, otherwise home.
  */
 export function TutorialScreen() {

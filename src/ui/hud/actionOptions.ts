@@ -6,7 +6,7 @@ import type { ActionRequest } from '../../store/game';
 import { HOTBAR, promptLabel } from './copy';
 
 export interface ActionOption {
-  /** `E` for the default, `Q` to eat, `F` to hurry, else the hotbar number. */
+  /** `E` for the default, `F` to hurry, else the hotbar number. */
   key: string;
   request: ActionRequest;
   label: string;
@@ -26,13 +26,13 @@ export type Check = (request: ActionRequest) => string | null;
 export function plotOptions(view: VisibleWorld, plot: { id: PlotId; kind: PlotKind }, check: Check): ActionOption[] {
   const stage = view.plots[plot.id]?.stage;
   const pending = view.fastTrackable.find((e) => e.plotId === plot.id);
-  const rows: { type: ActionType; eat?: boolean }[] = [];
+  const rows: { type: ActionType }[] = [];
   // At a water source the can comes first while it has room (decision 027).
   const fill = view.resources.can < CONFIG.canCapacity ? [{ type: 'fillCan' as const }] : [];
   switch (plot.kind) {
     case 'field':
       // Sow, water, wait, harvest; a rotten or withered tile is tended (cleared and tilled) first.
-      if (stage === 'ripe') rows.push({ type: 'harvest' }, { type: 'harvest', eat: true });
+      if (stage === 'ripe') rows.push({ type: 'harvest' });
       else if (stage === 'empty') rows.push({ type: 'plantCrops' });
       else if (stage === 'sown') rows.push({ type: 'water' });
       else if (stage === 'rotten' || stage === 'withered') rows.push({ type: 'maintain' });
@@ -40,7 +40,7 @@ export function plotOptions(view: VisibleWorld, plot: { id: PlotId; kind: PlotKi
     case 'orchard':
       if (stage === 'empty' || stage === 'dead') rows.push({ type: 'plantOrchard' });
       else {
-        if (stage === 'fruiting' || stage === 'worn') rows.push({ type: 'harvest' }, { type: 'harvest', eat: true });
+        if (stage === 'fruiting' || stage === 'worn') rows.push({ type: 'harvest' });
         rows.push({ type: 'maintain' });
       }
       break;
@@ -61,13 +61,13 @@ export function plotOptions(view: VisibleWorld, plot: { id: PlotId; kind: PlotKi
       return [];
   }
 
-  const options = rows.map(({ type, eat }, i): ActionOption => {
-    const request: ActionRequest = eat ? { type, plotId: plot.id, eat } : { type, plotId: plot.id };
+  const options = rows.map(({ type }, i): ActionOption => {
+    const request: ActionRequest = { type, plotId: plot.id };
     return {
-      key: eat ? 'Q' : i === 0 ? 'E' : String(HOTBAR.indexOf(type) + 1),
+      key: i === 0 ? 'E' : String(HOTBAR.indexOf(type) + 1),
       request,
-      label: promptLabel(type, plot.kind, view.biome, eat),
-      cost: costOf(type, eat),
+      label: promptLabel(type, plot.kind, view.biome),
+      cost: costOf(type),
       error: check(request),
     };
   });
@@ -91,11 +91,17 @@ export function waterEdgeOptions(view: VisibleWorld, check: Check): ActionOption
   return [{ key: 'E', request, label: promptLabel('fillCan', 'well', view.biome), cost: costOf('fillCan'), error: check(request) }];
 }
 
+/** At the oven in the house: a meal from the store (decision 029). Greyed out when the store is empty. */
+export function ovenOptions(view: VisibleWorld, check: Check): ActionOption[] {
+  const request: ActionRequest = { type: 'eat' };
+  return [{ key: 'E', request, label: promptLabel('eat', 'field', view.biome), cost: costOf('eat'), error: check(request) }];
+}
+
 /** What an action costs up front (Fast Track's price comes from its effect). */
-export function costOf(type: ActionType, eat = false): { stamina: number; water: number } {
+export function costOf(type: ActionType): { stamina: number; water: number } {
   switch (type) {
     case 'harvest':
-      return { stamina: eat ? CONFIG.harvestEatCost : CONFIG.harvestCost, water: 0 };
+      return { stamina: CONFIG.harvestCost, water: 0 };
     case 'plantCrops':
       return { stamina: CONFIG.plantCropsCost, water: CONFIG.plantCropsWater };
     case 'plantOrchard':
@@ -111,6 +117,7 @@ export function costOf(type: ActionType, eat = false): { stamina: number; water:
     case 'fastTrack':
     case 'water':
     case 'fillCan':
+    case 'eat':
       return { stamina: 0, water: 0 };
   }
 }

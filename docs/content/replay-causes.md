@@ -53,7 +53,7 @@ earlier generation than the one shown.
 
 Food and water are shown by default. Stamina can be asked for (`resources` argument); hunger isn't shown.
 
-## The screen around the causes (06, [029](../decisions/029-replay-viewer-pacing-and-legacy.md))
+## The screen around the causes (06, [030](../decisions/030-replay-viewer-pacing-and-legacy.md))
 
 Built in `src/ui/screens/replay/words.ts`.
 
@@ -84,6 +84,7 @@ the game (`stageName`), left out for plots with none. Repeats are counted: "fish
 | Fast Track | hurried it |
 | Hunt / fish | hunted there / fished there |
 | Fill can | filled the can there |
+| Eat at the oven | ate there |
 
 ### Timeline
 

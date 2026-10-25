@@ -3,7 +3,7 @@ import { beginTurn, createWorld } from '../../engine';
 import { generateMap } from '../../worldgen';
 import { useGameStore } from '../../store/game';
 import { clockLabel, gameHour, isNight, lightAt } from '../daylight';
-import { facedTile, interactTarget, nearbyPlot } from '../interact';
+import { facedSpot, facedTile, interactTarget, nearbyPlot } from '../interact';
 
 describe('game clock', () => {
   it('runs one day, 6 am to 6 am, over the turn', () => {
@@ -78,6 +78,18 @@ describe('facedTile', () => {
   it('falls back to whole plots, and never offers a whole field', () => {
     expect(interactTarget(map, { x: 4.5, y: 7.9, facing: 'down', moving: false })).toBe('well');
     expect(nearbyPlot(map, { x: 4.5, y: 7.9, facing: 'up', moving: false })).toBe('well');
+  });
+});
+
+describe('facedSpot', () => {
+  const map = generateMap(1, 'forest');
+  const oven = map.house!.furniture.find((f) => f.kind === 'oven')!;
+
+  it('is the oven from the free tile in front of it, facing it', () => {
+    const below = { x: oven.x + 0.5, y: oven.y + 1.9, moving: false };
+    expect(facedSpot(map, { ...below, facing: 'up' })).toBe('oven');
+    expect(facedSpot(map, { ...below, facing: 'down' })).toBeNull();
+    expect(facedSpot(map, { ...below, facing: 'left' })).toBeNull();
   });
 });
 

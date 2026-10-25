@@ -32,7 +32,7 @@ This section doesn't change stamina: it stays in the game, costs nothing, and is
   Orchard action. Trees appear and fruit, and flowers spread, as the world levels up.
 - **Eight actions in the end:** Water replaces Plant Orchard once trees come with level; until then Plant Orchard stays as a ninth, and filling the can is a free logged `fillCan` ([027](../decisions/027-watering-can-tilling-food-only-nights.md)) ([021](../decisions/021-per-tile-farming-and-watering.md),
   [024](../decisions/024-emergent-orchards-and-flowers.md)).
-- **The oven cooks stored food** so you can eat from the cabinet ([025](../decisions/025-oven-cooks-stored-food.md)).
+- **You eat at the oven**, one food from the store a meal, as a logged `eat` action. Harvest and eat is gone ([025](../decisions/025-oven-cooks-stored-food.md), [029](../decisions/029-eat-at-the-oven.md)).
 - **What the world shows during play** ([026](../decisions/026-lift-no-explanation-rule.md)): the old blanket rule is
   lifted, and the only new readouts are the **health bar and land level**. Due dates, future yields and causes still wait
   for the replay. The **cost summary stays realised-only**.
@@ -48,7 +48,7 @@ Stamina cost is 0 for every action (019). Time is from `CONFIG.actionSeconds`.
 | # | Action | Target | Takes | Uses | Effect |
 |---|---|---|---|---|---|
 | 1 | **Harvest** | one ripe tile, or a fruiting tree | 1 s | — | Tile: +1 food, + seeds back. Tree: +4 food once per generation, scaled by health `[PLACEHOLDER]` |
-| 1b | **Harvest and eat** (Q) | as Harvest | 1 s | — | Refills hunger (decision 016). Leftover goes to the cabinet |
+| 1b | **Cook and eat** (at the oven) | food in the store | 0.5 s | 1 food | Refills hunger, allowed when full. Replaces Harvest and eat ([029](../decisions/029-eat-at-the-oven.md)) |
 | 2 | **Plant Crops** | one empty or rotten tile | 1.5 s | 1 seed | Tile becomes `sown`. Doesn't grow until watered |
 | 3 | **Water** (new) | one sown tile | `[PLACEHOLDER 1 s]` | 1 pour from the can | Starts that tile's ripening clock (25% of the turn) |
 | 4 | **Repair Reservoir** | reservoir | 8 s | — | As before |
@@ -119,14 +119,14 @@ empty ─plant→ sown ─water→ watered/growing ─(1 min)→ ripe ─harvest
 ### Toolbar and controls
 
 - Slots: `1` hands (harvest, interact), `2` seeds, `3` watering can, `4–8` contextual structure actions. **E** uses the
-  held tool on the facing tile, **Q** harvests and eats, **F** fast-tracks.
+  held tool on the facing tile, **F** fast-tracks. There's no Q: you eat at the oven.
 - The prompt names the tile action ("E · Water"). Filling the can: "E · Fill can" at a source.
 
 ### Oven
 
-- At the oven, "E · Cook and eat" eats from the cabinet's stored food to refill hunger (`hungerPerFoodEaten`). It's free,
-  and refused when you're full. It isn't a new logged action: it's a `harvest`-style eat on the store
-  (`[OPEN]`: or a ninth action, `cook`).
+- Facing the oven, "E · Cook and eat" takes `mealFood` (1) from the cabinet's store and adds `hungerPerFoodEaten` to
+  hunger, up to full. It's free, takes 0.5 s, and is allowed when you're full. It's a logged action, `eat`, so the server
+  re-run and the replay see it ([029](../decisions/029-eat-at-the-oven.md)).
 
 ## Task split (least merge conflicts)
 
@@ -156,7 +156,7 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 - [x] **[A]** Unwatered `sown` tiles carry over; `beginTurn` withers them 2 generations after planting *(built by B, [027](../decisions/027-watering-can-tilling-food-only-nights.md); tending clears a withered or rotten tile)*
 - [ ] **[A]** Remove `plantOrchard`; the four tree tiles' stages follow level
 - [ ] **[A]** Health recompute with causes, and the level-up rule (never down)
-- [ ] **[A]** Oven eat from store (refills hunger)
+- [x] **[A]** Oven eat from store (refills hunger) *(built by B as a logged `eat` action, [029](../decisions/029-eat-at-the-oven.md))*
 - [x] **[A]** Fast Track on a watered tile and on the other pending effects *(works unchanged: watering schedules the tile's ripening)*
 - [ ] **[A]** Vitest: plant without water never ripens; water starts the clock; can empties; wither at +2 gens; seeds conserved; health causes; level never drops; still deterministic
 - [ ] **[A]** `scripts/simulate.ts` strategies updated for tiles, can trips and seeds
@@ -169,7 +169,7 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 - [ ] **[B]** Held-tool state in the store, number-key switching, "Fill can" at sources *("Fill the can" at ponds, the sea edge, the well and the reservoir is done, [027](../decisions/027-watering-can-tilling-food-only-nights.md); held tool not yet)*
 - [ ] **[B]** Watering FX (splash on the tile) and the can's full/empty sprite in hand
 - [ ] **[B]** Trees and flowers appear and grow with level; flowers spread
-- [ ] **[B]** Oven interaction prompt in the house
+- [x] **[B]** Oven interaction prompt in the house *([029](../decisions/029-eat-at-the-oven.md))*
 
 **HUD, copy and numbers (C)**
 
@@ -212,5 +212,4 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 2. With stamina free (019), time and can trips are the only limits. Is that enough pressure, or does stamina come back?
 3. Do trees still wear, or does health replace wear for them? What does level 4+ add?
 4. Do flowers feed health, or are they visual only?
-5. Oven: an eat interaction on the store, or a ninth action `cook`?
-6. What to do with spare time once stamina runs out (sleep to end the day, shorter turns)? Left open after a playtest.
+5. What to do with spare time once stamina runs out (sleep to end the day, shorter turns)? Left open after a playtest.

@@ -19,11 +19,11 @@
 Settled game-design questions (records in `docs/decisions/`):
 
 - **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. ~~The HUD shows "Needed by nightfall"~~: the line is gone, and nights take **food only** ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
-- **Eating** ([003](../decisions/003-eating-via-harvest.md)): yes, as an option on **Harvest** ("Harvest and eat"). It's not a ninth action.
+- **Eating** ([029](../decisions/029-eat-at-the-oven.md)): only at the house's **oven** ("Cook and eat"), one food from the store a meal. It's a free logged `eat` action. Harvest and eat ([003](../decisions/003-eating-via-harvest.md)) is gone.
 - **Hunger** ([016](../decisions/016-hunger.md)): a meter the family inherits. It drops at each new generation; eating (free) refills it; empty, you walk slower.
 - **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. *No longer applies once orchards grow from the level ([024](../decisions/024-emergent-orchards-and-flowers.md)).*
 - **Plant, then water** ([021](../decisions/021-per-tile-farming-and-watering.md)): a sown tile grows only after one pour from the watering can. Unwatered seeds carry over and wither after 2 generations.
-- **Oven** ([025](../decisions/025-oven-cooks-stored-food.md)): cooks stored food, so you can eat from the cabinet.
+- **Oven** ([025](../decisions/025-oven-cooks-stored-food.md), [029](../decisions/029-eat-at-the-oven.md)): the only place to eat, from the cabinet's store.
 - **Events** ([005](../decisions/005-seeded-events.md)): drought (always), good harvest, storm (Island only).
 - **Wild spot** ([006](../decisions/006-wild-spot-per-biome.md)): Forest = hunt, Island = fish, same numbers.
 - **Defaults** ([007](../decisions/007-turn-and-generation-defaults.md)): **10-minute turns**, **6 generations**.
@@ -49,7 +49,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 3. **Freeze.** The timer hits 0, the world freezes, and input locks.
 4. **Journal.** Write or draw your page. Earlier pages are read-only.
 5. **Cost summary.** Shows only what was **realised** this turn, including whether upkeep was met. Pending benefits are left out.
-6. **Upkeep check.** Food is deducted (water no longer, {D}). A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
+6. **Upkeep check.** Food is deducted (water no longer, [027](../decisions/027-watering-can-tilling-food-only-nights.md)). A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
 7. **Gravestone.** Your stone is placed in the graveyard. The turn is committed.
 8. **Between turns (engine).** Decay, wear, due effects, seeded events and wild stock regrowth are applied for the next generation.
 
@@ -57,11 +57,11 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 
 | Resource | Source | Sink | Between-generation rule |
 |---|---|---|---|
-| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
-| **Water** | Reservoir income, Well, starter stock | Plant Orchard, Fast Track (no longer upkeep, {D}). Crops are watered from the **can**, which fills free at a pond, the sea edge, the well or the reservoir | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
+| **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, meals at the oven | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
+| **Water** | Reservoir income, Well, starter stock | Plant Orchard, Fast Track (no longer upkeep, [027](../decisions/027-watering-can-tilling-food-only-nights.md)). Crops are watered from the **can**, which fills free at a pond, the sea edge, the well or the reservoir | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
 | **Labour (stamina)** | Full pool at turn start (reduced if weakened) | Every action | Doesn't carry over |
 | **Seeds** | Founder stock `seedStart` (9); +1 per harvested field tile, +2 per tree harvest | Plant Crops (1 per tile); withered tiles lose theirs | **Carries over** in full ([022](../decisions/022-seed-stock.md)) |
-| **Hunger** | Eating (Harvest and eat, or Cook and eat at the oven), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
+| **Hunger** | Cook and eat at the oven ([029](../decisions/029-eat-at-the-oven.md)), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
 
 ## Structures & plots (pre-defined sites)
 
@@ -93,7 +93,7 @@ They passed a rough scratch-model check (see **Balance pre-check**). The real ch
 
 | # | Action | Target | Immediate | Delayed / tail | Cost |
 |---|---|---|---|---|---|
-| 1 | **Harvest** | ripe field or fruiting orchard | +5 food (field) or +15 food (orchard, once per gen, halved at wear ≥ 2). **Harvest and eat** option: see below. | — | 5 stamina |
+| 1 | **Harvest** | ripe field or fruiting orchard | +5 food (field) or +15 food (orchard, once per gen, halved at wear ≥ 2). Goes to the store; eating is at the oven (see below). | — | 5 stamina |
 | 2 | **Plant Crops** | empty field | — | Ripens `cropRipenSeconds` (60 s) after watering; still growing at day's end, it finishes overnight in half its time left. Rots only if left ripe a whole generation ([028](../decisions/028-two-minute-days-crops-carry-over.md)). | 8 stamina, 1 water |
 | 3 | **Plant Orchard** | empty or dead orchard plot | — | Fruits from gen +2. Harvestable once per later gen while it survives wear. | 25 stamina, 5 water |
 | 4 | **Repair Reservoir** | cracked or low reservoir | — | From gen +1: water income 4 → 12/gen (6 at wear 2), and drought protection while wear < 2. Wear resets to 0. | **60 stamina** (the dilemma) |
@@ -102,13 +102,13 @@ They passed a rough scratch-model check (see **Balance pre-check**). The real ch
 | 7 | **Maintain** | dug well (including stagnant), repaired reservoir, or living orchard | Wear on that structure reset to 0 | It also skips the next generation's wear tick. Once per structure per turn. | 10 stamina |
 | 8 | **Fast Track** | any pending effect (anyone's) | That effect resolves **now** | It no longer happens later | **2× the original action's cost** (stamina + water), paid now |
 
-### Harvest and eat
+### Eating at the oven
 
-- Harvest has two variants: **Harvest** (E, yield goes to the store, 5 stamina) and **Harvest and eat** (Q, **free**).
-- Eating turns the fresh yield into **hunger** at `hungerPerFoodEaten` (10 per food), **up to full** (`hungerMax`). Whatever can't be eaten goes to the store. It's refused when hunger is already full ([016](../decisions/016-hunger.md), which replaced 003's eat-for-stamina).
-- Only the food just harvested can be eaten here. Stored food is eaten at the **oven** ("Cook and eat", [025](../decisions/025-oven-cooks-stored-food.md)), and Fish/Hunt catches go to the store.
+- You eat inside the house, facing the **oven**: "E · Cook and eat" ([029](../decisions/029-eat-at-the-oven.md)). Each meal is a free logged `eat` action that takes `mealFood` (1) from the store, adds `hungerPerFoodEaten` (10) to **hunger**, up to `hungerMax`, and takes 0.5 s.
+- It's allowed when full (the food is simply eaten) and refused with an empty store ("The store is empty").
+- Every harvest goes to the store. Harvest and eat (Q, [003](../decisions/003-eating-via-harvest.md), [016](../decisions/016-hunger.md)) is gone; the engine keeps its `eat` flag only so old logs re-run the same.
 - Eating doesn't give stamina, so a weakened player can't eat their way back; hunger is a separate, inherited need.
-- Eating is realised, so it appears in the cost summary ("You ate 15🍎").
+- Eating is realised, so it appears in the cost summary ("You ate 3🍎").
 
 ### Why the reservoir dilemma works
 
@@ -220,7 +220,8 @@ export const CONFIG = {
   // Hunger (decision 016)
   hungerMax: 100,
   hungerDropPerGen: 30,
-  hungerPerFoodEaten: 10, // Harvest and eat
+  hungerPerFoodEaten: 10, // per meal at the oven
+  mealFood: 1, // food a meal takes from the store (029)
   hungerSlowAt: 0,
   hungrySpeedMult: 0.6,
 
@@ -327,7 +328,7 @@ A rough Python model of the rules above, run before the engine exists. It isn't 
 What it shows: short-term play holds up until the drought and then fails, which is the "invisible protection" working.
 **Known gap:** the pure-sacrifice run leaves the investing generations with almost nothing spare, but doesn't actually miss upkeep.
 The acceptance line asks for missed upkeep, so check this in task 4. The levers, in order: starter food 12 → 11, repair 60 → 65.
-The model doesn't include Harvest and eat yet.
+The planter strategy eats at the oven when hungry ([029](../decisions/029-eat-at-the-oven.md)).
 
 ## Balance after section 13 (engine run, 2026-10-25)
 
@@ -338,7 +339,7 @@ level yet.
 | Strategy | Forest food, gen 1 → 6 | Missed upkeep | Final world |
 |---|---|---|---|
 | Hoarder (well, crops on every tile) | 36 → 66, +6 a generation | none | reservoir cracked, no orchard |
-| Planter (orchard + reservoir) | 18 → 8 | none | everything standing |
+| Planter (orchard + reservoir, eats at the oven) | 18 → 52 | none | everything standing |
 | Repair first | 36 → 66 | none | reservoir full |
 | Quick-fixer (well + hunting) | 32 → 0 | gen 6 | wild stock 0 |
 

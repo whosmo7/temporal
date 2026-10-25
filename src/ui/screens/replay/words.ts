@@ -36,6 +36,7 @@ const ACT: Record<ActionType, (biome: Biome) => string> = {
   fastTrack: () => 'hurried it',
   fishHunt: (biome) => (biome === 'island' ? 'fished there' : 'hunted there'),
   fillCan: () => 'filled the can there',
+  eat: () => 'ate there',
 };
 
 /** "AL sowed it, watered it and picked it", or null when nobody touched it that generation. */
