@@ -15,10 +15,11 @@
     "test:watch": "vitest",
     "worldgen": "tsx scripts/worldgen-preview.ts",
     "simulate": "tsx scripts/simulate.ts",
+    "simulate:llm": "tsx scripts/simulate-llm.ts",
     "atlas": "tsx scripts/build-atlas.ts",
     "audio": "tsx scripts/build-audio.ts",
     "functions:bundle": "tsx scripts/bundle-engine.ts",
-    "functions:deploy": "npm run functions:bundle && supabase functions deploy commit-turn --use-api && supabase functions deploy seed-demo --use-api",
+    "functions:deploy": "npm run functions:bundle && supabase functions deploy commit-turn --use-api && supabase functions deploy seed-demo --use-api && supabase functions deploy llm-simulate --use-api",
     "check:decisions": "tsx scripts/check-decisions.ts"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@google/genai": "^2.31.0",
     "@types/howler": "^2.2.13",
     "@types/node": "^26.6.5",
     "@types/pngjs": "^6.0.5",

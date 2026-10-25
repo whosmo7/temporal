@@ -1,5 +1,7 @@
 import { createClient, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
 import type {
+  SimulationRequest,
+  SimulationStep,
   AdminAction,
   AdminWorld,
   Backend,
@@ -204,6 +206,13 @@ export class SupabaseBackend implements Backend {
     const { data, error } = await this.db.functions.invoke('seed-demo', { body: {} });
     if (error) throw await functionError(error);
     return (data as { worldId: string }).worldId;
+  }
+
+  /** The llm-simulate Edge Function plays the generation with the GEMINI_API_KEY secret (040). */
+  async simulateGeneration(request: SimulationRequest): Promise<SimulationStep> {
+    const { data, error } = await this.db.functions.invoke('llm-simulate', { body: request });
+    if (error) throw await functionError(error);
+    return data as SimulationStep;
   }
 
   async listAdminActions(limit = 20): Promise<AdminAction[]> {

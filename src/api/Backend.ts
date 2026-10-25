@@ -125,6 +125,59 @@ export interface AdminAction {
   after: unknown;
 }
 
+/** A journal page from a simulated player (decision 040). Never a real player's page. */
+export interface SimJournalPage {
+  generation: number;
+  author: string;
+  text: string;
+  simulated: true;
+}
+
+/** Asks for one generation of an LLM playthrough (decision 040). */
+export interface SimulationRequest {
+  seed: number;
+  biome: Biome;
+  gens: number;
+  generation: number;
+  /** Persona ids to start with; the rest follow (scripts/llm/personas.ts). */
+  personas: string[];
+  model?: string;
+  /** Model calls this generation may use, journal included. */
+  callBudget: number;
+  /** The world as the previous generation left it; null for generation 1. */
+  state: WorldState | null;
+  journal: SimJournalPage[];
+}
+
+/** One simulated generation, computed on the server and never saved there. */
+export interface SimulationStep {
+  simulated: true;
+  model: string;
+  promptVersion: string;
+  persona: { id: string; motive: string };
+  result: {
+    generation: number;
+    persona: string;
+    player: string;
+    calls: number;
+    actions: number;
+    rejections: number;
+    /** Why the day ended: finished, time, calls, actions, invalid, budget, quota or deadline. */
+    end: string;
+    summary: TurnSummary;
+    journal?: string;
+    usage: { promptTokens?: number; outputTokens?: number; totalTokens?: number };
+  };
+  /** The world after this generation's night: send it with the next request. */
+  state: WorldState;
+  log: ActionEntry[];
+  journalPage: SimJournalPage | null;
+  /** Set when a quota error stopped it. */
+  stopped: string | null;
+  /** Every decision, as the command-line trace records it. */
+  trace: Record<string, unknown>[];
+}
+
 export interface SeededWorld {
   seed: number;
   biome: Biome;
@@ -184,4 +237,6 @@ export interface Backend {
   createDemoWorld(): Promise<string>;
   /** The latest admin log rows, newest first. */
   listAdminActions(limit?: number): Promise<AdminAction[]>;
+  /** Plays one generation with Gemini players on the server (decision 040). Nothing is saved. */
+  simulateGeneration(request: SimulationRequest): Promise<SimulationStep>;
 }

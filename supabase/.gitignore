@@ -7,3 +7,4 @@
 .env.local
 .env.*.local
 functions/_shared/engine.js
+functions/_shared/sim.js

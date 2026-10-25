@@ -9,6 +9,7 @@ import type {
   AdminActionKind,
   AdminWorld,
   Backend,
+  SimulationStep,
   ClaimedWorld,
   CommitInput,
   CompletedWorld,
@@ -548,6 +549,11 @@ export class LocalBackend implements Backend {
       .reverse()
       .slice(0, limit)
       .map(({ adminId, ...row }) => ({ ...row, admin: this.usernameOf(db, adminId) }));
+  }
+
+  /** The Gemini key is a Supabase secret, so simulated players run only on the live backend (040). */
+  async simulateGeneration(): Promise<SimulationStep> {
+    throw new Error('Simulated players need the live site: the Gemini key is a Supabase secret. Use npm run simulate:llm locally.');
   }
 
   private quiet = false;

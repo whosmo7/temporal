@@ -160,6 +160,7 @@ flourishing. The slot is **5 minutes**.
 | Level names | **Bare, Taking root, Green, Blooming, Abundant** (levels 0–4), shown by name, never as a number ([023](../decisions/023-world-health-and-level.md)) |
 | Replay viewer | **Play to auto-play** at Slow/Steady/Quick (12/8/4 s), names under the timeline dots, the **legacy view on the ending card**; a plot's history shows up to the generation on screen ([031](../decisions/031-replay-viewer-pacing-and-legacy.md)) |
 | Player scores | Each generation's **score is locked when it ends**: grown and gathered + kept − cost of keeping + the world it hands over. A new **`take`** action at the oven. **Shown in the replay and on a signed-in Scores page, finished worlds only**. Separate from the world score (037) ([039](../decisions/039-competitive-scoring.md)) |
+| Simulated players | **Gemini plays a fresh world from Admin → Simulated players**, one generation per request on the `llm-simulate` Edge Function, with the `GEMINI_API_KEY` secret. Nothing is saved; the trace downloads. The command line (`npm run simulate:llm`) stays ([040](../decisions/040-simulated-players-from-the-admin-panel.md)) |
 | First-pass numbers | Can 4 pours, empty each morning (027); 9 starting seeds, +1 per field tile, +2 per tree; level thresholds 55/65/75/85 (`01` › Section 13 values) |
 
 ## Glossary
