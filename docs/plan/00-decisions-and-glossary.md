@@ -124,6 +124,7 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Repeat play | **Allowed, but never back to back**: you're never drawn a world whose latest generation you played; once someone else has played it, it's back in the draw. Checked on the server ([034](../decisions/034-weighted-claim-no-back-to-back.md), replacing [020](../decisions/020-claim-and-lock-rules.md)'s device hint) |
 | Choosing a world | **No**: assignment is always the weighted random draw ([020](../decisions/020-claim-and-lock-rules.md)) |
 | World names | **From the seed**, `worldName(seed, biome)`, e.g. "Hollow Elm" ([020](../decisions/020-claim-and-lock-rules.md)) |
+| Admin panel | One shared **`admin`** account. Lists worlds in progress; **Delete removes a world from the game but keeps its history**, refused while locked; a **Create demo world** button; an append-only log of admin actions ([036](../decisions/036-admin-panel-scope.md)) |
 | Lock while reading | **Heartbeat** extends the lock while the clock is stopped, capped at 15 extra minutes ([020](../decisions/020-claim-and-lock-rules.md)) |
 | New world (Gen 1) | **Seeded starter state** (some food/water, damaged reservoir, wild stock, empty plots, biome modifier) |
 

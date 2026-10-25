@@ -50,9 +50,13 @@ shows it on its own. Code in `src/ui/tutorial/`. It replaces the walkthrough tut
 | **Force-assign world** | Pick a world + a username → sets `worlds.forced_for`. That user's next Play gets that world. |
 | **Configure world** | Edit `turn_seconds`, `generation_count` on a world; edit global defaults + `inherit_ratio` |
 | **Skip to replay** | Open any world's replay. Optionally mark an open world `complete`. |
-| World list | All worlds with status, current gen, lock holder, lock expiry, and a "clear lock" button |
+| World list | **Worlds in progress only** ([036](../decisions/036-admin-panel-scope.md)), with current gen, lock holder, lock expiry, and a "clear lock" button |
+| **Delete world** | Removes a world from the game: never assigned, listed or replayed again. **Its history is kept** (sets `worlds.removed_at`; rule 2 holds). Disabled while someone holds the lock ([036](../decisions/036-admin-panel-scope.md)) |
+| **Create demo world** | One button: makes the world from `src/api/demo-world.json`, plays the founder generations server-side and force-assigns the judge ([036](../decisions/036-admin-panel-scope.md)) |
+| **Recent admin actions** | The latest 20 rows of the append-only `admin_actions` log: who, what, which world, before → after, when ([036](../decisions/036-admin-panel-scope.md)) |
 
-(Reset demo world isn't required. See `10` for the seed script.)
+Admin access is the one shared **`admin`** account: sign in to it to use the panel. There are no promote or demote controls
+([036](../decisions/036-admin-panel-scope.md)). `scripts/seed-demo.ts` stays as the backup for the demo world (`10`).
 
 ## Tasks
 
@@ -66,6 +70,14 @@ shows it on its own. Code in `src/ui/tutorial/`. It replaces the walkthrough tut
 - [x] **[C]** Admin panel + guard *(`/#/admin` → `AdminScreen` behind `RequireAdmin`: logged out goes to `/auth` and back, a non-admin sees the not-found page. Force-assign first (pick a world, type a name, Enter; unlocked worlds listed first), then every world with its lock, next-Play user, editable generations and turn length, Clear lock and Skip to replay, then the defaults for new worlds and the inherit ratio. Admins get an Admin link in the header. `Profile.isAdmin` and the admin calls are on the `Backend` contract; in `LocalBackend`, signing up as `admin` makes an admin.)*
 - [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup) *(Claim failed and commit failed are done: Try again on both, and the local copy. No network waits for `SupabaseBackend`.)*
 - [x] **[C]** Audio toggle (mute) in the shell (`09`) *(`MuteToggle` in the header, saved in localStorage.)*
+
+**Admin panel follow-ups ([036](../decisions/036-admin-panel-scope.md))**
+
+- [ ] **[A]** Migration: `worlds.removed_at` / `removed_by`, append-only `admin_actions` (admins read, no direct writes), `admin_remove_world` (refused while locked), `admin_recent_actions`, a log row from every `admin_*` RPC, and the removed-world filter in `claim_world` (all [034](../decisions/034-weighted-claim-no-back-to-back.md) buckets), `admin_force_assign`, `admin_list_worlds`, `list_completed_worlds`, `get_replay`
+- [ ] **[A]** `Backend`: `removeWorld`, `createDemoWorld`, `listAdminActions`, in `SupabaseBackend` and `LocalBackend`, with tests (removed world never claimed; delete refused while locked; every admin call logs one row)
+- [ ] **[A]** `seed-demo` Edge Function (admin-only), sharing `src/api/demo.ts` with `scripts/seed-demo.ts`
+- [ ] **[A]** Live checks in `scripts/test-backend.ts` for remove, the lock refusal and the log
+- [ ] **[C]** Panel: list worlds in progress only; Delete with a confirm, disabled while locked; "Create demo world" button; "Recent admin actions" list
 
 ## Acceptance
 
