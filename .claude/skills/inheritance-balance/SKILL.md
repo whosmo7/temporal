@@ -37,8 +37,9 @@ defensible, and no single strategy should be obviously right. Spec: `docs/plan/0
    into the PR.
 
 Strategies live in `scripts/strategies/` (`hoarder.ts`, `planter.ts`, `quickFixer.ts`, `repairFirst.ts`). They're also
-used as Vitest fixtures, so changing numbers may require updating expected values in tests. Do that in the
-same PR, and explain why the expected values moved.
+used as Vitest fixtures in `scripts/__tests__/balance.test.ts`, so changing numbers may require updating expected
+values in tests. Do that in the same PR, and explain why the expected values moved. Targets the numbers miss today are
+`it.fails`: when a tuning change makes one go red, the target now holds, so turn it into a plain `it`.
 
 ## Defaults the team still has to set
 

@@ -181,8 +181,8 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 
 **Carried over from the first plan** (also listed in their own sections; tick both)
 
-- [ ] **[C]** `01` Write the "medium world" tuning scenario and check the dilemma holds (scenario written; re-run for tiles)
-- [ ] **[C]** `01` Write 3 balance test scenarios as Vitest fixtures: hoarder, planter, quick-fixer
+- [ ] **[C]** `01` Write the "medium world" tuning scenario and check the dilemma holds (scenario written; re-run for tiles) *(re-run 2026-10-25: doesn't hold yet; tune after A's seeds, health and level, `01` › Balance after section 13)*
+- [x] **[C]** `01` Write 3 balance test scenarios as Vitest fixtures: hoarder, planter, quick-fixer
 - [x] **[C]** `05` Copywriting pass with Game design (tone: quiet, reflective, no moralising)
 - [x] **[C]** `08` Tutorial scene (now: plant, water, fill the can, harvest)
 - [ ] **[B]** `08` Error states: no network (claim and commit failed are done)

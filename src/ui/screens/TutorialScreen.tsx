@@ -13,9 +13,19 @@ const SEED = 123;
 /** A short day: crops ripen in a quarter of it (decision 027), so about a minute after watering. */
 const TURN_SECONDS = 240;
 const BEFORE = 'Wren';
-const BEFORE_PAGE = 'Reservoir wall is cracked but it still holds some. Sow, then water, or nothing comes up.';
+const BEFORE_PAGE =
+  'Reservoir wall is cracked but it still holds some. Sow, then water, or nothing comes up.';
 
-const MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+const MOVE_KEYS = new Set([
+  'KeyW',
+  'KeyA',
+  'KeyS',
+  'KeyD',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+]);
 
 /**
  * `#/tutorial` (08): the real game on a fixed world, one hint at a time. No account needed and
@@ -66,7 +76,11 @@ export function TutorialScreen() {
       <Game map={map} start={start} author="You" save={save} endActions={endActions} />
       {!journalOpen && !over && (
         <div className="tutorial">
-          <Panel title={done ? 'That’s the day' : `${at + 1} of ${STEPS.length}`} className="tutorial__card" aria-live="polite">
+          <Panel
+            title={done ? 'That’s the day' : `${at + 1} of ${STEPS.length}`}
+            className="tutorial__card"
+            aria-live="polite"
+          >
             <p>{done ? UPKEEP_TEXT : STEPS[at]!.text}</p>
             <div className="tutorial__actions">
               {done ? (
@@ -91,7 +105,14 @@ export function TutorialScreen() {
  * someone in them. The player starts with the founder's stores, not what a night left of them.
  */
 function tutorialWorld(): TurnStart {
-  const founder = beginTurn(createWorld(SEED, { worldId: 'tutorial', biome: 'forest', turnSeconds: TURN_SECONDS, generationCount: 2 }).state);
+  const founder = beginTurn(
+    createWorld(SEED, {
+      worldId: 'tutorial',
+      biome: 'forest',
+      turnSeconds: TURN_SECONDS,
+      generationCount: 2,
+    }).state,
+  );
   const begun = beginTurn(endTurn(founder.state).state);
   return {
     world: { ...begun.state, resources: founder.state.resources, weakened: 0 },

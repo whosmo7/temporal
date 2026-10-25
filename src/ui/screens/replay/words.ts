@@ -2,7 +2,14 @@
 // on the ending card. Wording: docs/content/replay-causes.md. Only the replay may say these things.
 
 import type { Replay } from '../../../api';
-import type { ActionType, Biome, PlotId, PlotKind, ResourceKey, VisibleWorld } from '../../../engine';
+import type {
+  ActionType,
+  Biome,
+  PlotId,
+  PlotKind,
+  ResourceKey,
+  VisibleWorld,
+} from '../../../engine';
 import type { PlotGeneration } from '../../replay';
 import { plotName, stageName, tileName } from '../../hud/copy';
 
@@ -85,12 +92,19 @@ export interface Legacy {
  * that credits something done in an earlier one, grouped by who did what. Gains only; the
  * causes panel shows the rest.
  */
-export function legacyOf(replay: Pick<Replay, 'actions' | 'transitions'>, nameOf: (turn: number) => string): Legacy[] {
+export function legacyOf(
+  replay: Pick<Replay, 'actions' | 'transitions'>,
+  nameOf: (turn: number) => string,
+): Legacy[] {
   const actions = new Map(replay.actions.map((a) => [a.id, a]));
-  const groups = new Map<string, { turn: number; did: string; gave: Map<ResourceKey, Set<number>> }>();
+  const groups = new Map<
+    string,
+    { turn: number; did: string; gave: Map<ResourceKey, Set<number>> }
+  >();
 
   for (const tr of replay.transitions) {
-    if (!('resource' in tr.target) || !(tr.target.resource in GAVE) || !tr.delta || tr.delta <= 0) continue;
+    if (!('resource' in tr.target) || !(tr.target.resource in GAVE) || !tr.delta || tr.delta <= 0)
+      continue;
     const resource = tr.target.resource;
     for (const cause of tr.causes) {
       if (cause.kind !== 'action' || cause.committedTurn >= tr.at.turn) continue;
@@ -111,7 +125,10 @@ export function legacyOf(replay: Pick<Replay, 'actions' | 'transitions'>, nameOf
       const clauses = (['food', 'water'] as const)
         .filter((r) => g.gave.has(r))
         .map((r) => `${GAVE[r]} ${generations([...g.gave.get(r)!].sort((a, b) => a - b))}`);
-      return { turn: g.turn, text: `${nameOf(g.turn)} ${g.did} in Generation ${g.turn}. It ${list(clauses)}.` };
+      return {
+        turn: g.turn,
+        text: `${nameOf(g.turn)} ${g.did} in Generation ${g.turn}. It ${list(clauses)}.`,
+      };
     });
 }
 
@@ -121,5 +138,7 @@ function generations(turns: number[]): string {
 }
 
 function list(parts: string[]): string {
-  return parts.length <= 1 ? (parts[0] ?? '') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+  return parts.length <= 1
+    ? (parts[0] ?? '')
+    : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }

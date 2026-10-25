@@ -30,7 +30,11 @@ export function PlotPopover({
   const box = useRef<HTMLDivElement>(null);
   const view = viewAt(replay, turn);
   const kind = view.plots[plotId]?.kind;
-  const rows = kind ? plotHistory(replay, plotId).filter((g) => g.turn <= turn).map((g) => ({ turn: g.turn, text: historyLine(g, kind, replay.biome) })) : [];
+  const rows = kind
+    ? plotHistory(replay, plotId)
+        .filter((g) => g.turn <= turn)
+        .map((g) => ({ turn: g.turn, text: historyLine(g, kind, replay.biome) }))
+    : [];
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -64,7 +68,10 @@ export function PlotPopover({
       <h3>{plotLabel(view, plotId)}</h3>
       <ol>
         {rows.map((r) => (
-          <li key={r.turn} className={r.turn === turn ? 'replay__history replay__history--now' : 'replay__history'}>
+          <li
+            key={r.turn}
+            className={r.turn === turn ? 'replay__history replay__history--now' : 'replay__history'}
+          >
             {r.text}
           </li>
         ))}

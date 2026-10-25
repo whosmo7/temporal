@@ -22,18 +22,31 @@ describe('tutorial steps (08)', () => {
       progress({ moved: true, types: ['fillCan', 'plantCrops'] }),
       progress({ moved: true, types: ['fillCan', 'plantCrops', 'water'] }),
       progress({ moved: true, readJournal: true, types: ['fillCan', 'plantCrops', 'water'] }),
-      progress({ moved: true, readJournal: true, atGraveyard: true, types: ['fillCan', 'plantCrops', 'water'] }),
+      progress({
+        moved: true,
+        readJournal: true,
+        atGraveyard: true,
+        types: ['fillCan', 'plantCrops', 'water'],
+      }),
     ].map((p) => STEPS[currentStep(p)]!.id);
     expect(ids).toEqual(['fill', 'sow', 'water', 'lectern', 'graveyard', 'harvest']);
   });
 
   it('counts things done early, and ends when everything is done', () => {
-    expect(STEPS[currentStep(progress({ moved: true, readJournal: true, types: ['fillCan'] }))]!.id).toBe('sow');
-    const all = progress({ moved: true, readJournal: true, atGraveyard: true, types: ['fillCan', 'plantCrops', 'water', 'harvest'] });
+    expect(
+      STEPS[currentStep(progress({ moved: true, readJournal: true, types: ['fillCan'] }))]!.id,
+    ).toBe('sow');
+    const all = progress({
+      moved: true,
+      readJournal: true,
+      atGraveyard: true,
+      types: ['fillCan', 'plantCrops', 'water', 'harvest'],
+    });
     expect(currentStep(all)).toBe(STEPS.length);
   });
 
   it('never gives numbers or says what will come of anything', () => {
-    for (const s of STEPS) expect(s.text).not.toMatch(/\d|later|generations? to come|will grow into/i);
+    for (const s of STEPS)
+      expect(s.text).not.toMatch(/\d|later|generations? to come|will grow into/i);
   });
 });

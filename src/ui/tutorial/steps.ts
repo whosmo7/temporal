@@ -30,14 +30,26 @@ export const STEPS: readonly Step[] = [
     text: 'Find the field. Face a tile of tilled earth and sow it.',
     done: (p) => p.did.has('plantCrops'),
   },
-  { id: 'water', text: 'Seeds wait for water. Water the tile you sowed.', done: (p) => p.did.has('water') },
+  {
+    id: 'water',
+    text: 'Seeds wait for water. Water the tile you sowed.',
+    done: (p) => p.did.has('water'),
+  },
   {
     id: 'lectern',
     text: 'While it grows: the journal stands by the house. Those before you left words here. Press E to read it.',
     done: (p) => p.readJournal,
   },
-  { id: 'graveyard', text: 'Find the graveyard. When your day ends, you join them.', done: (p) => p.atGraveyard },
-  { id: 'harvest', text: 'Go back to your field. When the crop is ripe, harvest it.', done: (p) => p.did.has('harvest') },
+  {
+    id: 'graveyard',
+    text: 'Find the graveyard. When your day ends, you join them.',
+    done: (p) => p.atGraveyard,
+  },
+  {
+    id: 'harvest',
+    text: 'Go back to your field. When the crop is ripe, harvest it.',
+    done: (p) => p.did.has('harvest'),
+  },
 ];
 
 /** The last card, once every step is done. */

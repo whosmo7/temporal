@@ -37,7 +37,13 @@ export function Timeline({
           <li key={t}>
             <button
               type="button"
-              className={t === turn ? 'replay__dot replay__dot--on' : t < turn ? 'replay__dot replay__dot--past' : 'replay__dot'}
+              className={
+                t === turn
+                  ? 'replay__dot replay__dot--on'
+                  : t < turn
+                    ? 'replay__dot replay__dot--past'
+                    : 'replay__dot'
+              }
               aria-current={t === turn ? 'step' : undefined}
               title={`Generation ${t} · ${nameOf(t)}`}
               onClick={() => onJump(t)}
@@ -53,12 +59,23 @@ export function Timeline({
         {turn === generations ? 'The end' : `Generation ${turn + 1}`}
       </Button>
       <div className="replay__play">
-        <Button icon={playing ? 'pause' : 'play'} onClick={() => onPlaying(!playing)} aria-pressed={playing}>
+        <Button
+          icon={playing ? 'pause' : 'play'}
+          onClick={() => onPlaying(!playing)}
+          aria-pressed={playing}
+        >
           {playing ? 'Pause' : 'Play'}
         </Button>
         <div className="replay__paces" role="radiogroup" aria-label="Pace">
           {PACES.map((p) => (
-            <Button key={p} size="sm" variant={p === pace ? 'primary' : 'quiet'} role="radio" aria-checked={p === pace} onClick={() => onPace(p)}>
+            <Button
+              key={p}
+              size="sm"
+              variant={p === pace ? 'primary' : 'quiet'}
+              role="radio"
+              aria-checked={p === pace}
+              onClick={() => onPace(p)}
+            >
               {PACE_LABEL[p]}
             </Button>
           ))}

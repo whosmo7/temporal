@@ -10,7 +10,13 @@ function action(id: string, type: ActionEntry['type'], turn: number): ActionEntr
   return { id, worldId: 'w', actorId: `u${turn}`, type, committedAt: at, dueAt: at, seq: 0 };
 }
 
-function gain(id: string, turn: number, resource: 'food' | 'water', delta: number, credits: ActionEntry[]): Transition {
+function gain(
+  id: string,
+  turn: number,
+  resource: 'food' | 'water',
+  delta: number,
+  credits: ActionEntry[],
+): Transition {
   return {
     id,
     at: { turn, second: 0 },
@@ -18,7 +24,12 @@ function gain(id: string, turn: number, resource: 'food' | 'water', delta: numbe
     before: 0,
     after: delta,
     delta,
-    causes: credits.map((a) => ({ kind: 'action', actionId: a.id, actorId: a.actorId, committedTurn: a.committedAt.turn })),
+    causes: credits.map((a) => ({
+      kind: 'action',
+      actionId: a.id,
+      actorId: a.actorId,
+      committedTurn: a.committedAt.turn,
+    })),
   } as Transition;
 }
 
@@ -39,7 +50,9 @@ describe('plot history lines (06)', () => {
   });
 
   it('leaves out the acts when nobody touched it, and the stage when it has none', () => {
-    expect(historyLine({ turn: 2, stage: 'ripe', acts: [] }, 'field', 'forest')).toBe('Gen 2 · Ripe');
+    expect(historyLine({ turn: 2, stage: 'ripe', acts: [] }, 'field', 'forest')).toBe(
+      'Gen 2 · Ripe',
+    );
     expect(historyLine({ turn: 3, stage: '', acts: [] }, 'lectern', 'forest')).toBe('Gen 3');
   });
 });
