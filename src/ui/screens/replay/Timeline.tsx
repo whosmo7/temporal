@@ -3,7 +3,8 @@ import { PACE_LABEL, PACES, shortName, type Pace } from './words';
 
 /**
  * Under the generation view (06): one dot per generation with its player's name, the current one
- * marked, click to jump; previous and next beside it; Play/Pause and the pace.
+ * marked, click to jump; previous and next beside it; Play/Pause, the pace, and ghosts on or off
+ * (decision 038).
  */
 export function Timeline({
   turn,
@@ -15,6 +16,8 @@ export function Timeline({
   onPlaying,
   pace,
   onPace,
+  ghosts,
+  onGhosts,
 }: {
   turn: number;
   generations: number;
@@ -25,6 +28,8 @@ export function Timeline({
   onPlaying: (playing: boolean) => void;
   pace: Pace;
   onPace: (pace: Pace) => void;
+  ghosts: boolean;
+  onGhosts: (on: boolean) => void;
 }) {
   const turns = Array.from({ length: generations }, (_, i) => i + 1);
   return (
@@ -80,6 +85,9 @@ export function Timeline({
             </Button>
           ))}
         </div>
+        <Button size="sm" variant={ghosts ? 'primary' : 'quiet'} onClick={() => onGhosts(!ghosts)} aria-pressed={ghosts}>
+          Ghosts
+        </Button>
       </div>
     </nav>
   );
