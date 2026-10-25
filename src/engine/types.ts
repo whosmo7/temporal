@@ -40,7 +40,7 @@ export type ActionType =
   | 'fillCan'
   /** Eat one food from the store at the oven: refills hunger (decision 029). Free, and allowed when full. */
   | 'eat'
-  /** Keep food from the store for yourself at the oven: it leaves the world and counts toward your score (decision 033). */
+  /** Keep food from the store for yourself at the oven: it leaves the world and counts toward your score (decision 039). */
   | 'take';
 
 /** One entry in the append-only action log. Never mutated once written. */
@@ -105,7 +105,7 @@ export type CauseRule =
   | 'wither'
   /** A crop still growing at day's end grows on overnight, faster (decision 028). */
   | 'overnight'
-  /** A generation's score, locked when it ends (decision 033). */
+  /** A generation's score, locked when it ends (decision 039). */
   | 'assessed';
 
 export interface ActionCause {
@@ -190,13 +190,13 @@ export interface WorldState {
   /** Realised totals for the current turn, for the cost summary. Reset by beginTurn. */
   tally: TurnTally;
   /**
-   * One locked score per finished generation, in order (decision 033). Append-only: endTurn adds
+   * One locked score per finished generation, in order (decision 039). Append-only: endTurn adds
    * its own and never changes an earlier one. Absent in states saved before scoring.
    */
   scores?: GenerationScore[];
 }
 
-/** A generation's score, worked out from the world it handed over (decision 033). Shown in the replay only. */
+/** A generation's score, worked out from the world it handed over (decision 039). Shown in the replay only. */
 export interface GenerationScore {
   turn: number;
   productive: number;
@@ -216,11 +216,11 @@ export interface TurnTally {
   waterGained: number;
   /** Food eaten straight from a harvest (decision 003). */
   foodEaten: number;
-  /** Food harvested from fields and trees, or caught while the wild spot stays above `score.wildFloor` (033). */
+  /** Food harvested from fields and trees, or caught while the wild spot stays above `playerScore.wildFloor` (039). */
   productiveFood: number;
-  /** Food caught that took the wild spot below `score.wildFloor` (033). */
+  /** Food caught that took the wild spot below `playerScore.wildFloor` (039). */
   overhuntFood: number;
-  /** Food kept for yourself with `take` (033). */
+  /** Food kept for yourself with `take` (039). */
   foodTaken: number;
 }
 

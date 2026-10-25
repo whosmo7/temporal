@@ -1,3 +1,4 @@
+import { worldScore, type ScoreTally } from '../engine/score';
 import { worldName } from '../worldgen/names';
 import type { Biome } from '../worldgen/types';
 import type { PresetName } from '../worldgen/presets';
@@ -45,6 +46,8 @@ export interface CompletedRow {
   players: string[];
   preset: PresetName;
   final_state: WorldState | null;
+  /** Counted by list_completed_worlds (decision 037); absent before that migration. */
+  tally?: ScoreTally;
 }
 
 export interface ActionRow {
@@ -141,6 +144,7 @@ export function toCompletedWorld(row: CompletedRow): CompletedWorld {
     players: row.players,
     preset: row.preset,
     finalState: row.final_state,
+    score: row.tally ? worldScore(row.tally) : null,
   };
 }
 

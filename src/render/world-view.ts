@@ -4,13 +4,25 @@ import { CONFIG, TILED_KINDS, tileId, tileOf, type ActionType, type VisibleWorld
 import { isTimeUp, useGameStore } from '../store/game';
 import { BASE_OPTIONS, buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
 import { cameraOffset, pickZoom } from './camera';
-import { FIXED_STEP, INDOOR_DARKNESS, NIGHT_LIGHT_TILES, TILE, VIEW_TILES_INSIDE, WALK_SPEED, WEAKENED_WALK } from './constants';
+import {
+  FIXED_STEP,
+  GHOST_ALPHA,
+  GHOST_DAY_SECONDS,
+  GHOST_FADE_SECONDS,
+  GHOST_TINT,
+  INDOOR_DARKNESS,
+  NIGHT_LIGHT_TILES,
+  TILE,
+  VIEW_TILES_INSIDE,
+  WALK_SPEED,
+  WEAKENED_WALK,
+} from './constants';
 import { gameHour, lightAt } from './daylight';
 import { createFx } from './fx';
 import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
 import { KeyboardInput } from './input';
 import { facedSpot, interactTarget } from './interact';
-import { stepWalker, type CollisionGrid, type Walker } from './movement';
+import { stepWalker, type CollisionGrid, type Facing, type Walker } from './movement';
 import { P, paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
 // Pixel art: never smooth when scaling.
@@ -58,6 +70,11 @@ export interface WorldView {
   actionFx(type: ActionType, plotId: PlotId | undefined): void;
   /** Replay (06): these plots and tiles glow, as the ones that changed this generation. */
   setHighlights(ids: PlotId[]): void;
+  /**
+   * Replay: a faint figure replays this generation's day on a loop (decision 038), the whole day in
+   * `realSeconds` (then a short fade). Null hides it.
+   */
+  setGhost(ghost: GhostTrack | null, realSeconds?: number): void;
   /** The next generation wakes up: player back at the spawn, camera back on them. */
   newTurn(): void;
   /** Frames per second, for the perf readout. */
@@ -69,6 +86,18 @@ export interface WorldView {
 export interface ReplayMode {
   /** A plot or field/orchard tile was clicked, at this point on the canvas (CSS px). */
   onPlotClick?: (id: PlotId, at: { x: number; y: number }) => void;
+  /** Frame these tiles instead of the whole map (the tutorial's snapshots). */
+  frame?: { x: number; y: number; w: number; h: number };
+  /** Show the player standing still, feet at this tile point, facing this way. In the house, the roof is off. */
+  player?: { x: number; y: number; facing: Facing };
+  /** Outline this field or orchard tile, as play does for the one you face. */
+  mark?: PlotId;
+}
+
+/** A replay ghost: its day's length in turn seconds, and where it is (feet, in tiles) at each second. */
+export interface GhostTrack {
+  seconds: number;
+  poseAt(t: number): { x: number; y: number; facing: Facing; moving: boolean; working: boolean };
 }
 
 /** The look `visibleView()` describes: every plot and tile's stage and the world flags. */
@@ -352,8 +381,42 @@ export function createWorldView(
 
   const player = new Sprite(frame('player/walk-down-0'));
   player.anchor.set(0.5, 1);
-  player.visible = !replay;
+  player.visible = !replay || !!replay.player;
   sorted.addChild(player);
+  if (replay?.player) {
+    const { x, y, facing } = replay.player;
+    player.texture = frame(`player/walk-${facing}-0`);
+    player.position.set(Math.round(x * TILE), Math.round(y * TILE));
+    player.zIndex = y * TILE;
+  }
+
+  // The replay's ghost: the player's sprite, blue and see-through, sorted with everything else.
+  const ghostSprite = new Sprite(frame('player/walk-down-0'));
+  ghostSprite.anchor.set(0.5, 1);
+  ghostSprite.tint = GHOST_TINT;
+  ghostSprite.visible = false;
+  sorted.addChild(ghostSprite);
+  let ghost: GhostTrack | null = null;
+  let ghostT = 0;
+  let ghostAnim = 0;
+  let ghostReal = GHOST_DAY_SECONDS;
+
+  /** Plays the ghost's day in `ghostReal` seconds, fades it out, and starts it again. */
+  const updateGhost = (dt: number) => {
+    if (!ghost) return;
+    const day = ghost.seconds;
+    const fade = (day * GHOST_FADE_SECONDS) / ghostReal; // in turn seconds
+    ghostT += (dt * day) / ghostReal;
+    if (ghostT > day + fade) ghostT = 0;
+    ghostAnim += dt;
+    const pose = ghost.poseAt(Math.min(ghostT, day));
+    const step = pose.moving ? Math.floor(ghostAnim * 8) % 4 : 0;
+    const bob = pose.working ? Math.round(Math.sin(ghostAnim * 10)) : 0;
+    ghostSprite.texture = frame(`player/walk-${pose.facing}-${step}`);
+    ghostSprite.position.set(Math.round(pose.x * TILE), Math.round(pose.y * TILE) + bob);
+    ghostSprite.zIndex = pose.y * TILE;
+    ghostSprite.alpha = GHOST_ALPHA * (ghostT > day ? 1 - (ghostT - day) / fade : Math.min(1, ghostT / fade));
+  };
 
   let groundTexture: RenderTexture | null = null;
   let bakedDrought: boolean | null = null;
@@ -422,12 +485,21 @@ export function createWorldView(
     });
   }
 
-  /** The replay's still world: the whole map framed, midday light, changed plots pulsing. */
+  // A still shot's player inside the house: the roof is off and the outside dimmed, as in play.
+  if (replay?.player && house && shell && isInside(house, { ...replay.player, moving: false })) {
+    shell.alpha = 0;
+    dim.alpha = OUTSIDE_DIM;
+  }
+  const replayMark = replay?.mark ? rectOf(replay.mark) : null;
+  if (replayMark) marker.rect(replayMark.x * TILE + 0.5, replayMark.y * TILE + 0.5, TILE - 1, TILE - 1).stroke({ width: 1, color: P.cloud, alpha: 0.9 });
+
+  /** The replay's still world: the whole map (or `frame`) in view, midday light, changed plots pulsing. */
   const updateReplay = (dt: number) => {
     const dpr = app.renderer.resolution;
     const view = { w: app.screen.width, h: app.screen.height };
-    const zoom = pickZoom(view.w, view.h, dpr, { x: map.width, y: map.height });
-    const focus = { x: (map.width * TILE) / 2, y: (map.height * TILE) / 2 };
+    const area = replay?.frame ?? { x: 0, y: 0, w: map.width, h: map.height };
+    const zoom = pickZoom(view.w, view.h, dpr, { x: area.w, y: area.h });
+    const focus = { x: (area.x + area.w / 2) * TILE, y: (area.y + area.h / 2) * TILE };
     const offset = cameraOffset(focus, view, { w: map.width * TILE, h: map.height * TILE }, zoom, dpr);
     world.scale.set(zoom);
     world.position.set(offset.x, offset.y);
@@ -442,6 +514,7 @@ export function createWorldView(
     frozen.alpha = 0;
     glowT += dt;
     glow.alpha = 0.55 + 0.35 * Math.sin(glowT * 3);
+    updateGhost(dt);
   };
 
   const update = () => {
@@ -451,7 +524,8 @@ export function createWorldView(
     // The game loop owns the clock. It stands still while the journal is open (decision 012).
     const store = useGameStore.getState();
     store.advance(dt);
-    const { t, turnSeconds, journalOpen } = useGameStore.getState();
+    const { t, turnSeconds, helpOpen } = useGameStore.getState();
+    const journalOpen = useGameStore.getState().journalOpen || helpOpen; // both stop the clock
     const timeUp = isTimeUp({ t, turnSeconds });
     // Acting takes real turn time: the player stands still while they work (04).
     const busy = t < store.busyUntil || store.fastTrack !== null;
@@ -561,6 +635,12 @@ export function createWorldView(
         const r = rectOf(id);
         if (r) glow.rect(r.x * TILE + 0.5, r.y * TILE + 0.5, r.w * TILE - 1, r.h * TILE - 1).fill({ color: P.cloud, alpha: 0.3 }).stroke({ width: 1, color: P.cloud });
       }
+    },
+    setGhost: (next, realSeconds = GHOST_DAY_SECONDS) => {
+      ghost = next;
+      ghostReal = Math.max(1, realSeconds);
+      ghostT = 0;
+      ghostSprite.visible = !!next;
     },
     actionFx: (type, plotId) => {
       const r = plotId ? rectOf(plotId) : null;

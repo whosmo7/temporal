@@ -1,4 +1,4 @@
-// Takes everything it can today (decision 033): farms, hunts the wild spot bare, and keeps all but
+// Takes everything it can today (decision 039): farms, hunts the wild spot bare, and keeps all but
 // the night's food for itself. Invests in nothing.
 
 import { CONFIG } from '../../src/engine';

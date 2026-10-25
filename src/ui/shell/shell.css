@@ -315,6 +315,30 @@
   color: var(--ink);
 }
 
+/* Title on the left, the sort buttons on the right (decision 037). */
+.gallery__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--px) * 4);
+  margin: 0 0 calc(var(--px) * 8);
+}
+
+.gallery__head .gallery__title {
+  margin: 0;
+}
+
+.gallery__sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+}
+
+.gallery__score {
+  font-size: var(--text-md);
+}
+
 .gallery__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -437,6 +461,12 @@
 .replay__headline {
   font-size: var(--text-xl);
   font-weight: normal;
+}
+
+/* The world's score on the ending card (decision 037). */
+.replay__score {
+  margin: 0;
+  font-size: var(--text-lg);
 }
 
 .replay__actions {
@@ -669,7 +699,7 @@
   line-height: 1.4;
 }
 
-/* Scores (decision 033): the replay's ending card and the scores page share the table */
+/* Scores (decision 039): the replay's ending card and the scores page share the table */
 .replay__standings {
   width: min(100%, 720px);
   text-align: left;
@@ -828,32 +858,4 @@
   flex-wrap: wrap;
   gap: calc(var(--px) * 2);
   justify-content: flex-end;
-}
-
-/* Tutorial (08): one hint at a time, over the top of the game between the HUD and the clock. */
-.tutorial {
-  position: fixed;
-  top: 12px;
-  left: 50%;
-  z-index: 5;
-  transform: translateX(-50%);
-  width: min(460px, calc(100% - 640px));
-  min-width: 320px;
-  pointer-events: none;
-}
-
-.tutorial__card {
-  pointer-events: auto;
-}
-
-.tutorial__card p {
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: 1.4;
-}
-
-.tutorial__actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: calc(var(--px) * 3);
 }

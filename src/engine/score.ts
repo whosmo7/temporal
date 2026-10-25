@@ -1,9 +1,60 @@
-// Competitive scoring (decision 033). Each generation's score is worked out once, from the world
-// that player hands over after their own night's upkeep, and locked into `state.scores`. Later
-// generations append their own entry and never touch an earlier one.
+// Scores, shown only once a world has finished.
+// - A world's score (decision 037): counted from what happened, so any finished world can be scored
+//   from its stored history, including worlds finished before scoring existed. The server counts the
+//   same five things in SQL (`list_completed_worlds`); the weights live only in config.
+// - Each player's score (decision 039): worked out once per generation, from the world that player
+//   hands over after their own night's upkeep, and locked into `state.scores`. Later generations
+//   append their own entry and never touch an earlier one.
 
 import { CONFIG } from './config';
-import type { GenerationScore, PlotState, WorldState } from './types';
+import type { ActionEntry, GenerationScore, PlotState, Transition, WorldState } from './types';
+
+/** The things a score counts, over a whole world. */
+export interface ScoreTally {
+  cropsHarvested: number;
+  treesHarvested: number;
+  catches: number;
+  cropsRotted: number;
+  seedsWithered: number;
+}
+
+export const NO_TALLY: ScoreTally = { cropsHarvested: 0, treesHarvested: 0, catches: 0, cropsRotted: 0, seedsWithered: 0 };
+
+/** `field-1:2,0` and `field-1` are both a field. */
+const kindOf = (plotId: string | undefined) => plotId?.split(':')[0]?.replace(/-\d+$/, '');
+
+/** Counts a world's harvests, catches, rotted crops and withered seeds from its action and change logs. */
+export function tallyHistory(
+  actions: readonly Pick<ActionEntry, 'type' | 'plotId'>[],
+  transitions: readonly Pick<Transition, 'target' | 'after'>[],
+): ScoreTally {
+  const tally = { ...NO_TALLY };
+  for (const a of actions) {
+    if (a.type === 'fishHunt') tally.catches++;
+    else if (a.type === 'harvest' && kindOf(a.plotId) === 'field') tally.cropsHarvested++;
+    else if (a.type === 'harvest' && kindOf(a.plotId) === 'orchard') tally.treesHarvested++;
+  }
+  for (const t of transitions) {
+    if (!('plot' in t.target) || t.target.field !== 'stage' || kindOf(t.target.plot) !== 'field') continue;
+    if (t.after === 'rotten') tally.cropsRotted++;
+    else if (t.after === 'withered') tally.seedsWithered++;
+  }
+  return tally;
+}
+
+/** The score for a tally, with config's weights. */
+export function worldScore(t: ScoreTally): number {
+  const w = CONFIG.score;
+  return (
+    t.cropsHarvested * w.cropHarvested +
+    t.treesHarvested * w.treeHarvested +
+    t.catches * w.catch +
+    t.cropsRotted * w.cropRotted +
+    t.seedsWithered * w.seedWithered
+  );
+}
+
+// ---- Each player's score (decision 039) ----
 
 /**
  * The world's condition, 0..100, as the next player inherits it: useful reserves (capped, so a
@@ -11,7 +62,7 @@ import type { GenerationScore, PlotState, WorldState } from './types';
  * producing (trees, fields fit to sow, the wild spot). A shortfall at night scales it down.
  */
 export function worldCondition(state: WorldState): number {
-  const s = CONFIG.score;
+  const s = CONFIG.playerScore;
   const plots = Object.values(state.plots);
   const parts: [number, number][] = [
     [s.weights.food, capped(state.resources.food, CONFIG.upkeepFood * s.foodReserveNights)],
@@ -39,7 +90,7 @@ function working(plot: PlotState): number {
       return plot.stage === 'clear' ? worn : 0;
     case 'orchard':
       if (plot.stage === 'fruiting') return worn;
-      return plot.stage === 'sapling' || plot.stage === 'young' ? CONFIG.score.growingTree * worn : 0;
+      return plot.stage === 'sapling' || plot.stage === 'young' ? CONFIG.playerScore.growingTree * worn : 0;
     case 'field':
       return plot.stage === 'rotten' || plot.stage === 'withered' ? 0 : 1;
     default:
@@ -52,7 +103,7 @@ function working(plot: PlotState): number {
  * is taken out of the productive count first, so no unit is counted twice.
  */
 export function scoreGeneration(state: WorldState, turn: number): GenerationScore {
-  const s = CONFIG.score;
+  const s = CONFIG.playerScore;
   const { productiveFood, overhuntFood, foodTaken } = state.tally;
   const productive = Math.max(0, productiveFood - foodTaken) * s.productivePerFood;
   const extraction = foodTaken * s.takePerFood + overhuntFood * s.overhuntPerFood;

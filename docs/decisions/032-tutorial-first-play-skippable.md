@@ -2,6 +2,8 @@
 
 **Status:** decided 2026-10-25 by the user · **Settles:** `08` open questions 1 and 2
 
+> **Replaced by [033](033-how-to-play-pop-up.md) at the user's request:** the walkthrough is gone; the tutorial is a "How to play" pop-up that opens on the first day and from a button. A first Play no longer redirects. The `inheritance.tutorialSeen` key is kept, so anyone who finished or skipped the walkthrough isn't shown the pop-up.
+
 ## Context
 
 `08` left two questions about the tutorial: whether it is mandatory, and whether planting an orchard may say

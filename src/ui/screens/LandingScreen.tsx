@@ -8,7 +8,7 @@ import { Logo } from '../shell/Logo';
 
 /**
  * The landing (`08`, app-shell brief): the wordmark, the floating island living through a
- * generation, one premise line, then Play and Gallery, and Scores once signed in (decision 033).
+ * generation, one premise line, then Play and Gallery, and Scores once signed in (decision 039).
  * Enter is Play.
  */
 export function LandingScreen() {

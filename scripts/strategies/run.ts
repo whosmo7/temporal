@@ -23,7 +23,7 @@ export interface Strategy {
   name: string;
   /** What to try this generation, given the state the player inherits. */
   plan(state: WorldState): PlannedAction[];
-  /** What to try in the last moments of the day, given the state then (e.g. keeping food, 033). */
+  /** What to try in the last moments of the day, given the state then (e.g. keeping food, 039). */
   dusk?(state: WorldState): PlannedAction[];
 }
 

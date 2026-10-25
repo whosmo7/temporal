@@ -1,4 +1,4 @@
-// Competitive scoring runs (decision 033). Two tables per biome:
+// Competitive scoring runs (decision 039). Two tables per biome:
 //   1. Everyone plays one strategy: each generation's locked score and the world it handed over.
 //   2. One player deviates: a planter world where generation k plays strategy X instead. Shows
 //      X's own score against the planter it replaced, and what it did to everyone after it.

@@ -46,7 +46,7 @@ For each generation g = 1..N:
 ## Gallery
 
 - Grid of completed worlds: thumbnail (snapshot of the final gen), world name, biome, generation count, player names (from gravestones).
-- Sort: newest first. Filter by biome (stretch).
+- Sort: Most recent (default), Highest score, Lowest score; each card shows the world's score [037](../decisions/037-world-score-and-leaderboard.md). Filter by biome (stretch).
 - Click → replay.
 - "Your worlds" filter for the signed-in user (worlds they contributed to). This is optional, since repeat play and identity exist.
 
@@ -103,6 +103,7 @@ Names come from the journal page author of each generation, as in `causeSentence
 - [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; each card shows its world as a floating island. `ReplayScreen` loads `getReplay`; see the title and ending card task.)*
 - [x] **[C]** Admin "skip to replay" hook (`08`) *(Skip to replay in the admin world list asks to confirm, calls `markComplete` (the world ends with the generations played so far, its lock cleared) and opens its replay. Completed worlds get a Replay link instead.)*
 - [x] **[C]** (Stretch) Legacy view per player *(on the ending card, "After they left" ([031](../decisions/031-replay-viewer-pacing-and-legacy.md)); `legacyOf()` in `src/ui/screens/replay/words.ts`)*
+- [x] **[A]** Ghosts: each generation's player replays their day on the map, from the action log *(`src/ui/replay/ghosts.ts`, a "Ghosts" toggle beside the pace; replay only, off for reduced motion ([038](../decisions/038-replay-ghosts.md)))*
 - [ ] **[B]** (Stretch) Animate drawing strokes in the journal panel
 
 ## Acceptance

@@ -58,6 +58,8 @@ export interface CompletedWorld {
   /** For the gallery thumbnail (06): the map preset, and the state after the last generation. */
   preset?: PresetName;
   finalState?: WorldState | null;
+  /** The world's score (decision 037), from its whole history; null if the backend didn't count it. */
+  score: number | null;
 }
 
 export interface Replay {
@@ -122,6 +124,11 @@ export interface Backend {
    * Returns the new lock expiry, or null if the turn was voided and the world is gone.
    */
   heartbeat(worldId: string): Promise<string | null>;
+  /**
+   * Gives back a world you hold without playing it (backing out to Home, decision 035). The day
+   * is voided, nothing is written, and the next Play is a fresh draw. A no-op if you don't hold it.
+   */
+  releaseWorld(worldId: string): Promise<void>;
   commitTurn(input: CommitInput): Promise<TurnSummary>;
 
   listCompletedWorlds(): Promise<CompletedWorld[]>;

@@ -38,19 +38,10 @@
 
 ## Onboarding/tutorial
 
-Built as `#/tutorial` (`TutorialScreen`): the real game on a fixed forest world (seed 123) with a 4-minute day, one
-card at a time, nothing saved, no account. Shown before a first Play and skippable; also linked from the landing page as
-**How to play** ([032](../decisions/032-tutorial-first-play-skippable.md)). About two minutes.
-1. Move with WASD.
-2. Fill the can at the reservoir or a pond.
-3. Sow a tile of the field.
-4. Water it.
-5. While it grows, the lectern: "Those before you left words here."
-6. The graveyard: "When your day ends, you join them."
-7. Harvest the ripe tile.
-8. Upkeep: "Before night falls, keep enough food in the store to get through the night." → Play.
-
-No hint about how long anything takes. Wording: `docs/content/flavour-text.md` › Tutorial.
+**"How to play" pop-up** ([033](../decisions/033-how-to-play-pop-up.md)): four live pictures from a fixed tutorial world in a 2×2 grid, each with its prompt and
+one line: sow and water, fill the can, harvest (left too long, it rots), eat at the oven. It opens by itself on a
+browser's first day, and from a "How to play" button under the clock; the clock stops while it's open. `#/tutorial`
+shows it on its own. Code in `src/ui/tutorial/`. It replaces the walkthrough tutorial of [032](../decisions/032-tutorial-first-play-skippable.md) (a first Play no longer redirects there).
 
 ## Admin panel
 
@@ -59,22 +50,34 @@ No hint about how long anything takes. Wording: `docs/content/flavour-text.md` �
 | **Force-assign world** | Pick a world + a username → sets `worlds.forced_for`. That user's next Play gets that world. |
 | **Configure world** | Edit `turn_seconds`, `generation_count` on a world; edit global defaults + `inherit_ratio` |
 | **Skip to replay** | Open any world's replay. Optionally mark an open world `complete`. |
-| World list | All worlds with status, current gen, lock holder, lock expiry, and a "clear lock" button |
+| World list | **Worlds in progress only** ([036](../decisions/036-admin-panel-scope.md)), with current gen, lock holder, lock expiry, and a "clear lock" button |
+| **Delete world** | Removes a world from the game: never assigned, listed or replayed again. **Its history is kept** (sets `worlds.removed_at`; rule 2 holds). Disabled while someone holds the lock ([036](../decisions/036-admin-panel-scope.md)) |
+| **Create demo world** | One button: makes the world from `src/api/demo-world.json`, plays the founder generations server-side and force-assigns the judge ([036](../decisions/036-admin-panel-scope.md)) |
+| **Recent admin actions** | The latest 20 rows of the append-only `admin_actions` log: who, what, which world, before → after, when ([036](../decisions/036-admin-panel-scope.md)) |
 
-(Reset demo world isn't required. See `10` for the seed script.)
+Admin access is the one shared **`admin`** account: sign in to it to use the panel. There are no promote or demote controls
+([036](../decisions/036-admin-panel-scope.md)). `scripts/seed-demo.ts` stays as the backup for the demo world (`10`).
 
 ## Tasks
 
 - [x] **[C]** Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the `09` style) *(Kit in `src/ui/kit/`: `Button`, `ButtonLink`, `Panel`, `Dialog` (the Modal), `TextInput`, `Icon`; tokens in `src/ui/theme/`; sheet at `#/dev/kit` in dev. UI font is the pack's pixel font on a 9 px size grid.)*
 - [x] **[C]** Landing page with a background world (a floating island over a teal sky, see `docs/art/art-direction.md`) *("One generation a minute" from `docs/design/app-shell-brief.md`: `IslandScene` composites the world atlas on a 2D canvas, with a 60 s multiply-light loop and one stone rising each nightfall. Reduced motion holds at dusk. It stands in for a live `04` render of a sample world, which can replace the canvas later.)*
 - [x] **[C]** Auth screen + session persistence + logout + username display *(`/#/auth`, `?next=` returns the player where they were and `?mode=signup` opens on sign up. Session in `src/store/session.ts`, `RequireUser` guards `/play`. The app talks to `backend` from `src/api/index.ts`, `LocalBackend` until `SupabaseBackend` exists.)*
-- [x] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another" *(`PlayFlow` in `src/ui/play/`: claim → `Inheriting` → `Game` → seal commits ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) → Play another / Home. While the clock is stopped (journal open, end of the day) it calls `backend.heartbeat` once a minute until the turn is saved; `null` means the turn was voided, and a "Your day ran out" card replaces the game (`src/ui/play/heartbeat.ts`). `#/play?seed=…` is an offline dev sandbox that saves nothing. **Testing only, remove both before the demo:** an "End turn (test)" button under the clock jumps to 6 am, and "Next generation here (test)" on the last card claims the same world back for its next generation (admin force-assign, then a check that the same world and generation came back; non-admins get a message).)*
+- [x] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another" *(`PlayFlow` in `src/ui/play/`: claim → `Inheriting` → `Game` → seal commits ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) → Play another / Home. While the clock is stopped (journal open, end of the day) it calls `backend.heartbeat` once a minute until the turn is saved; `null` means the turn was voided, and a "Your day ran out" card replaces the game (`src/ui/play/heartbeat.ts`). Home, on the inheriting card or mid-day, releases the world so the next Play is a fresh draw ([035](../decisions/035-home-releases-the-world.md)). `#/play?seed=…` is an offline dev sandbox that saves nothing. **Testing only, remove both before the demo:** an "End turn (test)" button under the clock jumps to 6 am, and "Next generation here (test)" on the last card claims the same world back for its next generation (admin force-assign, then a check that the same world and generation came back; non-admins get a message).)*
 - [x] **[B]** Resume: if the user refreshes while holding a lock, put them back in (or void; open question) *(The same turn starts over at 6 am: `claimWorld` hands back the held world ([018](../decisions/018-commit-on-seal-refresh-restarts.md)).)*
-- [x] **[C]** Tutorial scene *(`src/ui/screens/TutorialScreen.tsx`, steps in `src/ui/tutorial/steps.ts`; a first Play redirects to `#/tutorial?then=play` until it's finished or skipped ([032](../decisions/032-tutorial-first-play-skippable.md)))*
+- [x] **[C]** Tutorial scene *(built by B as the "How to play" pop-up, [033](../decisions/033-how-to-play-pop-up.md); C to review the words)*
 - [x] **[C]** Gallery + replay routes (screens from `06`) *(see `06`)*
 - [x] **[C]** Admin panel + guard *(`/#/admin` → `AdminScreen` behind `RequireAdmin`: logged out goes to `/auth` and back, a non-admin sees the not-found page. Force-assign first (pick a world, type a name, Enter; unlocked worlds listed first), then every world with its lock, next-Play user, editable generations and turn length, Clear lock and Skip to replay, then the defaults for new worlds and the inherit ratio. Admins get an Admin link in the header. `Profile.isAdmin` and the admin calls are on the `Backend` contract; in `LocalBackend`, signing up as `admin` makes an admin.)*
 - [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup) *(Claim failed and commit failed are done: Try again on both, and the local copy. No network waits for `SupabaseBackend`.)*
 - [x] **[C]** Audio toggle (mute) in the shell (`09`) *(`MuteToggle` in the header, saved in localStorage.)*
+
+**Admin panel follow-ups ([036](../decisions/036-admin-panel-scope.md))**
+
+- [ ] **[A]** Migration: `worlds.removed_at` / `removed_by`, append-only `admin_actions` (admins read, no direct writes), `admin_remove_world` (refused while locked), `admin_recent_actions`, a log row from every `admin_*` RPC, and the removed-world filter in `claim_world` (all [034](../decisions/034-weighted-claim-no-back-to-back.md) buckets), `admin_force_assign`, `admin_list_worlds`, `list_completed_worlds`, `get_replay`
+- [ ] **[A]** `Backend`: `removeWorld`, `createDemoWorld`, `listAdminActions`, in `SupabaseBackend` and `LocalBackend`, with tests (removed world never claimed; delete refused while locked; every admin call logs one row)
+- [ ] **[A]** `seed-demo` Edge Function (admin-only), sharing `src/api/demo.ts` with `scripts/seed-demo.ts`
+- [ ] **[A]** Live checks in `scripts/test-backend.ts` for remove, the lock refusal and the log
+- [ ] **[C]** Panel: list worlds in progress only; Delete with a confirm, disabled while locked; "Create demo world" button; "Recent admin actions" list
 
 ## Acceptance
 
@@ -83,6 +86,6 @@ No hint about how long anything takes. Wording: `docs/content/flavour-text.md` �
 
 ## Open questions
 
-1. ~~Is the tutorial mandatory on first play, or skippable?~~ Shown before a first Play, skippable ([032](../decisions/032-tutorial-first-play-skippable.md)).
-2. ~~Is the "this will take longer than you have" hint OK?~~ No hint ([032](../decisions/032-tutorial-first-play-skippable.md)).
+1. ~~Is the tutorial mandatory on first play, or skippable?~~ Settled: it opens by itself on the first day and closes with Got it ([033](../decisions/033-how-to-play-pop-up.md)).
+2. ~~Is the "this will take longer than you have" hint OK, given pending effects are partly hidden?~~ Moot: the pop-up gives no timings ([033](../decisions/033-how-to-play-pop-up.md)).
 3. ~~Refresh mid-turn: resume with the time remaining, or void?~~ Settled: the same turn starts over ([018](../decisions/018-commit-on-seal-refresh-restarts.md)).

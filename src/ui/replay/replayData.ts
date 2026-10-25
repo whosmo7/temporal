@@ -86,7 +86,7 @@ export interface Standing extends GenerationScore {
 }
 
 /**
- * Each generation's locked score (decision 033), highest first, named by who played it. Scores were
+ * Each generation's locked score (decision 039), highest first, named by who played it. Scores were
  * locked as each generation ended, so they come from the last snapshot. Empty for worlds finished
  * before scoring existed.
  */

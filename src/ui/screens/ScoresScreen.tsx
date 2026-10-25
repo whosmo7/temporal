@@ -11,7 +11,7 @@ type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; worlds
 const TOP = 10;
 
 /**
- * `/scores` (decision 033), for a signed-in player: their own locked scores, then the highest
+ * `/scores` (decision 039), for a signed-in player: their own locked scores, then the highest
  * anyone has reached. From finished worlds only, so it never reveals a world still being played.
  */
 export function ScoresScreen() {

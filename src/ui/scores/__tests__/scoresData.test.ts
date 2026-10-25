@@ -22,6 +22,7 @@ function world(id: string, players: string[], scores?: GenerationScore[]): Compl
     generationCount: players.length,
     completedAt: '2026-10-25',
     players,
+    score: null,
     finalState: (scores ? { scores } : {}) as WorldState,
   };
 }

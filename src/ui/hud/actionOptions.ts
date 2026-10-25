@@ -92,7 +92,7 @@ export function waterEdgeOptions(view: VisibleWorld, check: Check): ActionOption
 }
 
 /**
- * At the oven in the house: a meal from the store (decision 029), or food kept for yourself (033).
+ * At the oven in the house: a meal from the store (decision 029), or food kept for yourself (039).
  * Both are greyed out when the store is empty.
  */
 export function ovenOptions(view: VisibleWorld, check: Check): ActionOption[] {
@@ -100,7 +100,7 @@ export function ovenOptions(view: VisibleWorld, check: Check): ActionOption[] {
   const keep: ActionRequest = { type: 'take' };
   return [
     { key: 'E', request: meal, label: promptLabel('eat', 'field', view.biome), cost: costOf('eat'), error: check(meal) },
-    // Never the default (decision 033)
+    // Never the default (decision 039)
     { key: 'T', request: keep, label: promptLabel('take', 'field', view.biome), cost: costOf('take'), error: check(keep) },
   ];
 }

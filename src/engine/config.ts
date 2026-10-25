@@ -85,10 +85,19 @@ export const CONFIG = {
   stormWear: 1,
   stormChance: 0.5,
 
-  // Competitive scoring (decision 033). generationScore = productive + extraction − corruption +
+  // World score (decision 037): what each counted thing adds, shown in the gallery and replay only
+  score: {
+    cropHarvested: 1, // a field tile harvested
+    treeHarvested: 3, // an orchard tree harvested
+    catch: 2, // a fish or a hunt
+    cropRotted: -2, // a field tile gone rotten
+    seedWithered: -1, // a sown seed that withered unwatered
+  },
+
+  // Each player's score (decision 039). generationScore = productive + extraction − corruption +
   // exitBonus, locked at the end of each generation from the world it hands over.
   takeFood: 1, // food one `take` moves from the store to the player
-  score: {
+  playerScore: {
     productivePerFood: 1, // per food harvested, or caught while the wild spot stays healthy
     takePerFood: 2, // per food kept for yourself (replaces its productive credit, never adds to it)
     overhuntPerFood: 1, // per food caught that takes the wild spot below wildFloor

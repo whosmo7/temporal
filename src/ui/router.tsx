@@ -7,8 +7,8 @@ import { NotFoundScreen } from './screens/NotFoundScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
 import { ScoresScreen } from './screens/ScoresScreen';
-import { TutorialScreen } from './screens/TutorialScreen';
 import { AppShell } from './shell/AppShell';
+import { TutorialScreen } from './tutorial/TutorialScreen';
 import { RequireAdmin } from './shell/RequireAdmin';
 import { RequireUser } from './shell/RequireUser';
 
@@ -51,7 +51,8 @@ const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
 /**
  * Hash routes (GitHub Pages). Everything but the game sits in the shell's sky; the game is
  * full-screen. Play needs a signed-in player; the gallery and replays are public (decision 017).
- * `/scores` needs a signed-in player (decision 033). `/admin` needs an admin. The tutorial is full-screen like the game, and open to anyone.
+ * `/scores` needs a signed-in player (decision 039). `/admin` needs an admin. `tutorial` is "How to play" on its
+ * own, open to anyone (decision 033).
  */
 export const router = createHashRouter([
   {
@@ -62,6 +63,7 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <LandingScreen /> },
       { path: 'auth', element: <AuthScreen /> },
+      { path: 'tutorial', element: <TutorialScreen /> },
       { path: 'gallery', element: <GalleryScreen /> },
       { path: 'world/:id/replay', element: <ReplayScreen /> },
       {
@@ -92,6 +94,5 @@ export const router = createHashRouter([
       </RequireUser>
     ),
   },
-  { path: '/tutorial', element: <TutorialScreen /> },
   ...devFullscreenRoutes,
 ]);

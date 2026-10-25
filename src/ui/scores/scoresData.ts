@@ -1,4 +1,4 @@
-// The scores page (decision 033): every locked generation score from finished worlds, named by who
+// The scores page (decision 039): every locked generation score from finished worlds, named by who
 // played it. Only finished worlds are listed, so nothing about a world still being played shows.
 
 import type { CompletedWorld } from '../../api';

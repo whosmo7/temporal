@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { CONFIG } from '../config';
 import { newGame, OPTS, sowAndWater } from '../__fixtures__/play';
 import { replay } from '../replay';
-import { scoreGeneration, worldCondition } from '../score';
+import { NO_TALLY, scoreGeneration, tallyHistory, worldCondition, worldScore } from '../score';
 
-describe('competitive scoring (decision 033)', () => {
+describe('player scores (decision 039)', () => {
   it('locks one score per generation at its end, and later generations never change it', () => {
     const game = newGame();
     game.turn((g) => g.act('digWell', { plotId: 'well' }));
@@ -42,12 +42,12 @@ describe('competitive scoring (decision 033)', () => {
     const b = scoreGeneration(poor, 1);
     expect(a.condition).toBeGreaterThan(b.condition);
     expect(a.exitBonus).toBeGreaterThan(b.exitBonus);
-    expect(a.exitBonus).toBeCloseTo(a.condition * CONFIG.score.exitBonusPerCondition, 1);
+    expect(a.exitBonus).toBeCloseTo(a.condition * CONFIG.playerScore.exitBonusPerCondition, 1);
   });
 
   it('does not reward stockpiling past the reserve, or count broken structures', () => {
     const state = newGame().begin().state;
-    const cap = CONFIG.upkeepFood * CONFIG.score.foodReserveNights;
+    const cap = CONFIG.upkeepFood * CONFIG.playerScore.foodReserveNights;
     state.resources.food = cap;
     const atCap = worldCondition(state);
     state.resources.food = cap * 50;
@@ -63,7 +63,7 @@ describe('competitive scoring (decision 033)', () => {
     const state = newGame().begin().state;
     const fed = worldCondition(state);
     state.weakened = 1;
-    expect(worldCondition(state)).toBeCloseTo(fed * (1 - CONFIG.score.weakenedPenalty), 0);
+    expect(worldCondition(state)).toBeCloseTo(fed * (1 - CONFIG.playerScore.weakenedPenalty), 0);
   });
 
   it('take moves food out of the store and is refused when it is empty', () => {
@@ -84,7 +84,7 @@ describe('competitive scoring (decision 033)', () => {
     game.act('take', { t: CONFIG.cropRipenSeconds });
     const score = scoreGeneration(game.state, 1);
     expect(score.productive).toBe(0);
-    expect(score.extraction).toBe(CONFIG.takeFood * CONFIG.score.takePerFood);
+    expect(score.extraction).toBe(CONFIG.takeFood * CONFIG.playerScore.takePerFood);
     expect(score.corruption).toBeGreaterThan(0);
   });
 
@@ -93,7 +93,7 @@ describe('competitive scoring (decision 033)', () => {
     const caught: string[] = [];
     while (game.state.wildStock > 0) {
       game.act('fishHunt', { plotId: 'wild' });
-      caught.push(game.state.wildStock < CONFIG.score.wildFloor ? 'over' : 'fair');
+      caught.push(game.state.wildStock < CONFIG.playerScore.wildFloor ? 'over' : 'fair');
     }
     const over = caught.filter((c) => c === 'over').length * CONFIG.fishHuntYield;
     expect(game.state.tally.overhuntFood).toBe(over);
@@ -128,5 +128,47 @@ describe('competitive scoring (decision 033)', () => {
     game.turn((g) => g.act('take'));
     const rebuilt = replay(7, OPTS, game.log);
     expect(rebuilt.snapshots.at(-1)!.state.scores).toEqual(game.state.scores);
+  });
+});
+
+const FIELD = 'field-1';
+const TREE = 'orchard-1:0,0';
+
+describe('world score (decision 037)', () => {
+  it('counts harvests, trees, catches, rotted crops and withered seeds from the logs', () => {
+    const game = newGame().begin();
+    sowAndWater(game, `${FIELD}:0,0`, 0);
+    game.act('harvest', { plotId: `${FIELD}:0,0`, t: CONFIG.cropRipenSeconds + 1 }); // +1
+    game.act('plantOrchard', { plotId: TREE, t: 2 });
+    const grow = game.state.pending.find((e) => e.kind === 'orchardMature');
+    game.act('fastTrack', { targetEffectId: grow?.id, t: 3 });
+    game.act('harvest', { plotId: TREE, t: 4 }); // +3
+    game.act('fishHunt', { plotId: 'wild', t: 5 }); // +2
+    sowAndWater(game, `${FIELD}:1,0`, 6); // ripens today, left all of gen 2: rots, −2
+    game.act('plantCrops', { plotId: `${FIELD}:2,0`, t: 8 }); // never watered: withers in gen 3, −1
+    game.end().begin().end().begin();
+
+    const tally = tallyHistory(game.log, game.transitions);
+    expect(tally).toEqual({ cropsHarvested: 1, treesHarvested: 1, catches: 1, cropsRotted: 1, seedsWithered: 1 });
+    expect(worldScore(tally)).toBe(1 + 3 + 2 - 2 - 1);
+  });
+
+  it('a refused action scores nothing: only logged actions count', () => {
+    const game = newGame().begin();
+    game.act('harvest', { plotId: `${FIELD}:0,0`, t: 1 }); // nothing ripe: refused, not logged
+    expect(tallyHistory(game.log, game.transitions)).toEqual(NO_TALLY);
+  });
+
+  it('scores worlds from before per-tile fields too (whole-field plot ids)', () => {
+    const tally = tallyHistory(
+      [{ type: 'harvest', plotId: 'field-1' }, { type: 'harvest', plotId: 'orchard-1' }],
+      [{ target: { plot: 'field-2', field: 'stage' }, after: 'rotten' }],
+    );
+    expect(tally).toEqual({ ...NO_TALLY, cropsHarvested: 1, treesHarvested: 1, cropsRotted: 1 });
+  });
+
+  it('uses the weights in config', () => {
+    const w = CONFIG.score;
+    expect([w.cropHarvested, w.treeHarvested, w.catch, w.cropRotted, w.seedWithered]).toEqual([1, 3, 2, -2, -1]);
   });
 });

@@ -1,7 +1,8 @@
-# 033: Competitive scoring, locked as each generation ends
+# 039: Competitive scoring, locked as each generation ends
 
 **Status:** decided 2026-10-25 by the user, experimental (branch `experiment/sandbox`) · **Section:** `01`, `02`, `06` ·
-**Changes:** "No score language" in `inheritance-player-facing` (for the replay's ending card only)
+**Changes:** "No score language" in `inheritance-player-facing` (the replay's ending card and the Scores page) ·
+**Sits beside:** [037](037-world-score-and-leaderboard.md), the world score
 
 ## Context
 
@@ -9,6 +10,11 @@ The user wanted the game to work like a society: players compete for the highest
 world. Taking too much from it leaves later players worse off. Productive, sustainable play has to be able to win,
 and selfish extraction has to be a real choice with real costs, neither always best nor always punished beyond its
 benefit.
+
+**Not the world score.** [037](037-world-score-and-leaderboard.md) scores a whole finished world from its history, for
+the gallery. This decision scores each *player's* generation, so they can compete. The two use separate config
+(`CONFIG.score` for 037, `CONFIG.playerScore` here) and both live in `src/engine/score.ts`. First numbered 033 on the
+experiment branch; renumbered to 039 when `main` took 033–038.
 
 ## Options
 
@@ -19,7 +25,7 @@ on the cost summary.
 
 ## Decision
 
-`generationScore = productive + extraction − corruption + exitBonus`, with every weight in `CONFIG.score`.
+`generationScore = productive + extraction − corruption + exitBonus`, with every weight in `CONFIG.playerScore`.
 
 - **Productive:** food harvested from fields and trees, and food caught while the wild spot stays at or above
   `wildFloor`.
@@ -60,7 +66,7 @@ on the cost summary.
 
 - **Contract (A):** `ActionType` gains `take`; `CauseRule` gains `assessed`; `TransitionTarget.world` gains `score`.
   `TurnTally` gains `productiveFood`, `overhuntFood` and `foodTaken`. `WorldState` gains an optional `scores`, which is
-  absent in states saved earlier. Migration `20261025120000_action_type_take.sql` allows `take` in the action log.
+  absent in states saved earlier. Migration `20261025150000_action_type_take.sql` allows `take` in the action log.
 - **Copy (C):** the oven offers "Keep some for yourself" on T. The replay's standings use plain labels (Grown and
   gathered, Kept, Cost of keeping, The world they left, In all), and nothing names an action good or bad.
 - All the numbers are first-pass and need C's tuning with `scripts/score-sim.ts`.

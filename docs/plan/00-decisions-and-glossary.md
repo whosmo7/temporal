@@ -116,14 +116,16 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Topic | Decision |
 |---|---|
 | Mode | **Async online**: each generation is played by whoever is assigned next, on their own device |
-| Assignment | **Weighted random** between inheriting an unlocked in-progress world and getting a new one; **ratio configurable** |
+| Assignment | **Weighted random**: 0.5 the open world furthest along, 0.4 any other, 0.1 a new world; an empty choice falls through. Both numbers are live settings [034](../decisions/034-weighted-claim-no-back-to-back.md) |
 | Concurrency | **Only one player can hold a world at a time** (lock) |
-| Abandon mid-turn | **Turn voided**: the lock expires, the world stays as it was before the turn, no gravestone |
+| Abandon mid-turn | **Turn voided**: the lock expires, the world stays as it was before the turn, no gravestone. Backing out to **Home** releases the world at once, and the next Play is a fresh draw [035](../decisions/035-home-releases-the-world.md) |
 | Refresh mid-turn | **The same turn starts over** at 6 am, within the original lock ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) |
 | Identity | **Username + password** (security isn't the focus) |
-| Repeat play | **Allowed**: the same person can play several generations of one world. Straight after a turn, the device asks not to be handed the same world again (a client-side hint, [020](../decisions/020-claim-and-lock-rules.md)) |
+| Repeat play | **Allowed, but never back to back**: you're never drawn a world whose latest generation you played; once someone else has played it, it's back in the draw. Checked on the server ([034](../decisions/034-weighted-claim-no-back-to-back.md), replacing [020](../decisions/020-claim-and-lock-rules.md)'s device hint) |
 | Choosing a world | **No**: assignment is always the weighted random draw ([020](../decisions/020-claim-and-lock-rules.md)) |
 | World names | **From the seed**, `worldName(seed, biome)`, e.g. "Hollow Elm" ([020](../decisions/020-claim-and-lock-rules.md)) |
+| Replay ghosts | **A faint figure of each generation's player replays their day** in the replay, built from the action log; a Ghosts toggle; never during play ([038](../decisions/038-replay-ghosts.md)) |
+| Admin panel | One shared **`admin`** account. Lists worlds in progress; **Delete removes a world from the game but keeps its history**, refused while locked; a **Create demo world** button; an append-only log of admin actions ([036](../decisions/036-admin-panel-scope.md)) |
 | Lock while reading | **Heartbeat** extends the lock while the clock is stopped, capped at 15 extra minutes ([020](../decisions/020-claim-and-lock-rules.md)) |
 | New world (Gen 1) | **Seeded starter state** (some food/water, damaged reservoir, wild stock, empty plots, biome modifier) |
 
@@ -152,11 +154,12 @@ flourishing. The slot is **5 minutes**.
 | Health & level | **World health bar + level badge in the HUD**; level only rises. Replaces "No score" ([023](../decisions/023-world-health-and-level.md)) |
 | Orchards & flowers | **Emergent** from the world's level; no planting ([024](../decisions/024-emergent-orchards-and-flowers.md)) |
 | Oven | **Where you eat**, from the store, one food a meal ([025](../decisions/025-oven-cooks-stored-food.md), [029](../decisions/029-eat-at-the-oven.md)) |
+| Tutorial | A **"How to play" pop-up**: four live pictures (sow and water, fill the can, harvest, eat), on the first day and from a button; the clock stops while it's open [033](../decisions/033-how-to-play-pop-up.md), replacing [032](../decisions/032-tutorial-first-play-skippable.md)'s walkthrough |
+| World score | **Counted from a finished world's history**: crop +1, tree +3, catch +2, rotted crop −2, withered seed −1 (`CONFIG.score`). Shown on gallery cards and the replay's ending card only, never during play; the gallery sorts by most recent, highest or lowest [037](../decisions/037-world-score-and-leaderboard.md) |
 | Explaining the world | The blanket rule is **lifted**, but the only new readouts are the **health bar and land level**. Due dates, yields and causes still wait for the replay; the cost summary stays realised-only ([026](../decisions/026-lift-no-explanation-rule.md)) |
 | Level names | **Bare, Taking root, Green, Blooming, Abundant** (levels 0–4), shown by name, never as a number ([023](../decisions/023-world-health-and-level.md)) |
 | Replay viewer | **Play to auto-play** at Slow/Steady/Quick (12/8/4 s), names under the timeline dots, the **legacy view on the ending card**; a plot's history shows up to the generation on screen ([031](../decisions/031-replay-viewer-pacing-and-legacy.md)) |
-| Competitive scoring | Each generation's **score is locked when it ends**: grown and gathered + kept − cost of keeping + the world it hands over. A new **`take`** action at the oven. **Shown in the replay and on a signed-in Scores page, finished worlds only** ([033](../decisions/033-competitive-scoring.md)) |
-| Tutorial | **Before a first Play, skippable**, and linked as How to play; no hint about how long anything takes ([032](../decisions/032-tutorial-first-play-skippable.md)) |
+| Player scores | Each generation's **score is locked when it ends**: grown and gathered + kept − cost of keeping + the world it hands over. A new **`take`** action at the oven. **Shown in the replay and on a signed-in Scores page, finished worlds only**. Separate from the world score (037) ([039](../decisions/039-competitive-scoring.md)) |
 | First-pass numbers | Can 4 pours, empty each morning (027); 9 starting seeds, +1 per field tile, +2 per tree; level thresholds 55/65/75/85 (`01` › Section 13 values) |
 
 ## Glossary

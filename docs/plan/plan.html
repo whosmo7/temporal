@@ -184,6 +184,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <li><a href="#s10"><span class="nav-num">10</span><span class="nav-label">Demo World &amp; Demo Moment</span><span class="nav-count" data-for="s10"></span></a></li>
 <li><a href="#s11"><span class="nav-num">11</span><span class="nav-label">Repo Setup, Workflow, Testing, Deploy</span><span class="nav-count" data-for="s11"></span></a></li>
 <li><a href="#s12"><span class="nav-num">12</span><span class="nav-label">Team Split (3 people)</span></a></li>
+<li><a href="#s13"><span class="nav-num">13</span><span class="nav-label">Gameplay Mechanics &amp; Playing Experience</span><span class="nav-count" data-for="s13"></span></a></li>
       </ul>
     </nav>
   </aside>
@@ -276,6 +277,11 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <td>12</td>
 <td><a href="#s12">Team split: who does what</a></td>
 <td>Everyone</td>
+</tr>
+<tr>
+<td>13</td>
+<td><a href="#s13">Gameplay mechanics &amp; playing experience</a></td>
+<td>Everyone, split by folder</td>
 </tr>
 </tbody>
 </table></div>
@@ -445,7 +451,11 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </tr>
 <tr>
 <td>Eating</td>
-<td><strong>Harvest and eat</strong>: a free Harvest option (Q) that turns the fresh yield into hunger, up to full. Not a ninth action (<a href="../decisions/003-eating-via-harvest.md">003</a>, <a href="../decisions/016-hunger.md">016</a>)</td>
+<td><strong>At the oven only</strong>: "Cook and eat" takes one food from the store and refills hunger. A free logged <code>eat</code> action, 0.5 s, allowed when full. Harvest and eat is gone (<a href="../decisions/029-eat-at-the-oven.md">029</a>, replacing <a href="../decisions/003-eating-via-harvest.md">003</a> and <a href="../decisions/016-hunger.md">016</a>'s Q)</td>
+</tr>
+<tr>
+<td>Watering</td>
+<td>Sow, then water from the can, then it grows. The can (4 pours) starts each day empty and fills at a pond, the sea edge, the well or the reservoir. Tend clears a rotten tile for replanting; nights take <strong>food only</strong> <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a></td>
 </tr>
 <tr>
 <td>Hunger</td>
@@ -477,7 +487,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </tr>
 <tr>
 <td>Drought</td>
-<td><strong>Exactly one per world</strong>, lasting <code>min(5, ceil(gens / 10))</code> consecutive generations, starting at a random gen ≥ 2 (<a href="../decisions/008-drought-length-and-timing.md">008</a>)</td>
+<td><strong>Off for now</strong> (<code>droughts: false</code>, <a href="../decisions/030-droughts-off.md">030</a>). When on: <strong>exactly one per world</strong>, lasting <code>min(5, ceil(gens / 10))</code> consecutive generations, starting at a random gen ≥ 2 (<a href="../decisions/008-drought-length-and-timing.md">008</a>)</td>
 </tr>
 <tr>
 <td>Wild spot</td>
@@ -517,7 +527,11 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <tbody>
 <tr>
 <td>Turn length</td>
-<td><strong>Configurable</strong> per world. Default <strong>10 minutes</strong> (600 s) (<a href="../decisions/007-turn-and-generation-defaults.md">007</a>)</td>
+<td><strong>Configurable</strong> per world. Default <strong>2 minutes</strong> (120 s, <a href="../decisions/028-two-minute-days-crops-carry-over.md">028</a>; was 10 minutes in <a href="../decisions/007-turn-and-generation-defaults.md">007</a>)</td>
+</tr>
+<tr>
+<td>Crops and rot</td>
+<td>A watered tile ripens <strong>a minute</strong> later. Unpicked, it's left ripe for the next player and rots only after standing ripe a whole generation; one still growing at dusk carries over with half its time left <a href="../decisions/028-two-minute-days-crops-carry-over.md">028</a></td>
 </tr>
 <tr>
 <td>Generations per world</td>
@@ -635,7 +649,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </tr>
 <tr>
 <td>Assignment</td>
-<td><strong>Weighted random</strong> between inheriting an unlocked in-progress world and getting a new one; <strong>ratio configurable</strong></td>
+<td><strong>Weighted random</strong>: 0.5 the open world furthest along, 0.4 any other, 0.1 a new world; an empty choice falls through. Both numbers are live settings <a href="../decisions/034-weighted-claim-no-back-to-back.md">034</a></td>
 </tr>
 <tr>
 <td>Concurrency</td>
@@ -643,7 +657,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </tr>
 <tr>
 <td>Abandon mid-turn</td>
-<td><strong>Turn voided</strong>: the lock expires, the world stays as it was before the turn, no gravestone</td>
+<td><strong>Turn voided</strong>: the lock expires, the world stays as it was before the turn, no gravestone. Backing out to <strong>Home</strong> releases the world at once, and the next Play is a fresh draw <a href="../decisions/035-home-releases-the-world.md">035</a></td>
 </tr>
 <tr>
 <td>Refresh mid-turn</td>
@@ -655,7 +669,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </tr>
 <tr>
 <td>Repeat play</td>
-<td><strong>Allowed</strong>: the same person can play several generations of one world. Straight after a turn, the device asks not to be handed the same world again (a client-side hint, <a href="../decisions/020-claim-and-lock-rules.md">020</a>)</td>
+<td><strong>Allowed, but never back to back</strong>: you're never drawn a world whose latest generation you played; once someone else has played it, it's back in the draw. Checked on the server (<a href="../decisions/034-weighted-claim-no-back-to-back.md">034</a>, replacing <a href="../decisions/020-claim-and-lock-rules.md">020</a>'s device hint)</td>
 </tr>
 <tr>
 <td>Choosing a world</td>
@@ -664,6 +678,14 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <tr>
 <td>World names</td>
 <td><strong>From the seed</strong>, <code>worldName(seed, biome)</code>, e.g. "Hollow Elm" (<a href="../decisions/020-claim-and-lock-rules.md">020</a>)</td>
+</tr>
+<tr>
+<td>Replay ghosts</td>
+<td><strong>A faint figure of each generation's player replays their day</strong> in the replay, built from the action log; a Ghosts toggle; never during play (<a href="../decisions/038-replay-ghosts.md">038</a>)</td>
+</tr>
+<tr>
+<td>Admin panel</td>
+<td>One shared <strong><code>admin</code></strong> account. Lists worlds in progress; <strong>Delete removes a world from the game but keeps its history</strong>, refused while locked; a <strong>Create demo world</strong> button; an append-only log of admin actions (<a href="../decisions/036-admin-panel-scope.md">036</a>)</td>
 </tr>
 <tr>
 <td>Lock while reading</td>
@@ -680,6 +702,73 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </div><div class="block block-plain"><h2 id="s00-demo">Demo</h2>
 <p><strong>Pre-seeded demo world</strong>: teammates play the earlier generations before judging (one plants the orchard and sees only its cost). The judge is force-assigned the generation where it is flourishing. The slot is <strong>5 minutes</strong>.</p>
 <hr />
+</div><div class="block block-plain"><h2 id="s00-gameplay-rework-13">Gameplay rework (13)</h2>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fields</td>
+<td><strong>Per tile</strong>: each tile is planted, watered, grown and harvested on its own (<a href="../decisions/019-per-tile-actions-take-time.md">019</a>; watering added in <a href="../decisions/021-per-tile-farming-and-watering.md">021</a>)</td>
+</tr>
+<tr>
+<td>Watering</td>
+<td><strong>Plant, then water once</strong> before a tile grows. A <strong>watering can</strong> holds a few pours, filled free at a well, reservoir, pond or sea edge (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>)</td>
+</tr>
+<tr>
+<td>Unwatered seeds</td>
+<td>Carry over, and <strong>wither 2 generations</strong> after planting (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>)</td>
+</tr>
+<tr>
+<td>Actions</td>
+<td>Still <strong>eight</strong>: <strong>Water</strong> replaces Plant Orchard (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>, <a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>)</td>
+</tr>
+<tr>
+<td>Seeds</td>
+<td><strong>Shared stock</strong> carried between generations; harvest gives some back (<a href="../decisions/022-seed-stock.md">022</a>)</td>
+</tr>
+<tr>
+<td>Health &amp; level</td>
+<td><strong>World health bar + level badge in the HUD</strong>; level only rises. Replaces "No score" (<a href="../decisions/023-world-health-and-level.md">023</a>)</td>
+</tr>
+<tr>
+<td>Orchards &amp; flowers</td>
+<td><strong>Emergent</strong> from the world's level; no planting (<a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>)</td>
+</tr>
+<tr>
+<td>Oven</td>
+<td><strong>Where you eat</strong>, from the store, one food a meal (<a href="../decisions/025-oven-cooks-stored-food.md">025</a>, <a href="../decisions/029-eat-at-the-oven.md">029</a>)</td>
+</tr>
+<tr>
+<td>Tutorial</td>
+<td>A <strong>"How to play" pop-up</strong>: four live pictures (sow and water, fill the can, harvest, eat), on the first day and from a button; the clock stops while it's open <a href="../decisions/033-how-to-play-pop-up.md">033</a>, replacing <a href="../decisions/032-tutorial-first-play-skippable.md">032</a>'s walkthrough</td>
+</tr>
+<tr>
+<td>World score</td>
+<td><strong>Counted from a finished world's history</strong>: crop +1, tree +3, catch +2, rotted crop −2, withered seed −1 (<code>CONFIG.score</code>). Shown on gallery cards and the replay's ending card only, never during play; the gallery sorts by most recent, highest or lowest <a href="../decisions/037-world-score-and-leaderboard.md">037</a></td>
+</tr>
+<tr>
+<td>Explaining the world</td>
+<td>The blanket rule is <strong>lifted</strong>, but the only new readouts are the <strong>health bar and land level</strong>. Due dates, yields and causes still wait for the replay; the cost summary stays realised-only (<a href="../decisions/026-lift-no-explanation-rule.md">026</a>)</td>
+</tr>
+<tr>
+<td>Level names</td>
+<td><strong>Bare, Taking root, Green, Blooming, Abundant</strong> (levels 0–4), shown by name, never as a number (<a href="../decisions/023-world-health-and-level.md">023</a>)</td>
+</tr>
+<tr>
+<td>Replay viewer</td>
+<td><strong>Play to auto-play</strong> at Slow/Steady/Quick (12/8/4 s), names under the timeline dots, the <strong>legacy view on the ending card</strong>; a plot's history shows up to the generation on screen (<a href="../decisions/031-replay-viewer-pacing-and-legacy.md">031</a>)</td>
+</tr>
+<tr>
+<td>First-pass numbers</td>
+<td>Can 4 pours, empty each morning (027); 9 starting seeds, +1 per field tile, +2 per tree; level thresholds 55/65/75/85 (<code>01</code> › Section 13 values)</td>
+</tr>
+</tbody>
+</table></div>
 </div><div class="block block-plain"><h2 id="s00-glossary">Glossary</h2>
 <div class="scroll"><table>
 <thead>
@@ -745,23 +834,26 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <strong>Depends on:</strong> nothing. This feeds <code>02-engine</code> (as <code>config.ts</code>) and <code>04</code>/<code>05</code> (what to show).</p>
 <div class="block block-decisions"><h2 id="s01-decisions-locked">Decisions (locked)</h2>
 <ul>
-<li>Resources: <strong>Food, Water, Labour (= player stamina)</strong>.</li>
-<li>Eight actions: Harvest, Plant Crops, Plant Orchard, Repair Reservoir, Dig Well, Fish/Hunt, Maintain, Fast Track.</li>
+<li>Resources: <strong>Food, Water, Labour (= player stamina)</strong>, plus <strong>hunger</strong> (<a href="../decisions/016-hunger.md">016</a>) and <strong>seeds</strong> (<a href="../decisions/022-seed-stock.md">022</a>).</li>
+<li>Actions: Harvest, Plant Crops, <strong>Water</strong>, Repair Reservoir, Dig Well, Fish/Hunt, Maintain, Fast Track, plus the free <code>fillCan</code> at a source. Water will replace Plant Orchard (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>, <a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>); until trees come with level, Plant Orchard stays as a ninth action (<a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>).</li>
 <li>Unlimited actions within a configurable turn length. Stamina and resources are the real limits.</li>
 <li>End-of-turn <strong>upkeep</strong> (food + water). Missing it = <strong>weakened start</strong> for the successor.</li>
 <li><strong>Decay</strong> (food rots, water stagnates) + <strong>infrastructure wear</strong> (structures degrade unless maintained).</li>
 <li><strong>Partly hidden</strong> delayed effects: players see growth or decay visually, never the exact numbers or due dates.</li>
-<li><strong>Seeded events</strong> only (e.g. a drought). No borrowing, no score.</li>
+<li><strong>Seeded events</strong> only (e.g. a drought). No borrowing.</li>
+<li><strong>World health and level</strong> are shown in the HUD: a health bar with no number and the land's name, Bare to Abundant (<a href="../decisions/023-world-health-and-level.md">023</a>). They aren't a score: no points, no win. Nothing else new is shown during play (<a href="../decisions/026-lift-no-explanation-rule.md">026</a>).</li>
 <li>The <strong>reservoir dilemma is tuned in on purpose</strong>.</li>
 <li>Biome (Forest / Island) gives <strong>small modifiers</strong> only.</li>
 </ul>
 <p>Settled game-design questions (records in <code>docs/decisions/</code>):</p>
 <ul>
-<li><strong>Upkeep timing</strong> (<a href="../decisions/002-upkeep-timing.md">002</a>): the screen order stays freeze → journal → cost summary. The HUD shows "Needed by nightfall", so players know where they stand before they write.</li>
-<li><strong>Eating</strong> (<a href="../decisions/003-eating-via-harvest.md">003</a>): yes, as an option on <strong>Harvest</strong> ("Harvest and eat"). It's not a ninth action.</li>
+<li><strong>Upkeep timing</strong> (<a href="../decisions/002-upkeep-timing.md">002</a>): the screen order stays freeze → journal → cost summary. <del>The HUD shows "Needed by nightfall"</del>: the line is gone, and nights take <strong>food only</strong> (<a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>).</li>
+<li><strong>Eating</strong> (<a href="../decisions/029-eat-at-the-oven.md">029</a>): only at the house's <strong>oven</strong> ("Cook and eat"), one food from the store a meal. It's a free logged <code>eat</code> action. Harvest and eat (<a href="../decisions/003-eating-via-harvest.md">003</a>) is gone.</li>
 <li><strong>Hunger</strong> (<a href="../decisions/016-hunger.md">016</a>): a meter the family inherits. It drops at each new generation; eating (free) refills it; empty, you walk slower.</li>
-<li><strong>Rushed orchard</strong> (<a href="../decisions/004-fast-tracked-orchard-yield.md">004</a>): no long-term yield penalty. The 2× cost is the price.</li>
-<li><strong>Events</strong> (<a href="../decisions/005-seeded-events.md">005</a>): drought (always), good harvest, storm (Island only).</li>
+<li><strong>Rushed orchard</strong> (<a href="../decisions/004-fast-tracked-orchard-yield.md">004</a>): no long-term yield penalty. <em>No longer applies once orchards grow from the level (<a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>).</em></li>
+<li><strong>Plant, then water</strong> (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>): a sown tile grows only after one pour from the watering can. Unwatered seeds carry over and wither after 2 generations.</li>
+<li><strong>Oven</strong> (<a href="../decisions/025-oven-cooks-stored-food.md">025</a>, <a href="../decisions/029-eat-at-the-oven.md">029</a>): the only place to eat, from the cabinet's store.</li>
+<li><strong>Events</strong> (<a href="../decisions/005-seeded-events.md">005</a>): drought (always, but <strong>off for now</strong>, <a href="../decisions/030-droughts-off.md">030</a>), good harvest, storm (Island only).</li>
 <li><strong>Wild spot</strong> (<a href="../decisions/006-wild-spot-per-biome.md">006</a>): Forest = hunt, Island = fish, same numbers.</li>
 <li><strong>Defaults</strong> (<a href="../decisions/007-turn-and-generation-defaults.md">007</a>): <strong>10-minute turns</strong>, <strong>6 generations</strong>.</li>
 <li><strong>Fields</strong> (B's <a href="../decisions/001-worldgen-map-size-and-presets.md">001</a>): configurable per map preset, default <strong>2</strong>. All numbers here are balanced for 2. The <code>small</code> (1 field) and <code>large</code> (3 fields) presets are untuned.</li>
@@ -783,7 +875,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <li><strong>Freeze.</strong> The timer hits 0, the world freezes, and input locks.</li>
 <li><strong>Journal.</strong> Write or draw your page. Earlier pages are read-only.</li>
 <li><strong>Cost summary.</strong> Shows only what was <strong>realised</strong> this turn, including whether upkeep was met. Pending benefits are left out.</li>
-<li><strong>Upkeep check.</strong> Food/water are deducted. A shortfall marks the successor as weakened. (The engine computes this at freeze in <code>endTurn</code>. The cost summary is where the player sees it.)</li>
+<li><strong>Upkeep check.</strong> Food is deducted (water no longer, <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>). A shortfall marks the successor as weakened. (The engine computes this at freeze in <code>endTurn</code>. The cost summary is where the player sees it.)</li>
 <li><strong>Gravestone.</strong> Your stone is placed in the graveyard. The turn is committed.</li>
 <li><strong>Between turns (engine).</strong> Decay, wear, due effects, seeded events and wild stock regrowth are applied for the next generation.</li>
 </ol>
@@ -801,13 +893,13 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <tr>
 <td><strong>Food</strong></td>
 <td>Harvest (crops, orchard), Fish/Hunt</td>
-<td>Upkeep, eating (Harvest and eat)</td>
+<td>Upkeep, meals at the oven</td>
 <td>Kept in the house's cabinet. <strong>Doesn't rot for now</strong> (<code>foodRotPct: 0</code>, <a href="../decisions/011-cabinet-food-store-no-rot.md">011</a>)</td>
 </tr>
 <tr>
 <td><strong>Water</strong></td>
 <td>Reservoir income, Well, starter stock</td>
-<td>Upkeep, Plant Crops/Orchard, Fast Track</td>
+<td>Plant Orchard, Fast Track (no longer upkeep, <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>). Crops are watered from the <strong>can</strong>, which fills free at a pond, the sea edge, the well or the reservoir</td>
 <td><strong>Stagnates</strong>: loses <code>waterStagnatePct</code> (20%), or 40% while the well is stagnant</td>
 </tr>
 <tr>
@@ -817,8 +909,14 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <td>Doesn't carry over</td>
 </tr>
 <tr>
+<td><strong>Seeds</strong></td>
+<td>Founder stock <code>seedStart</code> (9); +1 per harvested field tile, +2 per tree harvest</td>
+<td>Plant Crops (1 per tile); withered tiles lose theirs</td>
+<td><strong>Carries over</strong> in full (<a href="../decisions/022-seed-stock.md">022</a>)</td>
+</tr>
+<tr>
 <td><strong>Hunger</strong></td>
-<td>Eating (Harvest and eat), <code>hungerPerFoodEaten</code> (10) per food, up to <code>hungerMax</code> (100)</td>
+<td>Cook and eat at the oven (<a href="../decisions/029-eat-at-the-oven.md">029</a>), <code>hungerPerFoodEaten</code> (10) per food, up to <code>hungerMax</code> (100)</td>
 <td>—</td>
 <td><strong>Carries over</strong>, and drops by <code>hungerDropPerGen</code> (30) at each new generation. At or below <code>hungerSlowAt</code> (0) the player walks slower (<a href="../decisions/016-hunger.md">016</a>)</td>
 </tr>
@@ -836,13 +934,23 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <tbody>
 <tr>
 <td>Field ×2</td>
-<td>empty → sown → growing → ripe → rotten, <strong>per tile</strong></td>
-<td>Quick crops ripen within one turn. Each of the 9 tiles is sown and harvested on its own (<a href="../decisions/019-per-tile-actions-take-time.md">019</a>)</td>
+<td>empty → sown → watered → growing → ripe → rotten / withered, <strong>per tile</strong></td>
+<td>Quick crops ripen within one turn <strong>once watered</strong>. Each of the 9 tiles is sown, watered and harvested on its own (<a href="../decisions/019-per-tile-actions-take-time.md">019</a>, <a href="../decisions/021-per-tile-farming-and-watering.md">021</a>)</td>
 </tr>
 <tr>
 <td>Orchard plot</td>
 <td>empty → sapling → young → fruiting → (worn → dead), <strong>per tree</strong></td>
-<td>Four one-tile trees, each planted, picked, tended and worn on its own. Fruits from gen +2 (<code>orchardMatureGens</code>)</td>
+<td>Four one-tile trees. <strong>They appear and grow with the land's level</strong> (sapling at 1, young at 2, fruiting at 3), with nobody planting them (<a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>). Each is picked, tended and worn on its own</td>
+</tr>
+<tr>
+<td>Water sources</td>
+<td>—</td>
+<td>Dug well, reservoir, pond and sea edge fill the watering can, for free (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>)</td>
+</tr>
+<tr>
+<td>Flowers</td>
+<td>none → spreading</td>
+<td>Appear with the level, visual only for now (<a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>)</td>
 </tr>
 <tr>
 <td>Reservoir</td>
@@ -874,6 +982,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </div><div class="block block-plain"><h2 id="s01-actions">Actions</h2>
 <blockquote>
 <p><strong>Changed by <a href="../decisions/019-per-tile-actions-take-time.md">019</a>:</strong> fields and orchards are worked a tile at a time, every stamina cost is <strong>0 for now</strong>, and each action takes time instead (<code>actionSeconds</code>: harvest 1 s, sow 1.5 s, plant a tree 3 s, repair 8 s, dig 6 s, fish/hunt 3 s, tend 3 s, hurry 2 s). Yields are per tile: <strong>1 food per field tile, 4 per tree</strong>. Sowing needs no water; a tree needs 1. The table below is the earlier whole-plot set, kept for when stamina comes back.</p>
+<p><strong>Changed by <code>13</code>:</strong> Plant Crops costs 1 seed and leaves the tile sown until a <strong>Water</strong> action (1 pour from the can, 1 s) starts its ripening clock. <strong>Plant Orchard is removed</strong>: trees come from the level. See <code>13</code> › Actions.</p>
 </blockquote>
 <p>Values below are the first confirmed set for <code>src/engine/config.ts</code> (full block under <strong>Config values</strong>). They passed a rough scratch-model check (see <strong>Balance pre-check</strong>). The real check is task 4 with <code>scripts/simulate.ts</code>.</p>
 <div class="scroll"><table>
@@ -892,7 +1001,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <td>1</td>
 <td><strong>Harvest</strong></td>
 <td>ripe field or fruiting orchard</td>
-<td>+5 food (field) or +15 food (orchard, once per gen, halved at wear ≥ 2). <strong>Harvest and eat</strong> option: see below.</td>
+<td>+5 food (field) or +15 food (orchard, once per gen, halved at wear ≥ 2). Goes to the store; eating is at the oven (see below).</td>
 <td>—</td>
 <td>5 stamina</td>
 </tr>
@@ -901,7 +1010,7 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <td><strong>Plant Crops</strong></td>
 <td>empty field</td>
 <td>—</td>
-<td>Ripens after <code>cropRipenPct</code> × turn (25%, so 150 s at the default) <strong>in the same turn</strong>. Rots at end of turn if not harvested.</td>
+<td>Ripens <code>cropRipenSeconds</code> (60 s) after watering; still growing at day's end, it finishes overnight in half its time left. Rots only if left ripe a whole generation (<a href="../decisions/028-two-minute-days-crops-carry-over.md">028</a>).</td>
 <td>8 stamina, 1 water</td>
 </tr>
 <tr>
@@ -954,13 +1063,13 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </tr>
 </tbody>
 </table></div>
-<h3 id="s01-harvest-and-eat">Harvest and eat</h3>
+<h3 id="s01-eating-at-the-oven">Eating at the oven</h3>
 <ul>
-<li>Harvest has two variants: <strong>Harvest</strong> (E, yield goes to the store, 5 stamina) and <strong>Harvest and eat</strong> (Q, <strong>free</strong>).</li>
-<li>Eating turns the fresh yield into <strong>hunger</strong> at <code>hungerPerFoodEaten</code> (10 per food), <strong>up to full</strong> (<code>hungerMax</code>). Whatever can't be eaten goes to the store. It's refused when hunger is already full (<a href="../decisions/016-hunger.md">016</a>, which replaced 003's eat-for-stamina).</li>
-<li>Only the food just harvested can be eaten. Stored food can't be eaten mid-turn, and Fish/Hunt can't be eaten.</li>
+<li>You eat inside the house, facing the <strong>oven</strong>: "E · Cook and eat" (<a href="../decisions/029-eat-at-the-oven.md">029</a>). Each meal is a free logged <code>eat</code> action that takes <code>mealFood</code> (1) from the store, adds <code>hungerPerFoodEaten</code> (10) to <strong>hunger</strong>, up to <code>hungerMax</code>, and takes 0.5 s.</li>
+<li>It's allowed when full (the food is simply eaten) and refused with an empty store ("The store is empty").</li>
+<li>Every harvest goes to the store. Harvest and eat (Q, <a href="../decisions/003-eating-via-harvest.md">003</a>, <a href="../decisions/016-hunger.md">016</a>) is gone; the engine keeps its <code>eat</code> flag only so old logs re-run the same.</li>
 <li>Eating doesn't give stamina, so a weakened player can't eat their way back; hunger is a separate, inherited need.</li>
-<li>Eating is realised, so it appears in the cost summary ("You ate 15🍎").</li>
+<li>Eating is realised, so it appears in the cost summary ("You ate 3🍎").</li>
 </ul>
 <h3 id="s01-why-the-reservoir-dilemma-works">Why the reservoir dilemma works</h3>
 <ul>
@@ -1141,12 +1250,12 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </table></div>
 <p>The founder can meet upkeep from the starter stores alone (12 food, 16–18 water) with no actions. Anything they invest comes out of the margin they leave the next player.</p>
 </div><div class="block block-plain"><h2 id="s01-configurable-per-world">Configurable per world</h2>
-<p><code>turnSeconds</code> (default <strong>600</strong>), <code>generationCount</code> (default <strong>6</strong>), plus the admin-set global <code>inheritRatio</code> (see <code>07</code>). The demo world sets its own shorter values (<code>10</code>).</p>
+<p><code>turnSeconds</code> (default <strong>120</strong>, <a href="../decisions/028-two-minute-days-crops-carry-over.md">028</a>), <code>generationCount</code> (default <strong>6</strong>), plus the admin-set global <code>inheritRatio</code> (see <code>07</code>). The demo world sets its own shorter values (<code>10</code>).</p>
 </div><div class="block block-plain"><h2 id="s01-config-values">Config values</h2>
 <p>For <code>src/engine/config.ts</code>. Names are a proposal for the engine dev; the numbers are the decision.</p>
 <pre class="ts"><code>export const CONFIG = {
   // World defaults (decision 007)
-  turnSeconds: 600,
+  turnSeconds: 120, // decision 028 (was 600)
   generationCount: 6,
   // fields: a worldgen preset option (src/worldgen/options.ts, default 2), not engine config
 
@@ -1160,7 +1269,8 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
   // Hunger (decision 016)
   hungerMax: 100,
   hungerDropPerGen: 30,
-  hungerPerFoodEaten: 10, // Harvest and eat
+  hungerPerFoodEaten: 10, // per meal at the oven
+  mealFood: 1, // food a meal takes from the store (029)
   hungerSlowAt: 0,
   hungrySpeedMult: 0.6,
 
@@ -1172,7 +1282,8 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
   orchardYield: 4, // per tree, once per generation (was 15 per orchard)
   plantCropsCost: 0, // was 8
   plantCropsWater: 0, // was 1 per field
-  cropRipenPct: 0.25, // fraction of turnSeconds
+  cropRipenSeconds: 60, // from watering (decision 028; was cropRipenPct 0.25 of the day)
+  overnightGrowth: 0.5, // a crop still growing at dusk carries over with half its time left
   plantOrchardCost: 0, // was 25
   plantOrchardWater: 1, // per tree (was 5 per orchard)
   orchardMatureGens: 2,
@@ -1212,6 +1323,31 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
     island: { food: 12, water: 18, wildStock: 8, wildCap: 8, storm: true },
   },
 } as const;</code></pre>
+<h3 id="s01-section-13-values-first-pass">Section 13 values (first pass)</h3>
+<p>Approved 2026-10-25 by the user as a <strong>first pass</strong>. They can't be balance-checked until <code>scripts/simulate.ts</code> models tiles, the can, seeds and health (<code>13</code>, A). The keys are proposals for A, who adds them to <code>config.ts</code>; C owns the values.</p>
+<pre class="ts"><code>  // Watering can (decision 021)
+  // canCapacity 4, empty every morning, water 1 s, fillCan 1.5 s: built by 027, kept by the user (was proposed as 3)
+
+  // Seeds (decision 022)
+  seedStart: 9, // one full field
+  seedsPerCrop: 1, // fixed, per harvested field tile
+  seedsPerTree: 2, // per tree harvest, so a fruiting orchard grows the stock
+  witherGens: 2, // an unwatered seed withers 2 generations after sowing
+
+  // World health 0–100 (decision 023): each part is 0..1, weighted
+  healthWeights: { crops: 0.25, water: 0.2, structures: 0.25, upkeep: 0.15, wild: 0.15 },
+  // crops      = tended / (tended + rotten + withered) tiles; 0.5 with nothing planted
+  // water      = stored water / healthWaterReserve, at most 1 (nights take no water since 027)
+  // structures = mean over reservoir and well of (1 − wear / wearBreakAt); cracked or not dug = 0
+  // upkeep     = 1 − the last upkeep shortfall
+  // wild       = wildStock / wildCap
+  healthWaterReserve: 20, // stored water that counts as a full reserve
+  orchardYieldLowHealth: 50, // below this health a tree gives half
+
+  // Level (decision 023): checked at each generation start, rises by at most 1, never falls
+  levelThresholds: [55, 65, 75, 85], // health needed for levels 1–4</code></pre>
+<p>A founder world comes out at about <strong>55</strong> (Forest: crops 0.5, water 0.8, structures 0, upkeep 1, wild 0.8), so it reaches <strong>Taking root</strong> at the start of generation 2 and the first saplings appear. Trees fruit at <strong>Blooming</strong> (75), which needs the reservoir or the well in good repair. With at most one level per generation, the earliest fruit is generation 4 of 6.</p>
+<p>Yields stay as <a href="../decisions/019-per-tile-actions-take-time.md">019</a> set them: 1 food per field tile, 4 per tree.</p>
 </div><div class="block block-plain"><h2 id="s01-balance-pre-check-scratch-model">Balance pre-check (scratch model)</h2>
 <p>A rough Python model of the rules above, run before the engine exists. It isn't the engine, so treat it as a sanity check only. 6 gens, drought gen 5, good harvest gen 3, Island storm gen 4:</p>
 <div class="scroll"><table>
@@ -1256,14 +1392,54 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </tr>
 </tbody>
 </table></div>
-<p>What it shows: short-term play holds up until the drought and then fails, which is the "invisible protection" working. <strong>Known gap:</strong> the pure-sacrifice run leaves the investing generations with almost nothing spare, but doesn't actually miss upkeep. The acceptance line asks for missed upkeep, so check this in task 4. The levers, in order: starter food 12 → 11, repair 60 → 65. The model doesn't include Harvest and eat yet.</p>
+<p>What it shows: short-term play holds up until the drought and then fails, which is the "invisible protection" working. <strong>Known gap:</strong> the pure-sacrifice run leaves the investing generations with almost nothing spare, but doesn't actually miss upkeep. The acceptance line asks for missed upkeep, so check this in task 4. The levers, in order: starter food 12 → 11, repair 60 → 65. The planter strategy eats at the oven when hungry (<a href="../decisions/029-eat-at-the-oven.md">029</a>).</p>
+</div><div class="block block-plain"><h2 id="s01-balance-after-section-13-engine-run-2026-10-25">Balance after section 13 (engine run, 2026-10-25)</h2>
+<p><code>npm run simulate -- --gens 6</code>, seed 1, on the engine as it stands: per-tile farming and watering (027), stamina a placeholder at 0, nights taking 12 food and no water, two-minute days with one-minute crops (028), droughts off (030), no seeds, health or level yet.</p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Forest food, gen 1 → 6</th>
+<th>Missed upkeep</th>
+<th>Final world</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hoarder (well, crops on every tile)</td>
+<td>36 → 66, +6 a generation</td>
+<td>none</td>
+<td>reservoir cracked, no orchard</td>
+</tr>
+<tr>
+<td>Planter (orchard + reservoir, eats at the oven)</td>
+<td>18 → 52</td>
+<td>none</td>
+<td>everything standing</td>
+</tr>
+<tr>
+<td>Repair first</td>
+<td>36 → 66</td>
+<td>none</td>
+<td>reservoir full</td>
+</tr>
+<tr>
+<td>Quick-fixer (well + hunting)</td>
+<td>32 → 0</td>
+<td>gen 6</td>
+<td>wild stock 0</td>
+</tr>
+</tbody>
+</table></div>
+<p>Island is the same within a few points. <strong>The dilemma doesn't hold.</strong> Hoarding costs the hoarder nothing, investing never costs upkeep, and in the medium world one day fits both the repair and comfortable feeding. Nothing in a day binds: stamina is 0, and even in a two-minute day the actions leave time over (the simulator doesn't count walking, which will bind more than it shows).</p>
+<p>The fixtures in <code>scripts/__tests__/balance.test.ts</code> hold the <code>01</code> targets. The three that fail today are marked <code>it.fails</code> with these gaps, and turn red once the numbers fix them. <strong>Tune after A lands seeds (<a href="../decisions/022-seed-stock.md">022</a>, caps sowing) and health and level (<a href="../decisions/023-world-health-and-level.md">023</a>, gives investment a payoff)</strong>, as both change this picture (decided 2026-10-25 by the user). Levers then, in order: <code>seedStart</code> and <code>seedsPerCrop</code>, <code>upkeepFood</code>, <code>cropYield</code>, <code>foodRotPct</code>.</p>
 </div><div class="block block-tasks"><h2 id="s01-tasks">Tasks</h2>
 <ul class="task-list">
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Confirm the action table (costs, yields, delays) and record it as <code>config.ts</code> values with the engine dev</span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Decide defaults for <code>turnSeconds</code> and <code>generationCount</code></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)</span></label></li>
-<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t4"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the <strong>"medium world" tuning scenario</strong> and check the dilemma holds (use the engine's simulated playthrough script from <code>02</code>). <em>Scenario written above; the check waits on <code>scripts/simulate.ts</code>.</em></span></label></li>
-<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t5"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write 3 balance test scenarios as Vitest fixtures: <em>hoarder</em>, <em>planter</em>, <em>quick-fixer</em>. Check no single strategy dominates over N gens.</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t4"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the <strong>"medium world" tuning scenario</strong> and check the dilemma holds (use the engine's simulated playthrough script from <code>02</code>). <em>Scenario written and checked (<code>scripts/__tests__/balance.test.ts</code>): it doesn't hold yet. Tune after seeds, health and level land; see "Balance after section 13".</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t5"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write 3 balance test scenarios as Vitest fixtures: <em>hoarder</em>, <em>planter</em>, <em>quick-fixer</em>. Check no single strategy dominates over N gens. <em>(<code>scripts/__tests__/balance.test.ts</code>, 6 gens, both biomes, plus the medium world. Today the hoarder dominates; the missed targets are <code>it.fails</code> until tuning, see "Balance after section 13".)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects). See <code>docs/content/flavour-text.md</code>.</span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t7"><span class="owner o-c" title="Owner C">C</span><span class="tt">Write the founder/Gen-0 starter conditions per biome (see <code>03</code>)</span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s01-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Hand <code>05</code> the cost-summary wording ("You spent… You gathered…") with no mention of future yields. See <code>docs/content/cost-summary.md</code>.</span></label></li>
@@ -1277,7 +1453,6 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 </div><div class="block block-open"><h2 id="s01-open-questions">Open questions</h2>
 <ol type="1">
 <li><strong>Idle time in 10-minute turns.</strong> With 100 stamina, most players will spend it all well before nightfall. Should there be a way to end the day early (e.g. "Sleep" at the lectern), or is spare time for reading the journal and walking around? Touches <code>04</code> (HUD/timer) and <code>07</code> (lock TTL scales with <code>turn_seconds</code>).</li>
-<li><strong>What does the oven do?</strong> The house (<a href="../decisions/010-player-house.md">010</a>) has an oven that's only furniture for now. Options: cook stored food for stamina (a ninth action, which changes the eight-action lock and decision 003), or make it where "Harvest and eat" happens. Owner: C (design), with A (engine).</li>
 </ol>
 </div></div></section>
 <section id="s02" class="doc" data-key="s02"><header class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">Simulation Engine: Turn Engine, Action Log, Causality</h2></header><div class="progress" data-for="s02"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
@@ -1537,7 +1712,7 @@ scatter decoration avoiding paths/plots</code></pre>
 </tbody>
 </table></div>
 <h3 id="s03-seeded-events">Seeded events</h3>
-<p>Generated at world creation from the seed (event list stored in state, see <code>02</code>/<code>01</code>). The generator places <strong>at least one drought</strong> so the reservoir decision always matters. Event set and timing: <code>01</code> › Seeded events (<a href="../decisions/005-seeded-events.md">005</a>).</p>
+<p>Generated at world creation from the seed (event list stored in state, see <code>02</code>/<code>01</code>). The generator places <strong>at least one drought</strong> so the reservoir decision always matters (<strong>off for now</strong>: <code>droughts: false</code> seeds none, <a href="../decisions/030-droughts-off.md">030</a>). Event set and timing: <code>01</code> › Seeded events (<a href="../decisions/005-seeded-events.md">005</a>).</p>
 </div><div class="block block-tasks"><h2 id="s03-tasks">Tasks</h2>
 <ul class="task-list">
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s03-t1"><span class="owner o-b" title="Owner B">B</span><span class="tt">Seeded noise util (value noise is enough)</span></label></li>
@@ -1573,8 +1748,9 @@ scatter decoration avoiding paths/plots</code></pre>
 <li><strong>2D Stardew-style angle</strong>, ~32×32 tiles, camera follows the player.</li>
 <li><strong>WASD/arrow</strong> movement, desktop only.</li>
 <li><strong>Day/night</strong> cycle across the turn.</li>
-<li><strong>Stardew-like HUD</strong>: resource counters top-left, stamina bar, clock top-right, action hotbar bottom.</li>
-<li><strong>Strong visual world state</strong>: the world never explains itself, so visuals carry all the information.</li>
+<li><strong>Stardew-like HUD</strong>: resource counters top-left, stamina bar, clock top-right, <strong>toolbar</strong> bottom (hands, seeds, watering can, then the structure actions; <code>13</code>).</li>
+<li><strong>World health bar and land level</strong> in the HUD (<a href="../decisions/023-world-health-and-level.md">023</a>): a bar with no number and the land's name (Bare, Taking root, Green, Blooming, Abundant).</li>
+<li><strong>Strong visual world state</strong>: apart from health and level, the world never explains itself, so visuals carry the information (<a href="../decisions/026-lift-no-explanation-rule.md">026</a>).</li>
 <li><strong>Partly hidden</strong> pending effects: show growth stages, never numbers or due dates.</li>
 </ul>
 </div><div class="block block-plain"><h2 id="s04-architecture">Architecture</h2>
@@ -1609,7 +1785,7 @@ scatter decoration avoiding paths/plots</code></pre>
 </div><div class="block block-plain"><h2 id="s04-interaction-model">Interaction model</h2>
 <ul>
 <li>Walk next to a plot and an <strong>interact prompt</strong> appears showing the valid action(s) and costs. Fields and orchards are used <strong>one tile at a time</strong>: the tile in front of you (the way you face) is outlined and gets the prompt (<a href="../decisions/019-per-tile-actions-take-time.md">019</a>, <code>facedTile</code> in <code>src/render/interact.ts</code>). Other plots use the nearest one, as before.</li>
-<li><code>E</code> / <code>Space</code> does the default action, <code>Q</code> is Harvest and eat (free, refills hunger, <a href="../decisions/016-hunger.md">016</a>). Number keys <code>1–8</code> pick a hotbar action when several are valid. Invalid actions are greyed out with a reason ("Not enough stamina").</li>
+<li><code>E</code> / <code>Space</code> uses the <strong>held tool</strong> on the faced tile (<code>13</code>): hands harvest or interact, seeds sow, the can waters. At a water source with the can held, E fills it ("Fill the can"). Facing the oven in the house, E is "Cook and eat" (one food from the store, <a href="../decisions/029-eat-at-the-oven.md">029</a>); there's no Q. Number keys <code>1–3</code> pick the tool and <code>4–8</code> the structure actions. Invalid actions are greyed out with a reason ("Not enough stamina").</li>
 <li><strong>Every action takes time</strong> (<code>CONFIG.actionSeconds</code>, e.g. sow 1.5 s, repair 8 s): the player stands still with a bar over their head while the clock runs, and the engine applies the action when it's done (<code>work</code> in the store). Its sound and burst play then.</li>
 <li><strong>Fast Track</strong>: from a pending plot (e.g. a sapling), prompt "F: Fast Track (cost ×2)". The menu also lists every pending effect.</li>
 <li><strong>Harvesting/planting animations</strong> are short (~0.5s) and <strong>use real turn time</strong>, so walking and acting cost time.</li>
@@ -1626,16 +1802,22 @@ scatter decoration avoiding paths/plots</code></pre>
 </thead>
 <tbody>
 <tr>
-<td>Field</td>
-<td>green rows / golden ripe</td>
-<td>wilting</td>
-<td>brown rot, flies</td>
+<td>Field tile</td>
+<td>dark wet soil (watered) → green rows → golden ripe</td>
+<td>dry seed row (sown, not watered)</td>
+<td>brown rot, flies; grey withered stalks</td>
 </tr>
 <tr>
 <td>Orchard</td>
-<td>sapling → young → fruiting tree</td>
+<td>sapling → young → fruiting tree, appearing with the level</td>
 <td>fewer fruit, yellow leaves (wear 2)</td>
 <td>dead stump (wear 3)</td>
+</tr>
+<tr>
+<td>Flowers</td>
+<td>spreading from the house along paths as the level rises</td>
+<td>—</td>
+<td>none (Bare)</td>
 </tr>
 <tr>
 <td>Reservoir</td>
@@ -1681,10 +1863,11 @@ scatter decoration avoiding paths/plots</code></pre>
 <li><strong>Top-left:</strong> Food 🍎 / Water 💧 counts (current, <strong>numeric</strong>. Resources are visible, pending effects aren't).</li>
 <li><strong>Stamina bar</strong> under the resources.</li>
 <li><strong>Top-right:</strong> clock / sun-moon dial + seconds left. Tint shifts with day/night.</li>
-<li><strong>Bottom:</strong> hotbar with 8 action icons + key hints.</li>
+<li><strong>Bottom:</strong> toolbar: <code>1</code> hands, <code>2</code> seeds (with the seed count), <code>3</code> watering can (with its pours as pips), <code>4–8</code> the structure actions, with key hints and the held tool lit (<code>13</code>).</li>
+<li><strong>Land:</strong> a world-health bar with <strong>no number</strong> and the level's name, e.g. "Taking root" (<a href="../decisions/023-world-health-and-level.md">023</a>). It's the only readout of how the world is doing.</li>
 <li><strong>Generation badge:</strong> "Generation 3 of 5" + world name/seed.</li>
-<li><strong>Upkeep reminder:</strong> a small "Needed by nightfall: 12🍎 10💧", always shown (<a href="../decisions/002-upkeep-timing.md">002</a>).</li>
-<li><strong>Hunger bar</strong> next to stamina: it carries between generations and drops at each new one; Harvest and eat (Q, free) refills it, and at 0 the player walks slower (<a href="../decisions/016-hunger.md">016</a>). Stamina no longer rises mid-turn.</li>
+<li><del><strong>Upkeep reminder:</strong> "Needed by nightfall"</del>, removed: nights take food only, and the HUD's water count shows the <strong>watering can's pours</strong> ("3/4") instead of stored water (<a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>).</li>
+<li><strong>Hunger bar</strong> next to stamina: it carries between generations and drops at each new one; a meal at the oven refills it (<a href="../decisions/029-eat-at-the-oven.md">029</a>), and at 0 the player walks slower (<a href="../decisions/016-hunger.md">016</a>). Stamina no longer rises mid-turn.</li>
 </ul>
 </div><div class="block block-plain"><h2 id="s04-daynight">Day/night</h2>
 <p>A turn is <strong>one in-game day, 6 am to 6 am</strong> (<a href="../decisions/012-day-night-clock.md">012</a>): <code>t / turnSeconds</code> maps to the hour, so noon is at 25%, 6 pm at 50% and midnight at 75%.</p>
@@ -1701,7 +1884,7 @@ scatter decoration avoiding paths/plots</code></pre>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Player avatar: 4-direction walk animation, collision against the grid</span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t5"><span class="owner o-b" title="Owner B">B</span><span class="tt">Y-sorting for trees/structures vs the player</span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t6"><span class="owner o-b" title="Owner B">B</span><span class="tt">Plot sprites driven by <code>visibleView()</code> stages <em>(<code>PlayScreen</code> maps the store's <code>visibleView()</code> to <code>WorldLook</code>; plots re-texture only when a stage or flag changes)</em></span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t7"><span class="owner o-b" title="Owner B">B</span><span class="tt">Interact prompt + key handling + hotbar <em>(<code>plotOptions()</code> in <code>src/ui/hud/actionOptions.ts</code> lists what fits the plot's stage; E default, Q harvest and eat, F hurry, 1–8 hotbar)</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t7"><span class="owner o-b" title="Owner B">B</span><span class="tt">Interact prompt + key handling + hotbar <em>(<code>plotOptions()</code> in <code>src/ui/hud/actionOptions.ts</code> lists what fits the plot's stage; E default, F hurry, 1–8 hotbar; <code>ovenOptions()</code> at the oven, 029)</em></span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t8"><span class="owner o-b" title="Owner B">B</span><span class="tt">Wire actions → engine <code>applyAction</code> → store → re-render. Show an invalid-action reason. <em>(<code>useGameStore().act()</code>; greyed rows and a short flash show the engine's error as is; the engine <code>tick</code> runs at 4 Hz in <code>advance()</code>)</em></span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t9"><span class="owner o-b" title="Owner B">B</span><span class="tt">Fast Track menu (lists pending effects, with the originating player's name, no due dates) <em>(key 8; F at a pending plot hurries it straight from the prompt)</em></span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s04-t10"><span class="owner o-b" title="Owner B">B</span><span class="tt">Day/night lighting + timer <em>(6 am → 6 am in-game clock, decision 012)</em></span></label></li>
@@ -1733,9 +1916,9 @@ scatter decoration avoiding paths/plots</code></pre>
 <li>One shared <strong>world journal</strong>. <strong>One page per player turn.</strong> Earlier pages <strong>can't be edited</strong>.</li>
 <li>Pages hold <strong>free text + a drawing</strong> (single pen, a few colours, eraser).</li>
 <li>The journal is an <strong>in-world object (lectern), openable any time</strong>.</li>
-<li>The journal is the <strong>only</strong> information successors get about the past. The world never explains causes.</li>
+<li>The journal is the <strong>only</strong> information successors get about the past, besides the HUD's health bar and land level (<a href="../decisions/023-world-health-and-level.md">023</a>). The world never explains causes (<a href="../decisions/026-lift-no-explanation-rule.md">026</a>).</li>
 <li><strong>End flow: Freeze → Journal (write) → Cost summary → Gravestone.</strong></li>
-<li><strong>Cost summary shows only realised outcomes</strong>: costs paid and immediate gains. <strong>Pending benefits are left out.</strong></li>
+<li><strong>Cost summary shows only realised outcomes</strong>: costs paid and immediate gains. <strong>Pending benefits are left out.</strong> Confirmed for <code>13</code> on 2026-10-25: it adds tiles sown and watered, seeds used and gathered, and the land's health and level <strong>as they stand at day's end</strong>, nothing still growing.</li>
 <li><strong>Gravestone</strong>: name/initials, click to open that player's journal page. The hover label also shows the generation, and E reads the nearest stone (<a href="../decisions/014-gravestones.md">014</a>).</li>
 <li>No moderation for the hackathon.</li>
 <li>Text is limited to <strong>400 characters</strong> (<a href="../decisions/009-journal-character-limit.md">009</a>).</li>
@@ -1751,10 +1934,11 @@ scatter decoration avoiding paths/plots</code></pre>
    - &quot;Seal page&quot; button → irreversible confirm → **the turn is committed to the server** (07, [018](../decisions/018-commit-on-seal-refresh-restarts.md))
    - (Time limit for writing: team to define; see open questions)
    ▼
-[Cost summary: &quot;What you gave&quot;]
+[Cost summary: &quot;Your day&quot;]
    - Stamina spent, food/water spent, food/water gathered this turn
    - Upkeep: met / short by X
-   - Planted / built: listed as COST ONLY (&quot;Orchard: −25⚡ −5💧&quot;). No mention of what it will become.
+   - Planted / built: listed as COST ONLY (&quot;Crops sown ×6&quot;, &quot;Watered ×6&quot;). No mention of what it will become.
+   - Seeds: used and gathered today. The land: its health bar and level name at day&#39;s end (`13`).
    - Wording and templates: `docs/content/cost-summary.md`
    ▼
 [Gravestone]
@@ -1795,7 +1979,7 @@ scatter decoration avoiding paths/plots</code></pre>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s05-t8"><span class="owner o-b" title="Owner B">B</span><span class="tt">Graveyard rendering and interaction (with <code>04</code>) <em>(hover label, click and E open the page; <code>JournalModal</code> got an optional <code>openAt</code>. Dev: <code>#/play?graves=AL,MO,KE&amp;turn=20</code>.)</em></span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s05-t9"><span class="owner o-b" title="Owner B">B</span><span class="tt">Lectern interaction → read-only journal during play <em>(the world's pages are passed in by the play flow, <code>08</code>; for now the list is empty)</em></span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s05-t10"><span class="owner o-b" title="Owner B">B</span><span class="tt">Hand off to <code>07</code> commit; handle a commit failure (retry, keep the local copy) <em>(<code>Game</code> in <code>src/ui/play/</code> calls <code>save</code> on the seal; <code>PlayFlow</code> commits through <code>backend</code> and keeps the copy, see <code>src/ui/play/turnStart.ts</code>.)</em></span></label></li>
-<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">Copywriting pass with Game design (tone: quiet, reflective, no moralising)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s05-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">Copywriting pass with Game design (tone: quiet, reflective, no moralising) <em>(2026-10-25: the summary is headed "Your day", not "What you gave"; the night line drops water while nights take none (027); rotted crops are counted in tiles. The journal, stones, "You are inheriting…" and end cards read fine as they are.)</em></span></label></li>
 </ul>
 </div><div class="block block-accept"><h2 id="s05-acceptance">Acceptance</h2>
 <ul>
@@ -1853,7 +2037,7 @@ For each generation g = 1..N:
 </div><div class="block block-plain"><h2 id="s06-gallery">Gallery</h2>
 <ul>
 <li>Grid of completed worlds: thumbnail (snapshot of the final gen), world name, biome, generation count, player names (from gravestones).</li>
-<li>Sort: newest first. Filter by biome (stretch).</li>
+<li>Sort: Most recent (default), Highest score, Lowest score; each card shows the world's score <a href="../decisions/037-world-score-and-leaderboard.md">037</a>. Filter by biome (stretch).</li>
 <li>Click → replay.</li>
 <li>"Your worlds" filter for the signed-in user (worlds they contributed to). This is optional, since repeat play and identity exist.</li>
 </ul>
@@ -1862,20 +2046,44 @@ For each generation g = 1..N:
 <li>Prefer <strong>stored per-generation snapshots</strong> (from <code>commit-turn</code>, see <code>07</code>) for quick loading.</li>
 <li>Fallback / verification: <code>engine.replay(seed, opts, log)</code> from the action log. The two should match, and a Vitest test checks this.</li>
 </ul>
+</div><div class="block block-plain"><h2 id="s06-replay-viewer-who-builds-what">Replay viewer: who builds what</h2>
+<p>The generation view is split between <strong>B</strong> (the world and its data) and <strong>C</strong> (the screen around it), by folder so the two can work at once: B in <code>src/render/</code> and <code>src/ui/replay/</code>, C in <code>src/ui/screens/ReplayScreen.tsx</code>, <code>src/ui/kit/</code> and <code>docs/content/</code>. C's title card, ending card and arrow-key stepping are already built.</p>
+<p><strong>The meeting point</strong>, which B exports from <code>src/ui/replay/</code> first, as stubs if need be, so C builds against it straight away:</p>
+<pre class="ts"><code>// A read-only world for one generation: the snapshot&#39;s map at its end-of-generation look, the
+// stones so far, the changed tiles glowing. No player, no input, no clock. Fills its parent.
+&lt;ReplayWorld replay={replay} turn={n} onPlotClick={(plotId, at: { x: number; y: number }) =&gt; …} /&gt;
+
+// Field and orchard tiles and whole plots whose stage changed in generation `turn`.
+changedPlots(replay: Replay, turn: number): PlotId[]
+
+// One plot&#39;s or tile&#39;s story, generation by generation: its stage at the end, and who acted on it.
+plotHistory(replay: Replay, plotId: PlotId): { turn: number; stage: string; acts: { actor: string; type: ActionType }[] }[]</code></pre>
+<p>Names come from the journal page author of each generation, as in <code>causeSentences.ts</code>. Tiles are ids like <code>field-1:2,0</code> (<a href="../decisions/019-per-tile-actions-take-time.md">019</a>).</p>
 </div><div class="block block-tasks"><h2 id="s06-tasks">Tasks</h2>
 <ul class="task-list">
-<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>explain()</code> output → human sentences (templating with actor names + generations) <em>(<code>explainGeneration(turn, { actions, transitions, nameOf, biome })</code> in <code>src/ui/replay/causeSentences.ts</code> gives per-resource lines that add up to the net, each flagged <code>earlier</code> when it credits an earlier generation; <code>sentence()</code> formats one. Wording: <code>docs/content/replay-causes.md</code>. Names come from the journal page author of each generation.)</em></span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t2"><span class="owner o-b" title="Owner B">B</span><span class="tt">Replay screen layout: snapshot panel + journal panel + causes panel + timeline</span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t3"><span class="owner o-b" title="Owner B">B</span><span class="tt">Read-only Pixi render of a snapshot (reuse <code>04</code> layers, no avatar, no input)</span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Highlight changed plots per generation (diff vs the previous snapshot)</span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t5"><span class="owner o-b" title="Owner B">B</span><span class="tt">Plot history popover</span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t6"><span class="owner o-b" title="Owner B">B</span><span class="tt">Generation stepping (buttons + arrow keys) + optional auto-play</span></label></li>
+<li><p><label><input type="checkbox" checked="" /><span class="owner o-c">C</span> <code>explain()</code> output → human sentences (templating with actor names + generations) <em>(<code>explainGeneration(turn, { actions, transitions, nameOf, biome })</code> in <code>src/ui/replay/causeSentences.ts</code> gives per-resource lines that add up to the net, each flagged <code>earlier</code> when it credits an earlier generation; <code>sentence()</code> formats one. Wording: <code>docs/content/replay-causes.md</code>. Names come from the journal page author of each generation.)</em> <strong>Replay viewer: B (the world and its data)</strong></label></p></li>
+<li><p><label><input type="checkbox" checked="" /><span class="owner o-b">B</span> Stub the three exports above with their final types, so C can start (do first) <em>(built for real rather than stubbed: <code>import { ReplayWorld, changedPlots, plotHistory } from '../replay'</code>. Also exported: <code>viewAt</code>, <code>playerOf</code>, <code>stonesAt</code>, <code>replayMap</code>. Bench: <code>#/dev/replay</code> in dev, a scripted three-generation world, or <code>?world=&lt;id&gt;</code> for a finished one.)</em></label></p></li>
+<li><p><label><input type="checkbox" checked="" /><span class="owner o-b">B</span> <code>ReplayWorld</code>: a read-only <code>createWorldView</code> for a snapshot (reuse <code>04</code> layers; no avatar, no input, no clock, no music), the look from <code>visibleView(snapshot.state)</code>, the graveyard's stones up to that generation, and the camera framing the whole map <em>(<code>createWorldView(..., { onPlotClick })</code> replay mode: no player, keyboard, clock or music; midday light with the weakened and drought tints; the whole map at the largest whole-pixel zoom that fits. <code>Replay</code> gained an optional <code>preset</code> (LocalBackend fills it; <code>get_replay</code> doesn't return it yet, so it falls back to <code>default</code>, which every claimed world uses).)</em></label></p></li>
+<li><p><label><input type="checkbox" checked="" /><span class="owner o-b">B</span> <code>changedPlots</code>: diff each tile and plot's visible stage against the previous generation (the founder look for gen 1), with tests; the changed ones glow in <code>ReplayWorld</code> <em>(a soft pulsing fill and outline; compares visible stages, so a tile sown and harvested the same day isn't counted)</em></label></p></li>
+<li><p><label><input type="checkbox" checked="" /><span class="owner o-b">B</span> <code>plotHistory</code>, from the snapshots and the action log, with tests; clicking a tile or plot in <code>ReplayWorld</code> calls <code>onPlotClick</code> with its id and screen position <em>(position in CSS px from <code>ReplayWorld</code>'s top-left; hurrying a plot's effect counts as acting on it; <code>actor</code> is that generation's page author)</em></label></p></li>
+<li><p><label><input type="checkbox" /><span class="owner o-b">B</span> Health and level per generation, read from the snapshots (once <a href="../decisions/023-world-health-and-level.md">023</a> is in the engine), exported for C's panel</label></p></li>
+<li><p><label><input type="checkbox" checked="" /><span class="owner o-b">B</span> Check <code>replay()</code> rebuilds the stored snapshots for a played world (the Data note above), with a test <em>(LocalBackend, two generations: <code>src/ui/replay/__tests__/replayData.test.ts</code>)</em></label></p></li>
+</ul>
+<p><strong>Replay viewer: C (the screen around it)</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Generation layout in <code>ReplayScreen</code>: <code>ReplayWorld</code> on the left; the journal page and "What actually changed" on the right; the timeline underneath. It replaces the dusk-sky stand-in <em>(<code>GenerationView</code> in <code>ReplayScreen.tsx</code>; the world keeps its Pixi stage between generations. Dev bench of the whole screen on B's scripted world: <code>#/dev/replay-screen</code>.)</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Timeline: one dot per generation with its player's name, the current one marked, click to jump; previous/next buttons beside it (the arrow keys already step) <em>(<code>src/ui/screens/replay/Timeline.tsx</code>; names cut to 8 characters, full name on hover (<a href="../decisions/031-replay-viewer-pacing-and-legacy.md">031</a>))</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Auto-play: play/pause and a pace, stepping on its own, stopping at the ending card <em>(off until Play; Slow/Steady/Quick = 12/8/4 s; waits while a plot's history is open (<a href="../decisions/031-replay-viewer-pacing-and-legacy.md">031</a>))</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t4"><span class="owner o-c" title="Owner C">C</span><span class="tt">Plot history popover: opened by <code>onPlotClick</code>, anchored at the click, listing <code>plotHistory</code> generation by generation ("Gen 1 · AL sowed it · Sown"); Esc and clicking away close it <em>(<code>PlotPopover.tsx</code>; up to the generation on screen; titled "Field tile 4", "Tree 2", "Reservoir")</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t5"><span class="owner o-c" title="Owner C">C</span><span class="tt">Causes panel: make <code>earlier</code> lines (the reveal, "← planted by AL in Gen 1") stand out; add the health and level line once B exports it <em>(earlier lines get a ← , a peach tint and a left rule; titled "What actually changed". The health and level line waits on B's task above; its wording is ready in <code>replay-causes.md</code>.)</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Copy for the popover, timeline and health lines in <code>docs/content/replay-causes.md</code></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t7"><span class="owner o-c" title="Owner C">C</span><span class="tt">Title card + ending card <em>(<code>ReplayScreen</code>: title card ("An island · 6 generations", "Everyone who lived here is gone.", Begin) → each generation → ending card (the dusk island with a stone per generation, "6 generations lived here.", the names in order, Watch again / Gallery). Arrow keys step through. Worlds have no names yet, so the title uses the biome. Until B's layout lands, each generation shows the journal page and the cause lines on a dusk sky.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see <code>docs/art/art-direction.md</code>) <em>(<code>IslandThumb</code> in <code>src/ui/gallery/</code> draws the world's map from the world atlas on a 2D canvas: the area inside the boundary is the island's top, plots at their stage in the last snapshot, a stone per player, a cliff underneath. <code>CompletedWorld</code> gained optional <code>preset</code> and <code>finalState</code> for it (<code>07</code>); without them it draws the founder stages on the default preset.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t9"><span class="owner o-c" title="Owner C">C</span><span class="tt">Route <code>/#/world/:id/replay</code> and <code>/#/gallery</code> <em>(Both public (<a href="../decisions/017-public-gallery.md">017</a>). <code>GalleryScreen</code> lists completed worlds newest first as text cards, with empty and error states; each card shows its world as a floating island. <code>ReplayScreen</code> loads <code>getReplay</code>; see the title and ending card task.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t10"><span class="owner o-c" title="Owner C">C</span><span class="tt">Admin "skip to replay" hook (<code>08</code>) <em>(Skip to replay in the admin world list asks to confirm, calls <code>markComplete</code> (the world ends with the generations played so far, its lock cleared) and opens its replay. Completed worlds get a Replay link instead.)</em></span></label></li>
-<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">(Stretch) Legacy view per player</span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t12"><span class="owner o-b" title="Owner B">B</span><span class="tt">(Stretch) Animate drawing strokes in the journal panel</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">(Stretch) Legacy view per player <em>(on the ending card, "After they left" (<a href="../decisions/031-replay-viewer-pacing-and-legacy.md">031</a>); <code>legacyOf()</code> in <code>src/ui/screens/replay/words.ts</code>)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s06-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt">Ghosts: each generation's player replays their day on the map, from the action log <em>(<code>src/ui/replay/ghosts.ts</code>, a "Ghosts" toggle beside the pace; replay only, off for reduced motion (<a href="../decisions/038-replay-ghosts.md">038</a>))</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t13"><span class="owner o-b" title="Owner B">B</span><span class="tt">(Stretch) Animate drawing strokes in the journal panel</span></label></li>
 </ul>
 </div><div class="block block-accept"><h2 id="s06-acceptance">Acceptance</h2>
 <ul>
@@ -1887,7 +2095,7 @@ For each generation g = 1..N:
 <ol type="1">
 <li>Should the replay show the <strong>start</strong> or the <strong>end</strong> of each generation, or both (before/after slider)?</li>
 <li>Should the final player watch the replay straight away, or be sent to the gallery?</li>
-<li>Is the legacy view in scope?</li>
+<li><del>Is the legacy view in scope?</del> Yes, on the ending card (<a href="../decisions/031-replay-viewer-pacing-and-legacy.md">031</a>).</li>
 <li>Should incomplete worlds also be viewable (spectate-in-progress), or only completed ones?</li>
 </ol>
 </div></div></section>
@@ -1925,7 +2133,8 @@ For each generation g = 1..N:
 
 settings (                          -- single row, admin-editable
   id int pk default 1,
-  inherit_ratio numeric default 0.7,  -- [PLACEHOLDER] P(inherit) when an unlocked world exists
+  inherit_ratio numeric default 0.9,  -- P(inherit at all); the rest start a new world (034)
+  highest_chance numeric default 0.5, -- P(the open world furthest along) (034)
   default_turn_seconds int,           -- game designer decides
   default_generation_count int
 )
@@ -1993,9 +2202,10 @@ journal_pages (                    -- one per committed turn, never updated
 <pre><code>1. If the caller holds an unexpired lock → return that world (resume after refresh).
 2. If any world has forced_for = caller and is unlocked → lock and return it (admin force-assign).
 3. Expire stale locks: lock_expires_at &lt; now() → clear (turn voided).
-4. With probability settings.inherit_ratio, pick a random OPEN, UNLOCKED world
-   (SELECT … FOR UPDATE SKIP LOCKED ORDER BY random() LIMIT 1).
-   If none / coin says &quot;new&quot; → create a world with a random seed + biome + defaults.
+4. Roll once (decision 034) over the OPEN, UNLOCKED worlds whose latest generation
+   the caller didn&#39;t play: roll &lt; highest_chance → the one furthest along;
+   roll &lt; inherit_ratio → any other; else, or if both are empty → create a world
+   with a random seed + biome + defaults. (FOR UPDATE SKIP LOCKED, one row.)
 5. Set locked_by = caller, lock_expires_at = now() + turn_seconds + journal_allowance + grace.
 6. Return world + latest snapshot (or null for gen 1) + journal pages + gravestones.</code></pre>
 <p><code>SKIP LOCKED</code> + the single-row update guarantees <strong>only one player per world</strong>.</p>
@@ -2028,15 +2238,16 @@ journal_pages (                    -- one per committed turn, never updated
 <li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t2"><span class="owner o-a" title="Owner A">A</span><span class="tt">SQL migrations for the schema above (<code>supabase/migrations/</code>) <em>(C. Additions to the sketch: <code>worlds.preset</code>, <code>actions.eat</code>, and <code>settings.journal_allowance_seconds</code> + <code>lock_grace_seconds</code> for the lock TTL.)</em></span></label></li>
 <li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t3"><span class="owner o-a" title="Owner A">A</span><span class="tt">RLS policies (read-public for completed worlds, no update/delete) <em>(C. History is readable when the world is complete, by the current lock holder, or by an admin. There are no write policies at all.)</em></span></label></li>
 <li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t4"><span class="owner o-a" title="Owner A">A</span><span class="tt">Username signup/login with synthetic emails + <code>profiles</code> insert trigger <em>(C. Tested live: <code>.local</code> emails are accepted. Also adds the <code>username_available(name)</code> RPC. The <code>supabase-js</code> wrapper goes in <code>SupabaseBackend</code> once A's <code>Backend</code> interface exists.)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t5"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>claim_world</code> RPC with weighted assignment, <code>SKIP LOCKED</code>, stale-lock expiry, force-assign <em>(<code>supabase/migrations/20261024200000_claim_commit_admin.sql</code>. Takes an <code>avoid</code> hint (<a href="../decisions/020-claim-and-lock-rules.md">020</a>).)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t6"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>commit-turn</code> Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed) <em>(Deno can't resolve the engine's extensionless imports, so <code>npm run functions:bundle</code> bundles <code>src/api/runTurn.ts</code> with esbuild into <code>supabase/functions/_shared/engine.js</code> (gitignored). <code>npm run functions:deploy</code> bundles and deploys. The write is <code>commit_turn_write</code>, callable by the service role only.)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t7"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>heartbeat</code> RPC (if needed) <em>(Needed: the journal stops the clock (012). Capped by <code>settings.heartbeat_cap_seconds</code>, <a href="../decisions/020-claim-and-lock-rules.md">020</a>.)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t8"><span class="owner o-a" title="Owner A">A</span><span class="tt">Admin RPCs: set <code>settings</code>, set a world's <code>turn_seconds</code>/<code>generation_count</code>, force-assign, mark complete (skip to replay) <em>(Also <code>admin_list_worlds</code> and <code>admin_create_world</code> (a world from a chosen seed, for the demo).)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t9"><span class="owner o-a" title="Owner A">A</span><span class="tt">Gallery + replay read queries <em>(<code>list_completed_worlds()</code> and <code>get_replay(world)</code>, security invoker so RLS decides.)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t10"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>LocalBackend</code> implementation of the same interface (hot-seat) <em>(Same claim order, TTL, heartbeat cap and void rules; scenario tests in <code>src/api/__tests__/LocalBackend.test.ts</code>.)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t11"><span class="owner o-a" title="Owner A">A</span><span class="tt">Concurrency test: 2 clients call <code>claim_world</code> at once → different worlds <em>(<code>scripts/test-backend.ts</code>, passed live 2026-10-24 along with commit → successor, gallery/replay and RLS checks.)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt">Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone <em>(<code>scripts/test-backend.ts</code> shortens the TTL for the run; also covered on LocalBackend.)</em></span></label></li>
-<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t13"><span class="owner o-a" title="Owner A">A</span><span class="tt">Seed script for the demo world (<code>10</code>) <em>(<code>scripts/seed-demo.ts</code>, see <code>10</code>.)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t5"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>claim_world</code> RPC with weighted assignment, <code>SKIP LOCKED</code>, stale-lock expiry, force-assign <em>(<code>supabase/migrations/20261024200000_claim_commit_admin.sql</code>; the weighted draw and the no-back-to-back rule replaced it in <code>20261025120000</code> (<a href="../decisions/034-weighted-claim-no-back-to-back.md">034</a>). <code>avoid</code> is now ignored.)</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s07-t6"><span class="owner o-b" title="Owner B">B</span><span class="tt"><code>release_world</code> RPC + <code>Backend.releaseWorld</code>: Home gives the world back, so the next Play draws again <em>(<a href="../decisions/035-home-releases-the-world.md">035</a>, migration <code>20261025130000</code>)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t7"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>commit-turn</code> Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed) <em>(Deno can't resolve the engine's extensionless imports, so <code>npm run functions:bundle</code> bundles <code>src/api/runTurn.ts</code> with esbuild into <code>supabase/functions/_shared/engine.js</code> (gitignored). <code>npm run functions:deploy</code> bundles and deploys. The write is <code>commit_turn_write</code>, callable by the service role only.)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t8"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>heartbeat</code> RPC (if needed) <em>(Needed: the journal stops the clock (012). Capped by <code>settings.heartbeat_cap_seconds</code>, <a href="../decisions/020-claim-and-lock-rules.md">020</a>.)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t9"><span class="owner o-a" title="Owner A">A</span><span class="tt">Admin RPCs: set <code>settings</code>, set a world's <code>turn_seconds</code>/<code>generation_count</code>, force-assign, mark complete (skip to replay) <em>(Also <code>admin_list_worlds</code> and <code>admin_create_world</code> (a world from a chosen seed, for the demo).)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t10"><span class="owner o-a" title="Owner A">A</span><span class="tt">Gallery + replay read queries <em>(<code>list_completed_worlds()</code> and <code>get_replay(world)</code>, security invoker so RLS decides.)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t11"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>LocalBackend</code> implementation of the same interface (hot-seat) <em>(Same claim order, TTL, heartbeat cap and void rules; scenario tests in <code>src/api/__tests__/LocalBackend.test.ts</code>.)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt">Concurrency test: 2 clients call <code>claim_world</code> at once → different worlds <em>(<code>scripts/test-backend.ts</code>, passed live 2026-10-24 along with commit → successor, gallery/replay and RLS checks.)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t13"><span class="owner o-a" title="Owner A">A</span><span class="tt">Abandon test: claim, never commit, wait past the TTL → world is claimable again at the same turn, no gravestone <em>(<code>scripts/test-backend.ts</code> shortens the TTL for the run; also covered on LocalBackend.)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s07-t14"><span class="owner o-a" title="Owner A">A</span><span class="tt">Seed script for the demo world (<code>10</code>) <em>(<code>scripts/seed-demo.ts</code>, see <code>10</code>.)</em></span></label></li>
 </ul>
 </div><div class="block block-accept"><h2 id="s07-acceptance">Acceptance</h2>
 <ul>
@@ -2048,7 +2259,7 @@ journal_pages (                    -- one per committed turn, never updated
 <ol type="1">
 <li><del>Edge Function (authoritative) vs RPC (trust client) for commit?</del> <strong>Decided: Edge Function</strong> re-runs the turn through the engine (<a href="../decisions/013-engine-rule-details.md">013</a> item 10). The RPC is the fallback only if Deno can't import the engine.</li>
 <li>Journal writing time allowance → lock TTL.</li>
-<li><del>Can a player be assigned the world they just played?</del> <strong>Decided:</strong> the device passes its last world as a hint to avoid; no server check (<a href="../decisions/020-claim-and-lock-rules.md">020</a>).</li>
+<li><del>Can a player be assigned the world they just played?</del> <strong>Decided:</strong> never a world whose latest generation they played, checked on the server (<a href="../decisions/034-weighted-claim-no-back-to-back.md">034</a>; was a device hint in <a href="../decisions/020-claim-and-lock-rules.md">020</a>).</li>
 <li><del>Should players be able to <em>choose</em> to start a new world?</del> <strong>Decided:</strong> no, always random (<a href="../decisions/020-claim-and-lock-rules.md">020</a>).</li>
 <li>Hide open-world state from non-holders, or don't bother?</li>
 <li><del>How are world names generated?</del> <strong>Decided:</strong> <code>worldName(seed, biome)</code> from seeded word lists, computed on the client (<a href="../decisions/020-claim-and-lock-rules.md">020</a>).</li>
@@ -2118,16 +2329,7 @@ journal_pages (                    -- one per committed turn, never updated
 <li>Button: Begin. <strong>The timer starts when the player presses Begin.</strong></li>
 </ul>
 </div><div class="block block-plain"><h2 id="s08-onboardingtutorial">Onboarding/tutorial</h2>
-<p>Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, nothing saved.</p>
-<ol type="1">
-<li>Move with WASD.</li>
-<li>Walk to the field → plant crops → watch them ripen → harvest.</li>
-<li>See the orchard plot. Planting it shows "This will take longer than you have." (open: is this hint allowed, given hidden effects?)</li>
-<li>The lectern: "Those before you left words here."</li>
-<li>The graveyard: "When your day ends, you join them."</li>
-<li>Explain upkeep: "Before night falls, keep enough food and water to survive."</li>
-<li>→ Play.</li>
-</ol>
+<p><strong>"How to play" pop-up</strong> (<a href="../decisions/033-how-to-play-pop-up.md">033</a>): four live pictures from a fixed tutorial world in a 2×2 grid, each with its prompt and one line: sow and water, fill the can, harvest (left too long, it rots), eat at the oven. It opens by itself on a browser's first day, and from a "How to play" button under the clock; the clock stops while it's open. <code>#/tutorial</code> shows it on its own. Code in <code>src/ui/tutorial/</code>. It replaces the walkthrough tutorial of <a href="../decisions/032-tutorial-first-play-skippable.md">032</a> (a first Play no longer redirects there).</p>
 </div><div class="block block-plain"><h2 id="s08-admin-panel">Admin panel</h2>
 <div class="scroll"><table>
 <thead>
@@ -2151,23 +2353,43 @@ journal_pages (                    -- one per committed turn, never updated
 </tr>
 <tr>
 <td>World list</td>
-<td>All worlds with status, current gen, lock holder, lock expiry, and a "clear lock" button</td>
+<td><strong>Worlds in progress only</strong> (<a href="../decisions/036-admin-panel-scope.md">036</a>), with current gen, lock holder, lock expiry, and a "clear lock" button</td>
+</tr>
+<tr>
+<td><strong>Delete world</strong></td>
+<td>Removes a world from the game: never assigned, listed or replayed again. <strong>Its history is kept</strong> (sets <code>worlds.removed_at</code>; rule 2 holds). Disabled while someone holds the lock (<a href="../decisions/036-admin-panel-scope.md">036</a>)</td>
+</tr>
+<tr>
+<td><strong>Create demo world</strong></td>
+<td>One button: makes the world from <code>src/api/demo-world.json</code>, plays the founder generations server-side and force-assigns the judge (<a href="../decisions/036-admin-panel-scope.md">036</a>)</td>
+</tr>
+<tr>
+<td><strong>Recent admin actions</strong></td>
+<td>The latest 20 rows of the append-only <code>admin_actions</code> log: who, what, which world, before → after, when (<a href="../decisions/036-admin-panel-scope.md">036</a>)</td>
 </tr>
 </tbody>
 </table></div>
-<p>(Reset demo world isn't required. See <code>10</code> for the seed script.)</p>
+<p>Admin access is the one shared <strong><code>admin</code></strong> account: sign in to it to use the panel. There are no promote or demote controls (<a href="../decisions/036-admin-panel-scope.md">036</a>). <code>scripts/seed-demo.ts</code> stays as the backup for the demo world (<code>10</code>).</p>
 </div><div class="block block-tasks"><h2 id="s08-tasks">Tasks</h2>
 <ul class="task-list">
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t1"><span class="owner o-c" title="Owner C">C</span><span class="tt">Router (hash) + layout shell + pixel UI theme (shared components: Button, Panel, Modal in the <code>09</code> style) <em>(Kit in <code>src/ui/kit/</code>: <code>Button</code>, <code>ButtonLink</code>, <code>Panel</code>, <code>Dialog</code> (the Modal), <code>TextInput</code>, <code>Icon</code>; tokens in <code>src/ui/theme/</code>; sheet at <code>#/dev/kit</code> in dev. UI font is the pack's pixel font on a 9 px size grid.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t2"><span class="owner o-c" title="Owner C">C</span><span class="tt">Landing page with a background world (a floating island over a teal sky, see <code>docs/art/art-direction.md</code>) <em>("One generation a minute" from <code>docs/design/app-shell-brief.md</code>: <code>IslandScene</code> composites the world atlas on a 2D canvas, with a 60 s multiply-light loop and one stone rising each nightfall. Reduced motion holds at dusk. It stands in for a live <code>04</code> render of a sample world, which can replace the canvas later.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t3"><span class="owner o-c" title="Owner C">C</span><span class="tt">Auth screen + session persistence + logout + username display <em>(<code>/#/auth</code>, <code>?next=</code> returns the player where they were and <code>?mode=signup</code> opens on sign up. Session in <code>src/store/session.ts</code>, <code>RequireUser</code> guards <code>/play</code>. The app talks to <code>backend</code> from <code>src/api/index.ts</code>, <code>LocalBackend</code> until <code>SupabaseBackend</code> exists.)</em></span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s08-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Play flow: claim → interstitial → game → end flow → back to landing / "Play another" <em>(<code>PlayFlow</code> in <code>src/ui/play/</code>: claim → <code>Inheriting</code> → <code>Game</code> → seal commits (<a href="../decisions/018-commit-on-seal-refresh-restarts.md">018</a>) → Play another / Home. <code>#/play?seed=…</code> is an offline dev sandbox that saves nothing. <strong>Testing only:</strong> an "End turn (test)" button under the clock jumps to 6 am; remove it before the demo.)</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s08-t4"><span class="owner o-b" title="Owner B">B</span><span class="tt">Play flow: claim → interstitial → game → end flow → back to landing / "Play another" <em>(<code>PlayFlow</code> in <code>src/ui/play/</code>: claim → <code>Inheriting</code> → <code>Game</code> → seal commits (<a href="../decisions/018-commit-on-seal-refresh-restarts.md">018</a>) → Play another / Home. While the clock is stopped (journal open, end of the day) it calls <code>backend.heartbeat</code> once a minute until the turn is saved; <code>null</code> means the turn was voided, and a "Your day ran out" card replaces the game (<code>src/ui/play/heartbeat.ts</code>). Home, on the inheriting card or mid-day, releases the world so the next Play is a fresh draw (<a href="../decisions/035-home-releases-the-world.md">035</a>). <code>#/play?seed=…</code> is an offline dev sandbox that saves nothing. <strong>Testing only, remove both before the demo:</strong> an "End turn (test)" button under the clock jumps to 6 am, and "Next generation here (test)" on the last card claims the same world back for its next generation (admin force-assign, then a check that the same world and generation came back; non-admins get a message).)</em></span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s08-t5"><span class="owner o-b" title="Owner B">B</span><span class="tt">Resume: if the user refreshes while holding a lock, put them back in (or void; open question) <em>(The same turn starts over at 6 am: <code>claimWorld</code> hands back the held world (<a href="../decisions/018-commit-on-seal-refresh-restarts.md">018</a>).)</em></span></label></li>
-<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Tutorial scene</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t6"><span class="owner o-c" title="Owner C">C</span><span class="tt">Tutorial scene <em>(built by B as the "How to play" pop-up, <a href="../decisions/033-how-to-play-pop-up.md">033</a>; C to review the words)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t7"><span class="owner o-c" title="Owner C">C</span><span class="tt">Gallery + replay routes (screens from <code>06</code>) <em>(see <code>06</code>)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t8"><span class="owner o-c" title="Owner C">C</span><span class="tt">Admin panel + guard <em>(<code>/#/admin</code> → <code>AdminScreen</code> behind <code>RequireAdmin</code>: logged out goes to <code>/auth</code> and back, a non-admin sees the not-found page. Force-assign first (pick a world, type a name, Enter; unlocked worlds listed first), then every world with its lock, next-Play user, editable generations and turn length, Clear lock and Skip to replay, then the defaults for new worlds and the inherit ratio. Admins get an Admin link in the header. <code>Profile.isAdmin</code> and the admin calls are on the <code>Backend</code> contract; in <code>LocalBackend</code>, signing up as <code>admin</code> makes an admin.)</em></span></label></li>
 <li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s08-t9"><span class="owner o-b" title="Owner B">B</span><span class="tt">Error states: no network, claim failed, commit failed (retry + local backup) <em>(Claim failed and commit failed are done: Try again on both, and the local copy. No network waits for <code>SupabaseBackend</code>.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t10"><span class="owner o-c" title="Owner C">C</span><span class="tt">Audio toggle (mute) in the shell (<code>09</code>) <em>(<code>MuteToggle</code> in the header, saved in localStorage.)</em></span></label></li>
+</ul>
+<p><strong>Admin panel follow-ups (<a href="../decisions/036-admin-panel-scope.md">036</a>)</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s08-t11"><span class="owner o-a" title="Owner A">A</span><span class="tt">Migration: <code>worlds.removed_at</code> / <code>removed_by</code>, append-only <code>admin_actions</code> (admins read, no direct writes), <code>admin_remove_world</code> (refused while locked), <code>admin_recent_actions</code>, a log row from every <code>admin_*</code> RPC, and the removed-world filter in <code>claim_world</code> (all <a href="../decisions/034-weighted-claim-no-back-to-back.md">034</a> buckets), <code>admin_force_assign</code>, <code>admin_list_worlds</code>, <code>list_completed_worlds</code>, <code>get_replay</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s08-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>Backend</code>: <code>removeWorld</code>, <code>createDemoWorld</code>, <code>listAdminActions</code>, in <code>SupabaseBackend</code> and <code>LocalBackend</code>, with tests (removed world never claimed; delete refused while locked; every admin call logs one row)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s08-t13"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>seed-demo</code> Edge Function (admin-only), sharing <code>src/api/demo.ts</code> with <code>scripts/seed-demo.ts</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s08-t14"><span class="owner o-a" title="Owner A">A</span><span class="tt">Live checks in <code>scripts/test-backend.ts</code> for remove, the lock refusal and the log</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s08-t15"><span class="owner o-c" title="Owner C">C</span><span class="tt">Panel: list worlds in progress only; Delete with a confirm, disabled while locked; "Create demo world" button; "Recent admin actions" list</span></label></li>
 </ul>
 </div><div class="block block-accept"><h2 id="s08-acceptance">Acceptance</h2>
 <ul>
@@ -2176,8 +2398,8 @@ journal_pages (                    -- one per committed turn, never updated
 </ul>
 </div><div class="block block-open"><h2 id="s08-open-questions">Open questions</h2>
 <ol type="1">
-<li>Is the tutorial mandatory on first play, or skippable?</li>
-<li>Is the "this will take longer than you have" hint OK, given pending effects are partly hidden?</li>
+<li><del>Is the tutorial mandatory on first play, or skippable?</del> Settled: it opens by itself on the first day and closes with Got it (<a href="../decisions/033-how-to-play-pop-up.md">033</a>).</li>
+<li><del>Is the "this will take longer than you have" hint OK, given pending effects are partly hidden?</del> Moot: the pop-up gives no timings (<a href="../decisions/033-how-to-play-pop-up.md">033</a>).</li>
 <li><del>Refresh mid-turn: resume with the time remaining, or void?</del> Settled: the same turn starts over (<a href="../decisions/018-commit-on-seal-refresh-restarts.md">018</a>).</li>
 </ol>
 </div></div></section>
@@ -2410,6 +2632,9 @@ journal_pages (                    -- one per committed turn, never updated
 <blockquote>
 <p>A judge inherits a flourishing orchard and discovers it was planted by someone whose own final screen showed only its cost.</p>
 </blockquote>
+<blockquote>
+<p><strong>Changed by <code>13</code>:</strong> nobody plants the orchard any more. Trees grow from the land's level (<a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>), so the setup below no longer works as written. The new demo moment is <strong>still to be decided</strong> (<code>13</code> open question 1). What still holds: the cost summary shows only realised outcomes, and nothing during play explains causes, so the replay can still be the reveal (<a href="../decisions/026-lift-no-explanation-rule.md">026</a>). A candidate: the judge inherits a <strong>Blooming</strong> world, and the replay shows whose repairs and harvests raised its health. The table below is the original setup, kept for reference.</p>
+</blockquote>
 <h3 id="s10-setup-example-with-a-3-generation-demo-world-so-the-judge-plays-gen-3">Setup (example with a 3-generation demo world, so the judge plays Gen 3)</h3>
 <div class="scroll"><table>
 <thead>
@@ -2455,7 +2680,7 @@ journal_pages (                    -- one per committed turn, never updated
 <ul>
 <li><strong>Preferred:</strong> teammates actually play the early generations on the live site (so it's real data).</li>
 <li><strong>Backup:</strong> <code>scripts/seed-demo.ts</code> creates the same world from a fixed seed + a fixed action log + fixed journal pages, through the same <code>commit-turn</code> path. Run it the morning of judging, plus a second copy as a spare.</li>
-<li>Choose a seed where the orchard plot is near spawn and clearly visible (use the <code>03</code> worldgen debug page).</li>
+<li>Choose a seed where the orchard plot is near spawn and clearly visible (use the <code>03</code> worldgen debug page). With <code>13</code>, also check a pond or the sea edge is near the fields, so watering doesn't eat the judge's turn.</li>
 <li>Set a <strong>turn length</strong> the judge can play comfortably in the slot (e.g. 60s). The game designer decides.</li>
 </ul>
 <h3 id="s10-5-minute-run-sheet-draft-for-the-team-to-adapt">5-minute run sheet (draft, for the team to adapt)</h3>
@@ -2658,6 +2883,11 @@ journal_pages (                    -- one per committed turn, never updated
 <td>C → B</td>
 <td>Journal modal + stroke renderer components</td>
 <td>End-of-turn flow and replay journal panel</td>
+</tr>
+<tr>
+<td>B → C</td>
+<td><code>ReplayWorld</code>, <code>changedPlots</code>, <code>plotHistory</code> (<code>06</code> › Replay viewer: who builds what)</td>
+<td>The replay screen's layout, timeline and plot history popover</td>
 </tr>
 <tr>
 <td>B → C</td>
@@ -3372,6 +3602,298 @@ journal_pages (                    -- one per committed turn, never updated
 </tr>
 </tbody>
 </table></div>
+</div></div></section>
+<section id="s13" class="doc" data-key="s13"><header class="sec-head"><span class="sec-num">13</span><h2 class="sec-title">Gameplay Mechanics &amp; Playing Experience</h2></header><div class="progress" data-for="s13"><div class="bar"><span></span></div><span class="ptext"></span></div><div class="prose">
+<p><strong>Owner:</strong> everyone, split by folder to keep merge conflicts down (see Task split)<br />
+<strong>Depends on:</strong> the built engine (<code>02</code>), worldgen (<code>03</code>) and world view (<code>04</code>). <strong>Changes:</strong> <code>01</code>, <code>04</code>, <code>05</code>, <code>06</code>, <code>10</code>.</p>
+<p>This section reworks how the game actually plays: farming is done tile by tile with a watering can, seeds are a shared stock, and a visible <strong>world health</strong> and <strong>level</strong> grow orchards and flowers on their own. It also gathers the unfinished gameplay tasks from the first plan. Backend, deploy and demo-admin tasks stay in their own sections.</p>
+<p>All numbers marked <span class="ph">placeholder</span> are starting values for C to tune. <strong>Builds on <a href="../decisions/019-per-tile-actions-take-time.md">019</a></strong>, which is already on <code>main</code>: fields and orchards are worked tile by tile, the action goes to the tile you face, every action takes time (<code>CONFIG.actionSeconds</code>), and <strong>every stamina cost is 0</strong>. This section doesn't change stamina: it stays in the game, costs nothing, and is a placeholder.</p>
+<div class="block block-decisions"><h2 id="s13-decisions-locked">Decisions (locked)</h2>
+<ul>
+<li><strong>Farming is per tile</strong> (built in <a href="../decisions/019-per-tile-actions-take-time.md">019</a>). Every field tile is its own plot, planted, watered, grown and harvested on its own, next to the others. This section adds watering on top (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>).</li>
+<li><strong>Plant, then water, then it grows</strong> (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>). A planted tile doesn't grow until it has been watered once. Its own ripening clock starts at that pour.</li>
+<li><strong>Watering can</strong> (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>): holds a few pours. You fill it at a <strong>dug well, the reservoir, a pond or the sea edge</strong>. Filling it <strong>never costs stored Water</strong>.</li>
+<li><strong>Unwatered seeds carry over</strong>, and wither if nobody waters them within 2 generations (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>).</li>
+<li><strong>Seeds are a shared stock</strong> carried between generations. You start with some, and harvesting gives some back (<a href="../decisions/022-seed-stock.md">022</a>).</li>
+<li><strong>Stardew-style toolbar</strong>: number keys pick a held tool (seeds, watering can, hands), and E uses it on the tile you face (facing-tile targeting already exists from 019).</li>
+<li><strong>World health and level</strong> (<a href="../decisions/023-world-health-and-level.md">023</a>), shown in the HUD as a <strong>health bar</strong> (no number) and the <strong>land's name</strong> for its level: Bare, Taking root, Green, Blooming, Abundant. Health goes up and down. <strong>Level only rises.</strong> This replaces the locked "no score" rule.</li>
+<li><strong>Orchards and flowers are emergent</strong> (<a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>). There's no Plant Orchard action. Trees appear and fruit, and flowers spread, as the world levels up.</li>
+<li><strong>Eight actions in the end:</strong> Water replaces Plant Orchard once trees come with level; until then Plant Orchard stays as a ninth, and filling the can is a free logged <code>fillCan</code> (<a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>) (<a href="../decisions/021-per-tile-farming-and-watering.md">021</a>, <a href="../decisions/024-emergent-orchards-and-flowers.md">024</a>).</li>
+<li><strong>You eat at the oven</strong>, one food from the store a meal, as a logged <code>eat</code> action. Harvest and eat is gone (<a href="../decisions/025-oven-cooks-stored-food.md">025</a>, <a href="../decisions/029-eat-at-the-oven.md">029</a>).</li>
+<li><strong>What the world shows during play</strong> (<a href="../decisions/026-lift-no-explanation-rule.md">026</a>): the old blanket rule is lifted, and the only new readouts are the <strong>health bar and land level</strong>. Due dates, future yields and causes still wait for the replay. The <strong>cost summary stays realised-only</strong>.</li>
+<li><strong>Fast Track</strong> still pulls a pending effect forward at 2× cost: a reservoir repair landing, a growing tile, the well's income. It never touches health or level.</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s13-spec">Spec</h2>
+<h3 id="s13-actions-8">Actions (8)</h3>
+<p>Stamina cost is 0 for every action (019). Time is from <code>CONFIG.actionSeconds</code>.</p>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Action</th>
+<th>Target</th>
+<th>Takes</th>
+<th>Uses</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Harvest</strong></td>
+<td>one ripe tile, or a fruiting tree</td>
+<td>1 s</td>
+<td>—</td>
+<td>Tile: +1 food, + seeds back. Tree: +4 food once per generation, scaled by health <span class="ph">placeholder</span></td>
+</tr>
+<tr>
+<td>1b</td>
+<td><strong>Cook and eat</strong> (at the oven)</td>
+<td>food in the store</td>
+<td>0.5 s</td>
+<td>1 food</td>
+<td>Refills hunger, allowed when full. Replaces Harvest and eat (<a href="../decisions/029-eat-at-the-oven.md">029</a>)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Plant Crops</strong></td>
+<td>one empty or rotten tile</td>
+<td>1.5 s</td>
+<td>1 seed</td>
+<td>Tile becomes <code>sown</code>. Doesn't grow until watered</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Water</strong> (new)</td>
+<td>one sown tile</td>
+<td><span class="ph">placeholder 1 s</span></td>
+<td>1 pour from the can</td>
+<td>Starts that tile's ripening clock (25% of the turn)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Repair Reservoir</strong></td>
+<td>reservoir</td>
+<td>8 s</td>
+<td>—</td>
+<td>As before</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Dig Well</strong></td>
+<td>well site</td>
+<td>6 s</td>
+<td>—</td>
+<td>As before. A dug well becomes a can source</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Fish/Hunt</strong></td>
+<td>wild spot</td>
+<td>3 s</td>
+<td>—</td>
+<td>As before</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Maintain</strong></td>
+<td>well, reservoir, trees</td>
+<td>3 s</td>
+<td>—</td>
+<td>As before</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Fast Track</strong></td>
+<td>any pending effect</td>
+<td>2 s</td>
+<td>2× its cost</td>
+<td>As before. Fast-tracking a watered tile ripens it now</td>
+</tr>
+</tbody>
+</table></div>
+<p>Plant Orchard (3 s, 1 water per tree) is removed: the four 1-tile trees from 019 appear with level instead.</p>
+<p><strong>Filling the can</strong> isn't an action in the log. It's an interaction at a water source, like opening the journal. It costs no stamina and no stored Water. The engine still checks that the can has a pour when a Water action is logged, so the can's fill level is part of the turn's state: <code>can: { pours, capacity }</code>.</p>
+<h3 id="s13-tile-lifecycle">Tile lifecycle</h3>
+<pre><code>empty ─plant→ sown ─water→ watered/growing ─(1 min)→ ripe ─harvest→ empty
+               │              │                       │
+               │              │ still growing at dusk: │ ripe at dusk: left ripe for the next player.
+               │              │ carries over, half its │ Still unpicked at the end of a generation
+               │              │ time left              │ that began with it ripe: rotten (tend to clear)
+               │ not watered: stays sown and carries over
+               └ still unwatered 2 generations after planting: withered (tend to clear)</code></pre>
+<ul>
+<li>Tiles are already separate plots (<code>field-1:0,0</code> … <code>field-1:2,2</code>, from 019). Each tile's state has <code>ripeSince</code> for the rot rule (<a href="../decisions/028-two-minute-days-crops-carry-over.md">028</a>).</li>
+<li>Watering happens <strong>once</strong>. After that the tile ripens with no more care, in <code>cropRipenSeconds</code> (60).</li>
+<li>Unwatered <code>sown</code> tiles stay through the generation change. Watering one in a later generation starts it then.</li>
+</ul>
+<h3 id="s13-watering-can">Watering can</h3>
+<ul>
+<li>Capacity <strong>4</strong> pours (027; kept by the user on 2026-10-25). It starts every turn empty (<a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>).</li>
+<li>Sources: a dug well (clear or stagnant), the reservoir (cracked or not), ponds, the sea edge (<a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>). The HUD's water count shows the can's pours.</li>
+<li>The toolbar shows the fill level. The can's sprite shows full or empty.</li>
+</ul>
+<h3 id="s13-seeds">Seeds</h3>
+<ul>
+<li>Shared stock <code>seeds</code>, a carried resource like food. Founder start <strong>9</strong> (first pass).</li>
+<li>Planting costs 1 seed. Harvesting a field tile gives back <strong>1</strong> (fixed), and a tree harvest <strong>2</strong>.</li>
+<li>With 0 seeds you can't plant. The toolbar shows "No seeds".</li>
+</ul>
+<h3 id="s13-world-health-and-level">World health and level</h3>
+<ul>
+<li><strong>Health</strong> <code>0–100</code>, recomputed from the world's condition. It rises with: tended and harvested tiles, stored water, structures in repair, upkeep met, wild stock recovering. It falls with: rotten or withered tiles, wear, stagnation, drought, missed upkeep, overfishing or overhunting. Weights and the formula: <code>01</code> › Section 13 values (first pass).</li>
+<li><strong>Level</strong> starts at 0 (Bare) and <strong>only rises</strong>, by at most 1, at the <strong>start of a generation</strong> when health is at or above the next threshold (55, 65, 75, 85). A founder world is about 55.</li>
+<li><strong>HUD:</strong> a health bar with no number, and the level's name.</li>
+<li>Every health change is a transition with causes, so the replay can say who raised or lowered it.</li>
+</ul>
+<h3 id="s13-emergent-orchards-and-flowers">Emergent orchards and flowers</h3>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Orchard plot</th>
+<th>Flowers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 Bare</td>
+<td>empty</td>
+<td>none</td>
+</tr>
+<tr>
+<td>1 Taking root</td>
+<td>saplings appear on the four tree tiles</td>
+<td>a few near the house</td>
+</tr>
+<tr>
+<td>2 Green</td>
+<td>young trees</td>
+<td>spread along paths</td>
+</tr>
+<tr>
+<td>3 Blooming</td>
+<td>fruiting trees (harvestable)</td>
+<td>meadow patches</td>
+</tr>
+<tr>
+<td>4 Abundant</td>
+<td><code>[OPEN]</code> more trees / higher yield</td>
+<td>full bloom</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>Trees still wear and can be maintained (<code>[OPEN]</code>: or does health replace their wear?). Level can't fall, so a tree can only die from wear, not from a level drop.</li>
+<li>Flowers are visual only for now (<code>[OPEN]</code>: do they feed health?).</li>
+</ul>
+<h3 id="s13-toolbar-and-controls">Toolbar and controls</h3>
+<ul>
+<li>Slots: <code>1</code> hands (harvest, interact), <code>2</code> seeds, <code>3</code> watering can, <code>4–8</code> contextual structure actions. <strong>E</strong> uses the held tool on the facing tile, <strong>F</strong> fast-tracks. There's no Q: you eat at the oven.</li>
+<li>The prompt names the tile action ("E · Water"). Filling the can: "E · Fill can" at a source.</li>
+</ul>
+<h3 id="s13-oven">Oven</h3>
+<ul>
+<li>Facing the oven, "E · Cook and eat" takes <code>mealFood</code> (1) from the cabinet's store and adds <code>hungerPerFoodEaten</code> to hunger, up to full. It's free, takes 0.5 s, and is allowed when you're full. It's a logged action, <code>eat</code>, so the server re-run and the replay see it (<a href="../decisions/029-eat-at-the-oven.md">029</a>).</li>
+</ul>
+</div><div class="block block-plain"><h2 id="s13-task-split-least-merge-conflicts">Task split (least merge conflicts)</h2>
+<div class="scroll"><table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Owns these folders in this section</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td><code>src/engine/**</code> (types, actions, turn, view, effects, replay), engine tests, <code>scripts/simulate.ts</code>, <strong>new keys</strong> in <code>config.ts</code></td>
+</tr>
+<tr>
+<td><strong>B</strong></td>
+<td><code>src/worldgen/**</code>, <code>src/render/**</code>, <code>src/store/**</code>, replay viewer in <code>src/ui/replay/</code></td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td><code>src/ui/hud/**</code>, <code>src/ui/kit/**</code>, <code>src/ui/screens/**</code>, <code>docs/content/**</code>, decision follow-ups, and <strong>values</strong> in <code>config.ts</code> after A's key PR merges</td>
+</tr>
+</tbody>
+</table></div>
+<p>Order: A lands the contract PR first (<code>types.ts</code>, new config keys, <code>visibleView</code> stages). B and C build against it.</p>
+</div><div class="block block-tasks"><h2 id="s13-tasks">Tasks</h2>
+<p><strong>Contracts (do first)</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t1"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>types.ts</code>: <code>ActionType</code> swaps <code>plantOrchard</code> → <code>water</code>, <code>seeds</code> resource, <code>can</code> state, <code>health</code>/<code>level</code> on <code>WorldState</code>, new cause rules (<code>wither</code>, <code>health</code>, <code>level</code>)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t2"><span class="owner o-a" title="Owner A">A</span><span class="tt">Add the new config keys with placeholder values (can capacity, seed start/return, wither gens, health weights, level thresholds)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t3"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>visibleView</code>: per-tile stages (<code>sown</code>, <code>watered</code>, <code>growing</code>, <code>ripe</code>, <code>rotten</code>, <code>withered</code>), can fill, seeds, health bar value, level, tree and flower stages by level</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t4"><span class="owner o-a" title="Owner A">A</span><span class="tt">Update <code>inheritance-core/references/ids.md</code> with the new IDs</span></label></li>
+</ul>
+<p><strong>Engine (A)</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t5"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>plantCrops</code> (already per tile): costs 1 seed, leaves the tile <code>sown</code> with no ripening effect scheduled</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t6"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>water</code> action: needs a pour and a <code>sown</code> tile; schedules that tile's ripening effect <em>(built by B, <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t7"><span class="owner o-a" title="Owner A">A</span><span class="tt">Can fill as a non-logged interaction with a source check; the can resets at turn start <em>(built by B as a free <strong>logged</strong> <code>fillCan</code>, so the server re-run sees the pours; <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t8"><span class="owner o-a" title="Owner A">A</span><span class="tt">Harvest returns seeds; tree harvest scaled by health; add <code>water</code> to <code>actionSeconds</code></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t9"><span class="owner o-a" title="Owner A">A</span><span class="tt">Unwatered <code>sown</code> tiles carry over; <code>beginTurn</code> withers them 2 generations after planting <em>(built by B, <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>; tending clears a withered or rotten tile)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t10"><span class="owner o-a" title="Owner A">A</span><span class="tt">Remove <code>plantOrchard</code>; the four tree tiles' stages follow level</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t11"><span class="owner o-a" title="Owner A">A</span><span class="tt">Health recompute with causes, and the level-up rule (never down)</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt">Oven eat from store (refills hunger) <em>(built by B as a logged <code>eat</code> action, <a href="../decisions/029-eat-at-the-oven.md">029</a>)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t13"><span class="owner o-a" title="Owner A">A</span><span class="tt">Fast Track on a watered tile and on the other pending effects <em>(works unchanged: watering schedules the tile's ripening)</em></span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t14"><span class="owner o-a" title="Owner A">A</span><span class="tt">Vitest: plant without water never ripens; water starts the clock; can empties; wither at +2 gens; seeds conserved; health causes; level never drops; still deterministic</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s13-t15"><span class="owner o-a" title="Owner A">A</span><span class="tt"><code>scripts/simulate.ts</code> strategies updated for tiles, can trips and seeds</span></label></li>
+</ul>
+<p><strong>World and rendering (B)</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t16"><span class="owner o-b" title="Owner B">B</span><span class="tt">Worldgen: mark water-source tiles (pond edge, sea edge, well, reservoir) for can filling</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t17"><span class="owner o-b" title="Owner B">B</span><span class="tt">Worldgen: flower spawn spots</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t18"><span class="owner o-b" title="Owner B">B</span><span class="tt">Render the new tile stages (sown, watered dark soil, withered) next to the existing ones <em>(borrowed frames with a tint until the atlas has their own; <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>)</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t19"><span class="owner o-b" title="Owner B">B</span><span class="tt">Held-tool state in the store, number-key switching, "Fill can" at sources <em>("Fill the can" at ponds, the sea edge, the well and the reservoir is done, <a href="../decisions/027-watering-can-tilling-food-only-nights.md">027</a>; held tool not yet)</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t20"><span class="owner o-b" title="Owner B">B</span><span class="tt">Watering FX (splash on the tile) and the can's full/empty sprite in hand</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t21"><span class="owner o-b" title="Owner B">B</span><span class="tt">Trees and flowers appear and grow with level; flowers spread</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t22"><span class="owner o-b" title="Owner B">B</span><span class="tt">Oven interaction prompt in the house <em>(<a href="../decisions/029-eat-at-the-oven.md">029</a>)</em></span></label></li>
+</ul>
+<p><strong>HUD, copy and numbers (C)</strong></p>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t23"><span class="owner o-c" title="Owner C">C</span><span class="tt">Toolbar component (slots, held tool, can fill pips, seed count)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t24"><span class="owner o-c" title="Owner C">C</span><span class="tt">Health bar (no number) and level badge in the HUD</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t25"><span class="owner o-c" title="Owner C">C</span><span class="tt">Prompt and tooltip copy for Plant, Water, Fill can, Cook and eat, No seeds (<code>docs/content/flavour-text.md</code>)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t26"><span class="owner o-c" title="Owner C">C</span><span class="tt">Cost summary: tiles planted and watered, seeds used and gained, health and level at the end of your day</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t27"><span class="owner o-c" title="Owner C">C</span><span class="tt">Tune the placeholders: can capacity, seed start and return, health weights, level thresholds, per-tile yields <em>(first pass in <code>01</code> › Section 13 values; re-check once <code>simulate.ts</code> models them)</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t28"><span class="owner o-c" title="Owner C">C</span><span class="tt">Update <code>inheritance-player-facing</code>, <code>inheritance-core</code> and the <code>CLAUDE.md</code> rules to match decisions 023 and 026</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t29"><span class="owner o-c" title="Owner C">C</span><span class="tt">Update <code>01</code>, <code>04</code>, <code>05</code> and <code>10</code> text where this section changes them</span></label></li>
+</ul>
+<p><strong>Carried over from the first plan</strong> (also listed in their own sections; tick both)</p>
+<ul class="task-list">
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t30"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>01</code> Write the "medium world" tuning scenario and check the dilemma holds (scenario written; re-run for tiles) <em>(re-run 2026-10-25: doesn't hold yet; tune after A's seeds, health and level, <code>01</code> › Balance after section 13)</em></span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t31"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>01</code> Write 3 balance test scenarios as Vitest fixtures: hoarder, planter, quick-fixer</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t32"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>05</code> Copywriting pass with Game design (tone: quiet, reflective, no moralising)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t33"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>08</code> Tutorial scene (now: plant, water, fill the can, harvest) <em>(now the "How to play" pop-up built by B, with eating too, <a href="../decisions/033-how-to-play-pop-up.md">033</a>)</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t34"><span class="owner o-b" title="Owner B">B</span><span class="tt"><code>08</code> Error states: no network (claim and commit failed are done)</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t35"><span class="owner o-b" title="Owner B">B</span><span class="tt"><code>06</code> Replay viewer, the world and its data: <code>ReplayWorld</code> (read-only snapshot render), <code>changedPlots</code> (per tile), <code>plotHistory</code> and plot clicks, health and level per generation (split in <code>06</code> › Replay viewer: who builds what)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t36"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>06</code> Replay viewer, the screen around it: layout, timeline and stepping, auto-play, plot history popover, causes panel, copy (same split)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t37"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>10</code> Decide the new demo moment (the planted orchard is gone; see Open questions)</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t38"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>10</code> Pick the demo seed, generation count and turn length</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t39"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>10</code> Write the founder journal pages</span></label></li>
+<li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s13-t40"><span class="owner o-c" title="Owner C">C</span><span class="tt"><code>06</code> (Stretch) Legacy view per player</span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s13-t41"><span class="owner o-b" title="Owner B">B</span><span class="tt"><code>06</code> (Stretch) Animate drawing strokes in the journal panel</span></label></li>
+</ul>
+</div><div class="block block-accept"><h2 id="s13-acceptance">Acceptance</h2>
+<ul>
+<li>A player plants a tile, sees it stay as seed, fills the can at a pond, waters it, and watches only that tile grow.</li>
+<li>Two tiles next to each other, planted and watered at different times, ripen at different times.</li>
+<li>An unwatered seed is still there for the next player, and is withered two generations after it was planted.</li>
+<li>The HUD shows a health bar and level. Health falls when tiles rot; level never goes down.</li>
+<li>A sapling appears on the orchard plot when the world reaches level 1, with nobody planting it.</li>
+<li><code>replay()</code> still rebuilds identical states, and every health change has a cause.</li>
+</ul>
+</div><div class="block block-open"><h2 id="s13-open-questions">Open questions</h2>
+<ol type="1">
+<li><strong>Demo moment</strong> without a planted orchard (deferred by the user). Candidates: a health legacy reveal in the replay, or keep one plantable orchard.</li>
+<li>With stamina free (019), time and can trips are the only limits. Is that enough pressure, or does stamina come back?</li>
+<li>Do trees still wear, or does health replace wear for them? What does level 4+ add?</li>
+<li>Do flowers feed health, or are they visual only?</li>
+<li>What to do with spare time once stamina runs out (sleep to end the day, shorter turns)? Left open after a playtest.</li>
+</ol>
 </div></div></section>
     <p class="foot">Built from <code>docs/plan/</code> in <code>whosmo7/temporal</code>. Ticked tasks are saved in this browser only.</p>
   </main>

@@ -1,5 +1,5 @@
 // The planter's day, then keeps for itself whatever the store holds beyond the night and a reserve
-// (decision 033): selfish only with what the next player can most easily spare.
+// (decision 039): selfish only with what the next player can most easily spare.
 
 import { CONFIG } from '../../src/engine';
 import { planter } from './planter';
@@ -9,7 +9,7 @@ export const skimmer: Strategy = {
   name: 'skimmer',
   plan: planter.plan,
   dusk(state) {
-    const keep = CONFIG.upkeepFood * (1 + CONFIG.score.foodReserveNights);
+    const keep = CONFIG.upkeepFood * (1 + CONFIG.playerScore.foodReserveNights);
     return takes(state.resources.food - keep, state.turnSeconds);
   },
 };

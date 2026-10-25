@@ -63,7 +63,7 @@ export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome): str
     case 'eat':
       return FARM_TEXT.cook; // at the oven (decision 029)
     case 'take':
-      return FARM_TEXT.keep; // at the oven (decision 033)
+      return FARM_TEXT.keep; // at the oven (decision 039)
   }
 }
 

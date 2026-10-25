@@ -230,7 +230,7 @@ export function endTurn(state: WorldState): EndTurnResult {
   };
 
   // This generation's score, from the world it hands over after its own upkeep, locked now
-  // (decision 033). Earlier entries are copied as they are.
+  // (decision 039). Earlier entries are copied as they are.
   const score = scoreGeneration(next, n);
   rec.emit({ world: 'score' }, null, score.total, [rule('assessed')]);
   next.scores = [...(next.scores ?? []), score];
