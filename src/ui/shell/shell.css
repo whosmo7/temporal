@@ -696,3 +696,31 @@
   gap: calc(var(--px) * 2);
   justify-content: flex-end;
 }
+
+/* Tutorial (08): one hint at a time, over the top of the game between the HUD and the clock. */
+.tutorial {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 5;
+  transform: translateX(-50%);
+  width: min(460px, calc(100% - 640px));
+  min-width: 320px;
+  pointer-events: none;
+}
+
+.tutorial__card {
+  pointer-events: auto;
+}
+
+.tutorial__card p {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.tutorial__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: calc(var(--px) * 3);
+}

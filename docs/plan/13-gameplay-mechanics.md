@@ -184,7 +184,7 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 - [ ] **[C]** `01` Write the "medium world" tuning scenario and check the dilemma holds (scenario written; re-run for tiles)
 - [ ] **[C]** `01` Write 3 balance test scenarios as Vitest fixtures: hoarder, planter, quick-fixer
 - [ ] **[C]** `05` Copywriting pass with Game design (tone: quiet, reflective, no moralising)
-- [ ] **[C]** `08` Tutorial scene (now: plant, water, fill the can, harvest)
+- [x] **[C]** `08` Tutorial scene (now: plant, water, fill the can, harvest)
 - [ ] **[B]** `08` Error states: no network (claim and commit failed are done)
 - [ ] **[B]** `06` Replay viewer, the world and its data: `ReplayWorld` (read-only snapshot render), `changedPlots` (per tile), `plotHistory` and plot clicks, health and level per generation (split in `06` › Replay viewer: who builds what)
 - [x] **[C]** `06` Replay viewer, the screen around it: layout, timeline and stepping, auto-play, plot history popover, causes panel, copy (same split)

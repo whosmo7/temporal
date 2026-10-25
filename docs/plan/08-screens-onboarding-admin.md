@@ -38,14 +38,19 @@
 
 ## Onboarding/tutorial
 
-Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, nothing saved.
+Built as `#/tutorial` (`TutorialScreen`): the real game on a fixed forest world (seed 123) with a 4-minute day, one
+card at a time, nothing saved, no account. Shown before a first Play and skippable; also linked from the landing page as
+**How to play** ([029](../decisions/029-tutorial-first-play-skippable.md)). About two minutes.
 1. Move with WASD.
-2. Walk to the field → plant crops → watch them ripen → harvest.
-3. See the orchard plot. Planting it shows "This will take longer than you have." (open: is this hint allowed, given hidden effects?)
-4. The lectern: "Those before you left words here."
-5. The graveyard: "When your day ends, you join them."
-6. Explain upkeep: "Before night falls, keep enough food and water to survive."
-7. → Play.
+2. Fill the can at the reservoir or a pond.
+3. Sow a tile of the field.
+4. Water it.
+5. While it grows, the lectern: "Those before you left words here."
+6. The graveyard: "When your day ends, you join them."
+7. Harvest the ripe tile.
+8. Upkeep: "Before night falls, keep enough food in the store to get through the night." → Play.
+
+No hint about how long anything takes. Wording: `docs/content/flavour-text.md` › Tutorial.
 
 ## Admin panel
 
@@ -65,7 +70,7 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 - [x] **[C]** Auth screen + session persistence + logout + username display *(`/#/auth`, `?next=` returns the player where they were and `?mode=signup` opens on sign up. Session in `src/store/session.ts`, `RequireUser` guards `/play`. The app talks to `backend` from `src/api/index.ts`, `LocalBackend` until `SupabaseBackend` exists.)*
 - [x] **[B]** Play flow: claim → interstitial → game → end flow → back to landing / "Play another" *(`PlayFlow` in `src/ui/play/`: claim → `Inheriting` → `Game` → seal commits ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) → Play another / Home. While the clock is stopped (journal open, end of the day) it calls `backend.heartbeat` once a minute until the turn is saved; `null` means the turn was voided, and a "Your day ran out" card replaces the game (`src/ui/play/heartbeat.ts`). `#/play?seed=…` is an offline dev sandbox that saves nothing. **Testing only, remove both before the demo:** an "End turn (test)" button under the clock jumps to 6 am, and "Next generation here (test)" on the last card claims the same world back for its next generation (admin force-assign, then a check that the same world and generation came back; non-admins get a message).)*
 - [x] **[B]** Resume: if the user refreshes while holding a lock, put them back in (or void; open question) *(The same turn starts over at 6 am: `claimWorld` hands back the held world ([018](../decisions/018-commit-on-seal-refresh-restarts.md)).)*
-- [ ] **[C]** Tutorial scene
+- [x] **[C]** Tutorial scene *(`src/ui/screens/TutorialScreen.tsx`, steps in `src/ui/tutorial/steps.ts`; a first Play redirects to `#/tutorial?then=play` until it's finished or skipped ([029](../decisions/029-tutorial-first-play-skippable.md)))*
 - [x] **[C]** Gallery + replay routes (screens from `06`) *(see `06`)*
 - [x] **[C]** Admin panel + guard *(`/#/admin` → `AdminScreen` behind `RequireAdmin`: logged out goes to `/auth` and back, a non-admin sees the not-found page. Force-assign first (pick a world, type a name, Enter; unlocked worlds listed first), then every world with its lock, next-Play user, editable generations and turn length, Clear lock and Skip to replay, then the defaults for new worlds and the inherit ratio. Admins get an Admin link in the header. `Profile.isAdmin` and the admin calls are on the `Backend` contract; in `LocalBackend`, signing up as `admin` makes an admin.)*
 - [ ] **[B]** Error states: no network, claim failed, commit failed (retry + local backup) *(Claim failed and commit failed are done: Try again on both, and the local copy. No network waits for `SupabaseBackend`.)*
@@ -78,6 +83,6 @@ Keep it short (target ≈ 30–45 s). A fixed tutorial seed, no timer pressure, 
 
 ## Open questions
 
-1. Is the tutorial mandatory on first play, or skippable?
-2. Is the "this will take longer than you have" hint OK, given pending effects are partly hidden?
+1. ~~Is the tutorial mandatory on first play, or skippable?~~ Shown before a first Play, skippable ([029](../decisions/029-tutorial-first-play-skippable.md)).
+2. ~~Is the "this will take longer than you have" hint OK?~~ No hint ([029](../decisions/029-tutorial-first-play-skippable.md)).
 3. ~~Refresh mid-turn: resume with the time remaining, or void?~~ Settled: the same turn starts over ([018](../decisions/018-commit-on-seal-refresh-restarts.md)).

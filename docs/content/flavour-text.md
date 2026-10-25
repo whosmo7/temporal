@@ -113,3 +113,23 @@ Say what's missing, in a few words.
 Things deliberately **not** written: no tooltip says what anything becomes or when (the Sow tooltip says a seed *needs* water, not what it will give),
 no line says how to raise the land's health or what the next level brings, nothing explains why a plot looks
 the way it does, and no event (drought, storm, good harvest) is ever named during play.
+
+## Tutorial (08, [029](../decisions/029-tutorial-first-play-skippable.md))
+
+One card at a time at the top of the screen, headed "{n} of 7", with Skip. Built in `src/ui/tutorial/steps.ts`.
+
+1. Walk with WASD or the arrow keys.
+2. Your can starts each day empty. Walk up to the reservoir or a pond and fill it.
+3. Find the field. Face a tile of tilled earth and sow it.
+4. Seeds wait for water. Water the tile you sowed.
+5. While it grows: the journal stands by the house. Those before you left words here. Press E to read it.
+6. Find the graveyard. When your day ends, you join them.
+7. Go back to your field. When the crop is ripe, harvest it.
+
+Last card, **That’s the day**: "Before night falls, keep enough food in the store to get through the night. When the day
+ends, you write a page for whoever comes next." → **Play**.
+
+The page left by the one before (Wren): "Reservoir wall is cracked but it still holds some. Sow, then water, or nothing
+comes up."
+
+No numbers, no durations, nothing about what anything becomes later.

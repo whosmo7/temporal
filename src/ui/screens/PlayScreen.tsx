@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import type { Gravestone, JournalPage } from '../../api';
 import { beginTurn, CONFIG, createWorld, endTurn } from '../../engine';
 import { founderLook, lookIds, type WorldLook } from '../../render/world-view';
@@ -7,6 +7,7 @@ import { useGameStore } from '../../store/game';
 import { generateMap, isPresetName, type Biome, type PresetName, type TileMap } from '../../worldgen';
 import { Game, type SealedTurn, type TurnStart } from '../play/Game';
 import { PlayFlow } from '../play/PlayFlow';
+import { tutorialSeen } from '../tutorial/steps';
 
 /**
  * `#/play` claims a world from the backend and plays it (08). With `seed=` it's an offline dev
@@ -14,11 +15,13 @@ import { PlayFlow } from '../play/PlayFlow';
  * world to the next generation and nothing is saved. Sandbox params: `turn=60` shortens the turn
  * to 60 s, `name=JO` is you, `graves=AL,MO,KE` plays that many idle generations first (their stones
  * and pages too), and `look=healthy|neglected` swaps the engine's look for a fixed preview.
- * `fps=1` shows the frame rate in both.
+ * `fps=1` shows the frame rate in both. A first Play on this browser opens the tutorial first.
  */
 export function PlayScreen() {
   const [params] = useSearchParams();
   const showFps = params.get('fps') === '1';
+  // A first Play goes through the tutorial, which can be skipped (decision 029).
+  if (!params.has('seed') && !tutorialSeen()) return <Navigate to="/tutorial?then=play" replace />;
   return params.has('seed') ? <Sandbox params={params} showFps={showFps} /> : <PlayFlow showFps={showFps} />;
 }
 

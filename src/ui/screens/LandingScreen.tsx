@@ -36,6 +36,9 @@ export function LandingScreen() {
           Play
         </ButtonLink>
         <ButtonLink to="/gallery">Gallery</ButtonLink>
+        <ButtonLink to="/tutorial" variant="quiet">
+          How to play
+        </ButtonLink>
       </div>
       {/* Kyrise's icons are CC BY 4.0, so the credit has to be visible in the game (ASSETS.md). */}
       <p className="landing__credits">
