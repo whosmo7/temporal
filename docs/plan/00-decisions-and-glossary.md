@@ -116,12 +116,12 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 | Topic | Decision |
 |---|---|
 | Mode | **Async online**: each generation is played by whoever is assigned next, on their own device |
-| Assignment | **Weighted random** between inheriting an unlocked in-progress world and getting a new one; **ratio configurable** |
+| Assignment | **Weighted random**: 0.5 the open world furthest along, 0.4 any other, 0.1 a new world; an empty choice falls through. Both numbers are live settings [034](../decisions/034-weighted-claim-no-back-to-back.md) |
 | Concurrency | **Only one player can hold a world at a time** (lock) |
 | Abandon mid-turn | **Turn voided**: the lock expires, the world stays as it was before the turn, no gravestone |
 | Refresh mid-turn | **The same turn starts over** at 6 am, within the original lock ([018](../decisions/018-commit-on-seal-refresh-restarts.md)) |
 | Identity | **Username + password** (security isn't the focus) |
-| Repeat play | **Allowed**: the same person can play several generations of one world. Straight after a turn, the device asks not to be handed the same world again (a client-side hint, [020](../decisions/020-claim-and-lock-rules.md)) |
+| Repeat play | **Allowed, but never back to back**: you're never drawn a world whose latest generation you played; once someone else has played it, it's back in the draw. Checked on the server ([034](../decisions/034-weighted-claim-no-back-to-back.md), replacing [020](../decisions/020-claim-and-lock-rules.md)'s device hint) |
 | Choosing a world | **No**: assignment is always the weighted random draw ([020](../decisions/020-claim-and-lock-rules.md)) |
 | World names | **From the seed**, `worldName(seed, biome)`, e.g. "Hollow Elm" ([020](../decisions/020-claim-and-lock-rules.md)) |
 | Lock while reading | **Heartbeat** extends the lock while the clock is stopped, capped at 15 extra minutes ([020](../decisions/020-claim-and-lock-rules.md)) |

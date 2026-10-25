@@ -42,8 +42,10 @@ Order matters, and it must all run in one function:
 1. The caller already holds an unexpired lock → return that world (resume after refresh).
 2. A world is `forced_for` the caller and unlocked → lock it and return it (admin force-assign).
 3. Expire stale locks (`lock_expires_at < now()`). Those turns are voided; nothing to clean up, because nothing was written.
-4. With probability `settings.inherit_ratio`, pick a random open, unlocked world with
-   `FOR UPDATE SKIP LOCKED`. Otherwise (or if none exist) create a world with a random seed and the default settings.
+4. Roll once (decision 034) over the open, unlocked worlds whose latest generation the caller didn't play:
+   below `settings.highest_chance` (0.5) take the one furthest along, below `settings.inherit_ratio` (0.9) any other,
+   else create a world with a random seed and the default settings. An empty choice falls through to the other one,
+   then to a new world. One row, `FOR UPDATE SKIP LOCKED`.
 5. Set `locked_by` and `lock_expires_at = now() + turn_seconds + journal allowance + grace`.
 
 `SKIP LOCKED` plus a single-row update is what guarantees one player per world. Don't replace it with

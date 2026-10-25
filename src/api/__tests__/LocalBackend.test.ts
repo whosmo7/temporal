@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createWorld } from '../../engine';
 import type { ActionEntry, ClaimedWorld } from '../Backend';
-import { DEFAULT_SETTINGS, LOCK_TIMING, LocalBackend } from '../LocalBackend';
+import { DEFAULT_SETTINGS, HIGHEST_CHANCE, LOCK_TIMING, LocalBackend } from '../LocalBackend';
 
 // The 07 backend scenarios on LocalBackend. scripts/test-backend.ts runs the same ones (plus the
 // concurrency test) against the live Supabase project.
@@ -247,5 +247,76 @@ describe('LocalBackend', () => {
     const replay = await b.getReplay(w.worldId);
     expect(replay.snapshots.map((s) => s.turn)).toHaveLength(2);
     expect(replay.journal.map((j) => j.authorUsername)).toEqual(['alma', 'bram']);
+  });
+});
+
+describe('the weighted draw (decision 034)', () => {
+  /** Two open worlds: `far` on generation 3 (played by pia then pol), `near` on generation 1. */
+  async function twoWorlds() {
+    const b = make();
+    for (const name of ['pia', 'pol', 'cara']) await b.signUp(name, 'pw');
+    await b.signUp('admin', 'pw');
+    const far = await b.createSeededWorld({ seed: 1, biome: 'forest', generationCount: 6 });
+    const near = await b.createSeededWorld({ seed: 2, biome: 'forest', generationCount: 6 });
+    for (const name of ['pia', 'pol']) {
+      await b.signIn('admin', 'pw');
+      await b.forceAssign(far, name);
+      await b.signIn(name, 'pw');
+      const w = await b.claimWorld();
+      await b.commitTurn({ worldId: w.worldId, actions: [], journal: journal('') });
+    }
+    await b.signIn('cara', 'pw');
+    return { b, far, near };
+  }
+
+  it('a low roll inherits the world furthest along', async () => {
+    const { b, far } = await twoWorlds();
+    rolls = [HIGHEST_CHANCE - 0.01];
+    expect((await b.claimWorld()).worldId).toBe(far);
+  });
+
+  it('a middle roll inherits another world', async () => {
+    const { b, near } = await twoWorlds();
+    rolls = [HIGHEST_CHANCE + 0.01];
+    expect((await b.claimWorld()).worldId).toBe(near);
+  });
+
+  it('a high roll starts a new world', async () => {
+    const { b, far, near } = await twoWorlds();
+    rolls = [DEFAULT_SETTINGS.inheritRatio + 0.01, 0.3, 0.3];
+    const w = await b.claimWorld();
+    expect([far, near]).not.toContain(w.worldId);
+    expect(w.turn).toBe(1);
+  });
+
+  it('an empty bucket falls to the other one before a new world', async () => {
+    const { b, far, near } = await twoWorlds();
+    await b.signIn('admin', 'pw');
+    await b.forceAssign(near, 'pia');
+    await b.signIn('pia', 'pw');
+    expect((await b.claimWorld()).worldId).toBe(near); // pia holds it, so only `far` is left
+    await b.signIn('cara', 'pw');
+    rolls = [HIGHEST_CHANCE + 0.01]; // wants "any other"
+    expect((await b.claimWorld()).worldId).toBe(far);
+  });
+
+  it("never hands back a world whose latest generation you played, but does once someone else has", async () => {
+    const { b, far } = await twoWorlds();
+    await b.signIn('pol', 'pw'); // pol played far's latest generation
+    rolls = [0];
+    const other = await b.claimWorld();
+    expect(other.worldId).not.toBe(far);
+    await b.signIn('pia', 'pw'); // pia played far's generation 1; pol has played since
+    rolls = [0];
+    expect((await b.claimWorld()).worldId).toBe(far);
+  });
+
+  it('admin force-assign may still hand back your own latest world', async () => {
+    const { b, far } = await twoWorlds();
+    await b.signIn('admin', 'pw');
+    await b.forceAssign(far, 'pol');
+    await b.signIn('pol', 'pw');
+    rolls = [0.99];
+    expect((await b.claimWorld()).worldId).toBe(far);
   });
 });

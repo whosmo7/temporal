@@ -45,7 +45,8 @@ profiles (
 
 settings (                          -- single row, admin-editable
   id int pk default 1,
-  inherit_ratio numeric default 0.7,  -- [PLACEHOLDER] P(inherit) when an unlocked world exists
+  inherit_ratio numeric default 0.9,  -- P(inherit at all); the rest start a new world (034)
+  highest_chance numeric default 0.5, -- P(the open world furthest along) (034)
   default_turn_seconds int,           -- game designer decides
   default_generation_count int
 )
@@ -119,9 +120,10 @@ Gravestones are derived from `turns` + `profiles.username` (no separate table ne
 1. If the caller holds an unexpired lock → return that world (resume after refresh).
 2. If any world has forced_for = caller and is unlocked → lock and return it (admin force-assign).
 3. Expire stale locks: lock_expires_at < now() → clear (turn voided).
-4. With probability settings.inherit_ratio, pick a random OPEN, UNLOCKED world
-   (SELECT … FOR UPDATE SKIP LOCKED ORDER BY random() LIMIT 1).
-   If none / coin says "new" → create a world with a random seed + biome + defaults.
+4. Roll once (decision 034) over the OPEN, UNLOCKED worlds whose latest generation
+   the caller didn't play: roll < highest_chance → the one furthest along;
+   roll < inherit_ratio → any other; else, or if both are empty → create a world
+   with a random seed + biome + defaults. (FOR UPDATE SKIP LOCKED, one row.)
 5. Set locked_by = caller, lock_expires_at = now() + turn_seconds + journal_allowance + grace.
 6. Return world + latest snapshot (or null for gen 1) + journal pages + gravestones.
 ```
@@ -171,7 +173,7 @@ nothing was ever written.
 - [x] **[A]** SQL migrations for the schema above (`supabase/migrations/`) *(C. Additions to the sketch: `worlds.preset`, `actions.eat`, and `settings.journal_allowance_seconds` + `lock_grace_seconds` for the lock TTL.)*
 - [x] **[A]** RLS policies (read-public for completed worlds, no update/delete) *(C. History is readable when the world is complete, by the current lock holder, or by an admin. There are no write policies at all.)*
 - [x] **[A]** Username signup/login with synthetic emails + `profiles` insert trigger *(C. Tested live: `.local` emails are accepted. Also adds the `username_available(name)` RPC. The `supabase-js` wrapper goes in `SupabaseBackend` once A's `Backend` interface exists.)*
-- [x] **[A]** `claim_world` RPC with weighted assignment, `SKIP LOCKED`, stale-lock expiry, force-assign *(`supabase/migrations/20261024200000_claim_commit_admin.sql`. Takes an `avoid` hint ([020](../decisions/020-claim-and-lock-rules.md)).)*
+- [x] **[A]** `claim_world` RPC with weighted assignment, `SKIP LOCKED`, stale-lock expiry, force-assign *(`supabase/migrations/20261024200000_claim_commit_admin.sql`; the weighted draw and the no-back-to-back rule replaced it in `20261025120000` ([034](../decisions/034-weighted-claim-no-back-to-back.md)). `avoid` is now ignored.)*
 - [x] **[A]** `commit-turn` Edge Function importing the engine (check that Deno can import the TS engine package; bundle if needed) *(Deno can't resolve the engine's extensionless imports, so `npm run functions:bundle` bundles `src/api/runTurn.ts` with esbuild into `supabase/functions/_shared/engine.js` (gitignored). `npm run functions:deploy` bundles and deploys. The write is `commit_turn_write`, callable by the service role only.)*
 - [x] **[A]** `heartbeat` RPC (if needed) *(Needed: the journal stops the clock (012). Capped by `settings.heartbeat_cap_seconds`, [020](../decisions/020-claim-and-lock-rules.md).)*
 - [x] **[A]** Admin RPCs: set `settings`, set a world's `turn_seconds`/`generation_count`, force-assign, mark complete (skip to replay) *(Also `admin_list_worlds` and `admin_create_world` (a world from a chosen seed, for the demo).)*
@@ -191,7 +193,7 @@ nothing was ever written.
 
 1. ~~Edge Function (authoritative) vs RPC (trust client) for commit?~~ **Decided: Edge Function** re-runs the turn through the engine ([013](../decisions/013-engine-rule-details.md) item 10). The RPC is the fallback only if Deno can't import the engine.
 2. Journal writing time allowance → lock TTL.
-3. ~~Can a player be assigned the world they just played?~~ **Decided:** the device passes its last world as a hint to avoid; no server check ([020](../decisions/020-claim-and-lock-rules.md)).
+3. ~~Can a player be assigned the world they just played?~~ **Decided:** never a world whose latest generation they played, checked on the server ([034](../decisions/034-weighted-claim-no-back-to-back.md); was a device hint in [020](../decisions/020-claim-and-lock-rules.md)).
 4. ~~Should players be able to *choose* to start a new world?~~ **Decided:** no, always random ([020](../decisions/020-claim-and-lock-rules.md)).
 5. Hide open-world state from non-holders, or don't bother?
 6. ~~How are world names generated?~~ **Decided:** `worldName(seed, biome)` from seeded word lists, computed on the client ([020](../decisions/020-claim-and-lock-rules.md)).

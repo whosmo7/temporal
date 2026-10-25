@@ -18,7 +18,7 @@ import type {
   TurnSummary,
   WorldState,
 } from './Backend';
-import { getLastWorld, setLastWorld } from './lastWorld';
+import { setLastWorld } from './lastWorld';
 import { runTurn } from './runTurn';
 
 // Hot-seat backend on localStorage, for development and the offline demo. Same rules as the
@@ -27,12 +27,14 @@ import { runTurn } from './runTurn';
 
 const STORAGE_KEY = 'inheritance.local';
 
-// Matches the settings defaults in the migrations (decision 007, 020).
+// Matches the settings defaults in the migrations (decision 007, 020, 034).
 export const DEFAULT_SETTINGS: Settings = {
-  inheritRatio: 0.7,
+  inheritRatio: 0.9, // chance to inherit at all; the rest start a new world (034)
   defaultTurnSeconds: 120, // decision 028
   defaultGenerationCount: 6,
 };
+/** Chance of inheriting the open world furthest along (034; a settings column the admin panel doesn't edit). */
+export const HIGHEST_CHANCE = 0.5;
 /** Lock timing (settings columns the admin panel doesn't edit). */
 export const LOCK_TIMING = {
   journalAllowanceSeconds: 300,
@@ -205,17 +207,24 @@ export class LocalBackend implements Backend {
     // 2. Admin force-assign.
     let world = db.worlds.find((w) => w.forcedFor === me.id && w.status === 'open' && !w.lockedBy);
 
-    // 4. Inherit an open world (not the one this device just played), or start a new one.
-    if (!world && this.random() < settings.inheritRatio) {
-      const avoid = getLastWorld(me.id);
-      const open = db.worlds.filter(
+    // 4. The weighted draw (034): a low roll takes the open world furthest along, a middle one any
+    // other, else a new world. An empty bucket falls to the other one, then to a new world. Nobody
+    // inherits the world whose latest generation they played.
+    const roll = world ? null : this.random();
+    if (roll !== null && roll < settings.inheritRatio) {
+      const pool = db.worlds.filter(
         (w) =>
           w.status === 'open' &&
           !w.lockedBy &&
           (w.forcedFor === null || w.forcedFor === me.id) &&
-          w.id !== avoid,
+          !db.turns.some((t) => t.worldId === w.id && t.turn === w.currentTurn - 1 && t.playerId === me.id),
       );
-      world = open[Math.floor(this.random() * open.length)];
+      const top = Math.max(...pool.map((w) => w.currentTurn));
+      const highest = pool.filter((w) => w.currentTurn === top);
+      const others = pool.filter((w) => w.currentTurn < top);
+      const [first, second] = roll < Math.min(HIGHEST_CHANCE, settings.inheritRatio) ? [highest, others] : [others, highest];
+      const bucket = first.length ? first : second;
+      world = bucket[Math.floor(this.random() * bucket.length)];
     }
     if (!world) {
       world = this.newWorld(

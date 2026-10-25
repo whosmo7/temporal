@@ -2,6 +2,8 @@
 
 **Status:** accepted (A, 2026-10-24; numbered 016 in the comments of migration `20261024200000`; renumbered twice because `016-hunger` and `019-per-tile-actions-take-time` took those numbers) · **Settles:** `07` open questions 3, 4 and 6, and the `heartbeat` task · **Changes:** `07` › Server operations, `src/api/Backend.ts`
 
+> **Repeat play replaced by [034](034-weighted-claim-no-back-to-back.md):** the server never draws you a world whose latest generation you played; the `avoid` hint is ignored.
+
 ## Context
 
 `claim_world` couldn't be built without answers to three `07` open questions: can a player be handed the world they just
