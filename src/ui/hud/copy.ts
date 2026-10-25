@@ -84,7 +84,15 @@ export function stageName(kind: PlotKind, stage: string | undefined, biome: Biom
 }
 
 const STAGE_NAME: Partial<Record<PlotKind, Record<string, string>>> = {
-  field: { empty: 'Bare earth', sown: 'Sown', growing: 'Coming up', ripe: 'Ripe', rotten: 'Rotten' },
+  field: {
+    empty: 'Bare earth',
+    sown: 'Sown',
+    watered: 'Watered', // 13
+    growing: 'Coming up',
+    ripe: 'Ripe',
+    rotten: 'Rotten',
+    withered: 'Withered', // 13
+  },
   orchard: {
     empty: 'Bare ground',
     sapling: 'Sapling',
@@ -98,3 +106,36 @@ const STAGE_NAME: Partial<Record<PlotKind, Record<string, string>>> = {
 };
 const WILD_FOREST: Record<string, string> = { many: 'Tracks everywhere', few: 'A few tracks', none: 'Quiet' };
 const WILD_ISLAND: Record<string, string> = { many: 'Fish rising', few: 'The odd fish', none: 'Still water' };
+
+/** The land's name for each level, 0–4 (13, decision 023). Shown alone, never as "Level N". */
+export const LEVEL_NAMES = ['Bare', 'Taking root', 'Green', 'Blooming', 'Abundant'] as const;
+
+/** Held tools on toolbar slots 1–3 (13). */
+export type Tool = 'hands' | 'seeds' | 'can';
+export const TOOLS: readonly Tool[] = ['hands', 'seeds', 'can'];
+
+export function toolLabel(tool: Tool, seeds?: number): string {
+  if (tool === 'seeds') return seeds === undefined ? 'Seeds' : `Seeds · ${seeds}`;
+  return tool === 'hands' ? 'Hands' : 'Can';
+}
+
+export const TOOL_TIP: Record<Tool, string> = {
+  hands: 'Pick, pull and carry.',
+  seeds: 'Seed for the fields.',
+  can: 'Fill it at the well, the reservoir, a pond or the sea.',
+};
+
+/** Prompts and error reasons for watering, seeds and the oven (13; docs/content/flavour-text.md). */
+export const FARM_TEXT = {
+  water: 'Water',
+  fillCan: 'Fill the can',
+  cook: 'Cook and eat',
+  noSeeds: 'No seeds left',
+  canEmpty: 'The can is empty',
+  nothingToWater: 'Nothing to water',
+  alreadyWatered: 'Already watered',
+  canFull: 'The can is full',
+  wellGreen: "The water's gone green",
+  notHungry: "You're not hungry",
+  storeEmpty: 'The store is empty',
+} as const;

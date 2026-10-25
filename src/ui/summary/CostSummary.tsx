@@ -23,7 +23,7 @@ export function CostSummary({ view, onContinue }: { view: CostSummaryView; onCon
           What you gave
         </h2>
         <div className="cost-summary__lines">
-          {[view.spentLine, view.waterLine, view.foodLine, view.eatenLine, view.rottedLine]
+          {[view.spentLine, view.waterLine, view.foodLine, view.eatenLine, view.rottedLine, view.seedsLine]
             .filter((l): l is string => !!l)
             .map((line) => (
               <p key={line}>
@@ -51,6 +51,14 @@ export function CostSummary({ view, onContinue }: { view: CostSummaryView; onCon
         <p>
           <WithIcons text={`Left in the store: ${store.food}🍎 ${store.water}💧`} />
         </p>
+        {view.land && (
+          <p className="cost-summary__land" aria-label={`The land: ${view.land.name}`}>
+            The land: {view.land.name}.
+            <span className="cost-summary__land-bar" aria-hidden="true">
+              <span style={{ width: `${view.land.health * 100}%` }} />
+            </span>
+          </p>
+        )}
         <div className="cost-summary__actions">
           <Button variant="primary" onClick={onContinue} autoFocus>
             Continue

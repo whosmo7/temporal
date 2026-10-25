@@ -18,7 +18,7 @@ also wanted crops that need watering before they grow, with a can filled at a wa
 - **Every field tile is its own plot** (019) with its own stage and clock: plant, water, grow and harvest per tile.
 - **Plant Crops** leaves a tile `sown`. It doesn't grow until **watered once**. The tile's ripening clock starts at the pour.
 - **Water** is a new action. Plant Orchard goes away ([024](024-emergent-orchards-and-flowers.md)), so there are still eight.
-- **The watering can** holds a few pours `[PLACEHOLDER 4]`. You fill it at a dug well, the reservoir, a pond or the sea edge.
+- **The watering can** holds **3** pours (first pass). You fill it at a dug well, the reservoir, a pond or the sea edge.
   **Filling never costs stored Water.** It's an interaction, not a logged action.
 - **An unwatered seed carries over** to the next player, and **withers 2 generations after planting** if nobody waters it.
 - Stamina stays at 0 cost (019) and is a placeholder. Water takes `[PLACEHOLDER 1 s]` in `actionSeconds`.

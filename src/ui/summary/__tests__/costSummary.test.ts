@@ -97,3 +97,43 @@ describe('cost summary', () => {
     expect(JSON.stringify(view)).not.toMatch(/will|later|future|successor/i);
   });
 });
+
+describe('cost summary: seeds and the land (13)', () => {
+  it('adds no seed or land lines until the engine has them', () => {
+    const { view } = play(fresh(), [{ id: 'a', type: 'plantCrops', plotId: 'field-1:0,0', t: 0 }]);
+    expect(view.seedsLine).toBeNull();
+    expect(view.land).toBeNull();
+  });
+
+  it("shows seeds used and gathered by today's actions, and the land as it stands", () => {
+    const world = fresh();
+    const begun = beginTurn(world);
+    const r = applyAction(
+      begun.state,
+      { id: 'a', type: 'plantCrops', plotId: 'field-1:0,0', actorId: 'AL', seq: 0 },
+      0,
+    );
+    if (!r.entry) throw new Error(r.error);
+    const ended = endTurn(r.state);
+    const seeds = (delta: number, id: string): Transition => ({
+      id,
+      at: { turn: ended.summary.turn, t: 0 },
+      target: { resource: 'seeds' as never },
+      before: 0,
+      after: 0,
+      delta,
+      causes: [{ kind: 'action', actionId: 'a', actorId: 'AL', committedTurn: ended.summary.turn }],
+    });
+    const after = { ...ended.state, health: 62, level: 1 } as WorldState;
+    const view = costSummary({
+      summary: ended.summary,
+      log: [r.entry],
+      transitions: [seeds(-1, 's1'), seeds(-1, 's2'), seeds(1, 's3')],
+      after,
+      biome: world.biome,
+      actor: 'AL',
+    });
+    expect(view.seedsLine).toBe('You used 2 seeds and gathered 1.');
+    expect(view.land).toEqual({ health: 0.62, level: 1, name: 'Taking root' });
+  });
+});

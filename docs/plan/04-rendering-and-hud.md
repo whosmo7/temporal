@@ -9,8 +9,9 @@
 - **2D Stardew-style angle**, ~32×32 tiles, camera follows the player.
 - **WASD/arrow** movement, desktop only.
 - **Day/night** cycle across the turn.
-- **Stardew-like HUD**: resource counters top-left, stamina bar, clock top-right, action hotbar bottom.
-- **Strong visual world state**: the world never explains itself, so visuals carry all the information.
+- **Stardew-like HUD**: resource counters top-left, stamina bar, clock top-right, **toolbar** bottom (hands, seeds, watering can, then the structure actions; `13`).
+- **World health bar and land level** in the HUD ([023](../decisions/023-world-health-and-level.md)): a bar with no number and the land's name (Bare, Taking root, Green, Blooming, Abundant).
+- **Strong visual world state**: apart from health and level, the world never explains itself, so visuals carry the information ([026](../decisions/026-lift-no-explanation-rule.md)).
 - **Partly hidden** pending effects: show growth stages, never numbers or due dates.
 
 ## Architecture
@@ -67,7 +68,7 @@
   used **one tile at a time**: the tile in front of you (the way you face) is outlined and gets the prompt
   ([019](../decisions/019-per-tile-actions-take-time.md), `facedTile` in `src/render/interact.ts`). Other plots use the
   nearest one, as before.
-- `E` / `Space` does the default action, `Q` is Harvest and eat (free, refills hunger, [016](../decisions/016-hunger.md)). Number keys `1–8` pick a hotbar action when several are valid. Invalid actions are greyed out with a reason ("Not enough stamina").
+- `E` / `Space` uses the **held tool** on the faced tile (`13`): hands harvest or interact, seeds sow, the can waters. At a water source with the can held, E fills it ("Fill the can"). `Q` is Harvest and eat (free, refills hunger, [016](../decisions/016-hunger.md)). Number keys `1–3` pick the tool and `4–8` the structure actions. Invalid actions are greyed out with a reason ("Not enough stamina").
 - **Every action takes time** (`CONFIG.actionSeconds`, e.g. sow 1.5 s, repair 8 s): the player stands still with a bar
   over their head while the clock runs, and the engine applies the action when it's done (`work` in the store). Its
   sound and burst play then.
@@ -78,8 +79,9 @@
 
 | Thing | Healthy | Warning | Bad |
 |---|---|---|---|
-| Field | green rows / golden ripe | wilting | brown rot, flies |
-| Orchard | sapling → young → fruiting tree | fewer fruit, yellow leaves (wear 2) | dead stump (wear 3) |
+| Field tile | dark wet soil (watered) → green rows → golden ripe | dry seed row (sown, not watered) | brown rot, flies; grey withered stalks |
+| Orchard | sapling → young → fruiting tree, appearing with the level | fewer fruit, yellow leaves (wear 2) | dead stump (wear 3) |
+| Flowers | spreading from the house along paths as the level rises | — | none (Bare) |
 | Reservoir | full blue, intact wall | lower water, hairline cracks | cracked dry bed |
 | Well | clear water sparkle | — | green murky water (stagnant) |
 | Wild spot | many fish/deer sprites | few | empty |
@@ -94,7 +96,8 @@ These visuals should be enough to inherit the world without reading anything. No
 - **Top-left:** Food 🍎 / Water 💧 counts (current, **numeric**. Resources are visible, pending effects aren't).
 - **Stamina bar** under the resources.
 - **Top-right:** clock / sun-moon dial + seconds left. Tint shifts with day/night.
-- **Bottom:** hotbar with 8 action icons + key hints.
+- **Bottom:** toolbar: `1` hands, `2` seeds (with the seed count), `3` watering can (with its pours as pips), `4–8` the structure actions, with key hints and the held tool lit (`13`).
+- **Land:** a world-health bar with **no number** and the level's name, e.g. "Taking root" ([023](../decisions/023-world-health-and-level.md)). It's the only readout of how the world is doing.
 - **Generation badge:** "Generation 3 of 5" + world name/seed.
 - **Upkeep reminder:** a small "Needed by nightfall: 12🍎 10💧", always shown ([002](../decisions/002-upkeep-timing.md)).
 - **Hunger bar** next to stamina: it carries between generations and drops at each new one; Harvest and eat (Q, free) refills it, and at 0 the player walks slower ([016](../decisions/016-hunger.md)). Stamina no longer rises mid-turn.

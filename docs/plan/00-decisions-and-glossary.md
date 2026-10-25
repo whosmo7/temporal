@@ -150,7 +150,9 @@ flourishing. The slot is **5 minutes**.
 | Health & level | **World health bar + level badge in the HUD**; level only rises. Replaces "No score" ([023](../decisions/023-world-health-and-level.md)) |
 | Orchards & flowers | **Emergent** from the world's level; no planting ([024](../decisions/024-emergent-orchards-and-flowers.md)) |
 | Oven | **Cooks stored food** to refill hunger ([025](../decisions/025-oven-cooks-stored-food.md)) |
-| Explaining the world | The "no due dates, yields or causes during play" rule is **lifted**; what to show is open ([026](../decisions/026-lift-no-explanation-rule.md)) |
+| Explaining the world | The blanket rule is **lifted**, but the only new readouts are the **health bar and land level**. Due dates, yields and causes still wait for the replay; the cost summary stays realised-only ([026](../decisions/026-lift-no-explanation-rule.md)) |
+| Level names | **Bare, Taking root, Green, Blooming, Abundant** (levels 0–4), shown by name, never as a number ([023](../decisions/023-world-health-and-level.md)) |
+| First-pass numbers | Can 3 pours, empty each morning; 9 starting seeds, +1 per field tile, +2 per tree; level thresholds 55/65/75/85 (`01` › Section 13 values) |
 
 ## Glossary
 

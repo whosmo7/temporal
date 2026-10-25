@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Button, Dialog, Icon, Panel, PixelIcon, TextInput, type IconName, type PixelIconName } from '../kit';
 import uiAtlas from '../kit/ui-atlas.json';
 import { palette } from '../theme/palette';
+import { LandMeter } from '../hud/Hud';
+import { Toolbar } from '../hud/Toolbar';
+import { landOf } from '../hud/land';
+import type { Tool } from '../hud/copy';
 
 const ICONS: IconName[] = ['close', 'undo', 'eraser', 'clear', 'left', 'right'];
 
@@ -9,6 +13,7 @@ const ICONS: IconName[] = ['close', 'undo', 'eraser', 'clear', 'left', 'right'];
 export function KitScreen() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
+  const [held, setHeld] = useState<Tool>('can');
 
   return (
     <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1fr 1fr', maxWidth: 1100, width: '100%' }}>
@@ -34,6 +39,24 @@ export function KitScreen() {
           <Button size="sm" icon="clear" iconOnly>
             Clear
           </Button>
+        </div>
+      </Panel>
+
+      <Panel title="Toolbar and land (13)">
+        <div
+          style={{ display: 'grid', gap: 18 }}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            const tool = ({ '1': 'hands', '2': 'seeds', '3': 'can' } as Record<string, Tool>)[e.key];
+            if (tool) setHeld(tool);
+          }}
+        >
+          <Toolbar held={held} data={{ seeds: 7, can: { pours: 2, capacity: 3 } }} />
+          <Toolbar held="hands" data={{ seeds: null, can: null }} />
+          {[30, 55, 78].map((health, i) => {
+            const land = landOf({ health, level: i * 2 });
+            return land && <LandMeter key={health} land={land} />;
+          })}
         </div>
       </Panel>
 

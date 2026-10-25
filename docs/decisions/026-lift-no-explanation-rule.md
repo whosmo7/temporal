@@ -13,7 +13,10 @@ The rule is lifted. The game may show due dates, future yields or causes during 
 
 ## Consequences
 
-- **What** to show is still open (`13` open question 2). Until it's answered, build nothing new that reveals pending
-  effects or causes, beyond the health bar and level from [023](023-world-health-and-level.md).
-- `CLAUDE.md` rule 4, `inheritance-core` and `inheritance-player-facing` must be updated (C, `13`).
+- **What to show, settled 2026-10-25 by the user (formerly `13` open question 2): the health bar and level only.** Due dates,
+  future yields and causes stay hidden until the replay. Anything more needs a new decision.
+- **The cost summary stays realised-only** (confirmed the same day). It may add the land's health and level as they stand
+  at day's end.
+- **The level is shown by name** (Bare, Taking root, Green, Blooming, Abundant), not as a number, to keep score language out.
+- `CLAUDE.md` rule 4, `inheritance-core` and `inheritance-player-facing` are updated to match (C, `13`, 2026-10-25).
 - The demo moment's "cost-only summary" reveal relies on the old rule. Settle it with `13` open question 1.

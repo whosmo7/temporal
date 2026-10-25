@@ -30,5 +30,5 @@ Load the skill that matches the work. They live in `.claude/skills/`:
 1. The engine is pure and deterministic: no `Math.random`, `Date.now`, DOM, React or Pixi in `src/engine/` or `src/worldgen/`.
 2. Logs are append-only: actions, transitions, turns, snapshots and journal pages are never updated or deleted.
 3. Every state transition records at least one cause.
-4. During play the world never explains itself: no numbers or due dates for pending effects, and no causes. Only the replay explains.
+4. During play nothing shows a pending effect's numbers or due date, or a cause. The only readouts of the world's condition are the health bar (no number) and the land's level name (decisions 023, 026). Only the replay explains.
 5. Don't decide an open question silently. Raise it and record the decision (see `inheritance-task-workflow`).

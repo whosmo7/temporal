@@ -61,3 +61,22 @@
   justify-content: flex-end;
   margin-top: 16px;
 }
+
+/* The land at day's end (13): a bar with no number beside its name. */
+.cost-summary__land {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cost-summary__land-bar {
+  display: inline-block;
+  width: 128px;
+  height: 10px;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--panel-edge);
+}
+.cost-summary__land-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--grass-shade);
+}

@@ -6,22 +6,25 @@ description: Rules for everything an INHERITANCE player sees or reads, covering 
 # Player-facing information and voice
 
 The game works because players **can't see** the future value of what they do, and successors **can't
-see** why the world is the way it is, except through the journal and what the world looks like. The
-demo moment (a judge inherits a flourishing orchard planted by someone whose own final screen showed
-only its cost) disappears if any screen leaks the hidden information. Text that moralises turns the game into the
+see** why the world is the way it is, except through the journal, what the world looks like, and the
+HUD's **world health bar and land level** ([023](../../../docs/decisions/023-world-health-and-level.md)).
+Decision [026](../../../docs/decisions/026-lift-no-explanation-rule.md) lifted the old blanket rule, and the
+user then chose (2026-10-25) to show **only health and level** beyond what was already allowed. Anything more
+(due dates, future yields, causes during play) needs a new decision first. The demo moment is being redesigned
+(`13` open question 1), but whatever it becomes, it needs the reveal to stay in the replay. Text that moralises turns the game into the
 "simplistic morality game" the brief warns against.
 
 ## What may be shown, where
 
 | Surface | May show | Must not show |
 |---|---|---|
-| **HUD (during play)** | Current food, water, stamina; clock / time left; generation "N of M"; upkeep needed by nightfall (if the open question is resolved that way) | Pending effect values, due generations, decay %, upcoming events |
-| **Interact prompt** | Action name, its **cost**, the engine's error reason | What it will yield later or when ("matures in 2 gens", "+15 food/gen") |
+| **HUD (during play)** | Current food, water, stamina, hunger; clock / time of day; generation "N of M"; upkeep needed by nightfall (002); **world health as a bar with no number**; **the land's level name** (Bare, Taking root, Green, Blooming, Abundant); toolbar: held tool, seed count, the can's pours | Pending effect values, due generations, decay %, upcoming events; health as a number, its formula, or what raises it; the next level's threshold |
+| **Interact prompt** | Action name, its **cost** (including 1 seed or 1 pour), the engine's error reason, "Fill the can" at a source | What it will yield later or when ("ripens in 150 s", "+4 food per tree"), or how it moves health |
 | **Plots / world** | Visual stages (sapling, cracked, murky), weather, blight | Labels or tooltips explaining causes ("cracked because no one maintained it") |
 | **Fast Track menu** | Pending items, the name of who started them, current stage, Fast Track cost | Due date or yield of the item |
 | **"You are inheriting…"** | World name, biome, generation N of M, names on gravestones, "You wake up tired" when weakened | Resource numbers, causes, what earlier players did |
 | **Journal** | Players' own pages (text + drawing), author name, generation | Any auto-generated summary of what happened |
-| **Cost summary** | Costs paid and immediate gains this turn; upkeep met / short by X; what you planted or built **as a cost** ("Orchard: −25⚡ −5💧") | What anything will become, or "your successors will thank you" |
+| **Cost summary** | Costs paid and immediate gains this turn; upkeep met / short by X; what you sowed, watered or built **as a cost** ("Crops sown ×6", "Watered ×6"); seeds used and gathered; the land's health bar and level name **as they stand at day's end** | What anything will become, tiles "still growing", or "your successors will thank you" |
 | **Gravestone** | Name/initials (generation if decided) | Achievements, ratings, score |
 | **Replay (after the final gen)** | Everything: causes, actors, generations, cost-only summaries, journal pages | No restriction (this is where the explanation happens) |
 | **Tutorial** | How to move/act/use the journal; that upkeep exists | Numbers for delayed effects. (Whether to say "this takes longer than you have" is an open question in `08`) |
@@ -36,7 +39,8 @@ The tone is quiet, plain and observational, like a field notebook or a parish re
 - **Describe, don't judge.** "The well water is green." Not "You neglected the well."
 - **No moral labels** on actions or outcomes: no "selfish", "noble", "sacrifice", "greed", "good choice".
   Every action should read as something a reasonable person might do.
-- **No score language:** no "win", "lose", "points", "achievement", "level up".
+- **No score language:** no "win", "lose", "points", "achievement", "level up". The land level is shown by its
+  **name** ("The land is Green"), never as "Level 3", and it's never announced as a reward.
 - **Address the player as "you", in the present tense,** briefly. One line where one line will do.
 - **Name things the way a farmer would**: field, orchard, reservoir, well, store. Never system terms
   like "effect", "transition", "turn engine" or "stamina pool". "Stamina" and the ⚡ icon are fine.
@@ -51,7 +55,7 @@ The tone is quiet, plain and observational, like a field notebook or a parish re
 ## Quick review checklist
 
 Before merging anything player-facing:
-- [ ] During play, nothing shows a future number, a due date or a cause
+- [ ] During play, nothing shows a future number, a due date or a cause; health appears only as a bar, level only as its name
 - [ ] The cost summary has only realised lines
 - [ ] No text judges an action or rates the player
 - [ ] Words are the farmer's, not the codebase's

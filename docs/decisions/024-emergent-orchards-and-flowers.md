@@ -15,7 +15,7 @@ the world's condition.
 
 ## Decision
 
-- **Plant Orchard is removed.** The four 1-tile trees from [019](019-per-tile-actions-take-time.md) appear as the level rises: sapling, young, fruiting `[PLACEHOLDER levels 1–3]`.
+- **Plant Orchard is removed.** The four 1-tile trees from [019](019-per-tile-actions-take-time.md) appear as the level rises: sapling, young, fruiting at levels 1–3 (Taking root, Green, Blooming; first pass).
 - **Flowers spread** with level.
 - Trees are still harvested (+4 food per tree once per generation, scaled by health `[PLACEHOLDER]`).
 

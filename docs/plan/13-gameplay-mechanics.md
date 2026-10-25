@@ -27,14 +27,15 @@ This section doesn't change stamina: it stays in the game, costs nothing, and is
 - **Stardew-style toolbar**: number keys pick a held tool (seeds, watering can, hands), and E uses it on the tile you face
   (facing-tile targeting already exists from 019).
 - **World health and level** ([023](../decisions/023-world-health-and-level.md)), shown in the HUD as a **health bar** (no
-  number) and a **level badge**. Health goes up and down. **Level only rises.** This replaces the locked "no score" rule.
+  number) and the **land's name** for its level: Bare, Taking root, Green, Blooming, Abundant. Health goes up and down. **Level only rises.** This replaces the locked "no score" rule.
 - **Orchards and flowers are emergent** ([024](../decisions/024-emergent-orchards-and-flowers.md)). There's no Plant
   Orchard action. Trees appear and fruit, and flowers spread, as the world levels up.
 - **Still eight actions:** Water replaces Plant Orchard ([021](../decisions/021-per-tile-farming-and-watering.md),
   [024](../decisions/024-emergent-orchards-and-flowers.md)).
 - **The oven cooks stored food** so you can eat from the cabinet ([025](../decisions/025-oven-cooks-stored-food.md)).
-- **The world may now explain itself during play** ([026](../decisions/026-lift-no-explanation-rule.md)). The old
-  "no due dates, yields or causes until the replay" rule is lifted. *What* to show is an open question below.
+- **What the world shows during play** ([026](../decisions/026-lift-no-explanation-rule.md)): the old blanket rule is
+  lifted, and the only new readouts are the **health bar and land level**. Due dates, future yields and causes still wait
+  for the replay. The **cost summary stays realised-only**.
 - **Fast Track** still pulls a pending effect forward at 2× cost: a reservoir repair landing, a growing tile, the well's
   income. It never touches health or level.
 
@@ -79,35 +80,35 @@ empty ─plant→ sown ─water→ watered/growing ─(ripen time)→ ripe ─ha
 
 ### Watering can
 
-- Capacity `[PLACEHOLDER 4]` pours. It starts every turn empty (`[PLACEHOLDER]`: or full).
+- Capacity **3** pours (first pass, `01` › Section 13 values). It starts every turn **empty**.
 - Sources: dug well (not a stagnant one, `[PLACEHOLDER]`), reservoir (`[OPEN]` even when cracked?), ponds, sea edge.
 - The toolbar shows the fill level. The can's sprite shows full or empty.
 
 ### Seeds
 
-- Shared stock `seeds`, a carried resource like food. Founder start `[PLACEHOLDER 6]`.
-- Planting costs 1 seed. Harvesting a tile gives back `[PLACEHOLDER 1–2]` (fixed or seeded, `[OPEN]`).
+- Shared stock `seeds`, a carried resource like food. Founder start **9** (first pass).
+- Planting costs 1 seed. Harvesting a field tile gives back **1** (fixed), and a tree harvest **2**.
 - With 0 seeds you can't plant. The toolbar shows "No seeds".
 
 ### World health and level
 
 - **Health** `0–100`, recomputed from the world's condition. It rises with: tended and harvested tiles, stored water,
   structures in repair, upkeep met, wild stock recovering. It falls with: rotten or withered tiles, wear, stagnation,
-  drought, missed upkeep, overfishing or overhunting. The weights are `[PLACEHOLDER]` config values (C).
-- **Level** starts at 0 and **only rises**. It goes up when health is at or above a threshold `[PLACEHOLDER]` at the start of a
-  generation (`[OPEN]`: or the moment health crosses it mid-turn).
-- **HUD:** a health bar with no number, and "Level N".
+  drought, missed upkeep, overfishing or overhunting. Weights and the formula: `01` › Section 13 values (first pass).
+- **Level** starts at 0 (Bare) and **only rises**, by at most 1, at the **start of a generation** when health is at or
+  above the next threshold (55, 65, 75, 85). A founder world is about 55.
+- **HUD:** a health bar with no number, and the level's name.
 - Every health change is a transition with causes, so the replay can say who raised or lowered it.
 
 ### Emergent orchards and flowers
 
 | Level | Orchard plot | Flowers |
 |---|---|---|
-| 0 | empty | none |
-| 1 `[PLACEHOLDER]` | saplings appear on the four tree tiles | a few near the house |
-| 2 | young tree | spread along paths |
-| 3 | fruiting tree (harvestable) | meadow patches |
-| 4+ | more trees / higher yield `[OPEN]` | full bloom |
+| 0 Bare | empty | none |
+| 1 Taking root | saplings appear on the four tree tiles | a few near the house |
+| 2 Green | young trees | spread along paths |
+| 3 Blooming | fruiting trees (harvestable) | meadow patches |
+| 4 Abundant | `[OPEN]` more trees / higher yield | full bloom |
 
 - Trees still wear and can be maintained (`[OPEN]`: or does health replace their wear?). Level can't fall, so a tree
   can only die from wear, not from a level drop.
@@ -170,13 +171,13 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 
 **HUD, copy and numbers (C)**
 
-- [ ] **[C]** Toolbar component (slots, held tool, can fill pips, seed count)
-- [ ] **[C]** Health bar (no number) and level badge in the HUD
-- [ ] **[C]** Prompt and tooltip copy for Plant, Water, Fill can, Cook and eat, No seeds (`docs/content/flavour-text.md`)
-- [ ] **[C]** Cost summary: tiles planted and watered, seeds used and gained, health and level at the end of your day
-- [ ] **[C]** Tune the placeholders: can capacity, seed start and return, health weights, level thresholds, per-tile yields
-- [ ] **[C]** Update `inheritance-player-facing`, `inheritance-core` and the `CLAUDE.md` rules to match decisions 023 and 026
-- [ ] **[C]** Update `01`, `04`, `05` and `10` text where this section changes them
+- [x] **[C]** Toolbar component (slots, held tool, can fill pips, seed count)
+- [x] **[C]** Health bar (no number) and level badge in the HUD
+- [x] **[C]** Prompt and tooltip copy for Plant, Water, Fill can, Cook and eat, No seeds (`docs/content/flavour-text.md`)
+- [x] **[C]** Cost summary: tiles planted and watered, seeds used and gained, health and level at the end of your day
+- [x] **[C]** Tune the placeholders: can capacity, seed start and return, health weights, level thresholds, per-tile yields *(first pass in `01` › Section 13 values; re-check once `simulate.ts` models them)*
+- [x] **[C]** Update `inheritance-player-facing`, `inheritance-core` and the `CLAUDE.md` rules to match decisions 023 and 026
+- [x] **[C]** Update `01`, `04`, `05` and `10` text where this section changes them
 
 **Carried over from the first plan** (also listed in their own sections; tick both)
 
@@ -206,13 +207,9 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 
 1. **Demo moment** without a planted orchard (deferred by the user). Candidates: a health legacy reveal in the replay, or
    keep one plantable orchard.
-2. **What may the world explain during play** now that rule 4 is lifted (026)? Due dates, future yields, causes, or
-   only health and level?
-3. With stamina free (019), time and can trips are the only limits. Is that enough pressure, or does stamina come back?
-4. Does the can start each turn empty or full? Can a cracked reservoir fill it? A stagnant well?
-5. Is harvest's seed return fixed or seeded-random?
-6. Level-up check: only at generation start, or any time health crosses the threshold?
-7. Do trees still wear, or does health replace wear for them? What does level 4+ add?
-8. Do flowers feed health, or are they visual only?
-9. Oven: an eat interaction on the store, or a ninth action `cook`?
-10. What to do with spare time once stamina runs out (sleep to end the day, shorter turns)? Left open after a playtest.
+2. With stamina free (019), time and can trips are the only limits. Is that enough pressure, or does stamina come back?
+3. Can a cracked reservoir fill the can? A stagnant well? (It starts empty: settled.)
+4. Do trees still wear, or does health replace wear for them? What does level 4+ add?
+5. Do flowers feed health, or are they visual only?
+6. Oven: an eat interaction on the store, or a ninth action `cook`?
+7. What to do with spare time once stamina runs out (sleep to end the day, shorter turns)? Left open after a playtest.

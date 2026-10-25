@@ -5,13 +5,14 @@
 
 ## Decisions (locked)
 
-- Resources: **Food, Water, Labour (= player stamina)**.
-- Eight actions: Harvest, Plant Crops, Plant Orchard, Repair Reservoir, Dig Well, Fish/Hunt, Maintain, Fast Track.
+- Resources: **Food, Water, Labour (= player stamina)**, plus **hunger** ([016](../decisions/016-hunger.md)) and **seeds** ([022](../decisions/022-seed-stock.md)).
+- Eight actions: Harvest, Plant Crops, **Water**, Repair Reservoir, Dig Well, Fish/Hunt, Maintain, Fast Track. Water replaces Plant Orchard ([021](../decisions/021-per-tile-farming-and-watering.md), [024](../decisions/024-emergent-orchards-and-flowers.md)); until the engine lands it, `plantOrchard` is still in `types.ts`.
 - Unlimited actions within a configurable turn length. Stamina and resources are the real limits.
 - End-of-turn **upkeep** (food + water). Missing it = **weakened start** for the successor.
 - **Decay** (food rots, water stagnates) + **infrastructure wear** (structures degrade unless maintained).
 - **Partly hidden** delayed effects: players see growth or decay visually, never the exact numbers or due dates.
-- **Seeded events** only (e.g. a drought). No borrowing, no score.
+- **Seeded events** only (e.g. a drought). No borrowing.
+- **World health and level** are shown in the HUD: a health bar with no number and the land's name, Bare to Abundant ([023](../decisions/023-world-health-and-level.md)). They aren't a score: no points, no win. Nothing else new is shown during play ([026](../decisions/026-lift-no-explanation-rule.md)).
 - The **reservoir dilemma is tuned in on purpose**.
 - Biome (Forest / Island) gives **small modifiers** only.
 
@@ -20,7 +21,9 @@ Settled game-design questions (records in `docs/decisions/`):
 - **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. The HUD shows "Needed by nightfall", so players know where they stand before they write.
 - **Eating** ([003](../decisions/003-eating-via-harvest.md)): yes, as an option on **Harvest** ("Harvest and eat"). It's not a ninth action.
 - **Hunger** ([016](../decisions/016-hunger.md)): a meter the family inherits. It drops at each new generation; eating (free) refills it; empty, you walk slower.
-- **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. The 2× cost is the price.
+- **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. *No longer applies once orchards grow from the level ([024](../decisions/024-emergent-orchards-and-flowers.md)).*
+- **Plant, then water** ([021](../decisions/021-per-tile-farming-and-watering.md)): a sown tile grows only after one pour from the watering can. Unwatered seeds carry over and wither after 2 generations.
+- **Oven** ([025](../decisions/025-oven-cooks-stored-food.md)): cooks stored food, so you can eat from the cabinet.
 - **Events** ([005](../decisions/005-seeded-events.md)): drought (always), good harvest, storm (Island only).
 - **Wild spot** ([006](../decisions/006-wild-spot-per-biome.md)): Forest = hunt, Island = fish, same numbers.
 - **Defaults** ([007](../decisions/007-turn-and-generation-defaults.md)): **10-minute turns**, **6 generations**.
@@ -57,14 +60,17 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 | **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
 | **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
 | **Labour (stamina)** | Full pool at turn start (reduced if weakened) | Every action | Doesn't carry over |
-| **Hunger** | Eating (Harvest and eat), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
+| **Seeds** | Founder stock `seedStart` (9); +1 per harvested field tile, +2 per tree harvest | Plant Crops (1 per tile); withered tiles lose theirs | **Carries over** in full ([022](../decisions/022-seed-stock.md)) |
+| **Hunger** | Eating (Harvest and eat, or Cook and eat at the oven), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
 
 ## Structures & plots (pre-defined sites)
 
 | Plot | States (visual) | Notes |
 |---|---|---|
-| Field ×2 | empty → sown → growing → ripe → rotten, **per tile** | Quick crops ripen within one turn. Each of the 9 tiles is sown and harvested on its own ([019](../decisions/019-per-tile-actions-take-time.md)) |
-| Orchard plot | empty → sapling → young → fruiting → (worn → dead), **per tree** | Four one-tile trees, each planted, picked, tended and worn on its own. Fruits from gen +2 (`orchardMatureGens`) |
+| Field ×2 | empty → sown → watered → growing → ripe → rotten / withered, **per tile** | Quick crops ripen within one turn **once watered**. Each of the 9 tiles is sown, watered and harvested on its own ([019](../decisions/019-per-tile-actions-take-time.md), [021](../decisions/021-per-tile-farming-and-watering.md)) |
+| Orchard plot | empty → sapling → young → fruiting → (worn → dead), **per tree** | Four one-tile trees. **They appear and grow with the land's level** (sapling at 1, young at 2, fruiting at 3), with nobody planting them ([024](../decisions/024-emergent-orchards-and-flowers.md)). Each is picked, tended and worn on its own |
+| Water sources | — | Dug well, reservoir, pond and sea edge fill the watering can, for free ([021](../decisions/021-per-tile-farming-and-watering.md)) |
+| Flowers | none → spreading | Appear with the level, visual only for now ([024](../decisions/024-emergent-orchards-and-flowers.md)) |
 | Reservoir | cracked → low / full | Not repaired = cracked. Repaired with wear ≥ 2 = low. Repaired with wear < 2 = full. Sets water income and drought protection. |
 | Well site | none → clear → (stagnant at wear 3) | Instant + ongoing water, needs maintaining |
 | Wild spot | stock level: many / few / none | Forest → hunting ground, Island → fishing spot |
@@ -78,6 +84,9 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 > 1.5 s, plant a tree 3 s, repair 8 s, dig 6 s, fish/hunt 3 s, tend 3 s, hurry 2 s). Yields are per tile: **1 food per
 > field tile, 4 per tree**. Sowing needs no water; a tree needs 1. The table below is the earlier whole-plot set, kept
 > for when stamina comes back.
+>
+> **Changed by `13`:** Plant Crops costs 1 seed and leaves the tile sown until a **Water** action (1 pour from the can,
+> 1 s) starts its ripening clock. **Plant Orchard is removed**: trees come from the level. See `13` › Actions.
 
 Values below are the first confirmed set for `src/engine/config.ts` (full block under **Config values**).
 They passed a rough scratch-model check (see **Balance pre-check**). The real check is task 4 with `scripts/simulate.ts`.
@@ -97,7 +106,7 @@ They passed a rough scratch-model check (see **Balance pre-check**). The real ch
 
 - Harvest has two variants: **Harvest** (E, yield goes to the store, 5 stamina) and **Harvest and eat** (Q, **free**).
 - Eating turns the fresh yield into **hunger** at `hungerPerFoodEaten` (10 per food), **up to full** (`hungerMax`). Whatever can't be eaten goes to the store. It's refused when hunger is already full ([016](../decisions/016-hunger.md), which replaced 003's eat-for-stamina).
-- Only the food just harvested can be eaten. Stored food can't be eaten mid-turn, and Fish/Hunt can't be eaten.
+- Only the food just harvested can be eaten here. Stored food is eaten at the **oven** ("Cook and eat", [025](../decisions/025-oven-cooks-stored-food.md)), and Fish/Hunt catches go to the store.
 - Eating doesn't give stamina, so a weakened player can't eat their way back; hunger is a separate, inherited need.
 - Eating is realised, so it appears in the cost summary ("You ate 15🍎").
 
@@ -265,6 +274,44 @@ export const CONFIG = {
 } as const;
 ```
 
+### Section 13 values (first pass)
+
+Approved 2026-10-25 by the user as a **first pass**. They can't be balance-checked until `scripts/simulate.ts` models tiles,
+the can, seeds and health (`13`, A). The keys are proposals for A, who adds them to `config.ts`; C owns the values.
+
+```ts
+  // Watering can (decision 021)
+  canCapacity: 3, // pours: one row of a 3×3 field per fill
+  canStartsFull: false, // empty every morning
+  waterSeconds: 1,
+  fillCanSeconds: 1,
+
+  // Seeds (decision 022)
+  seedStart: 9, // one full field
+  seedsPerCrop: 1, // fixed, per harvested field tile
+  seedsPerTree: 2, // per tree harvest, so a fruiting orchard grows the stock
+  witherGens: 2, // an unwatered seed withers 2 generations after sowing
+
+  // World health 0–100 (decision 023): each part is 0..1, weighted
+  healthWeights: { crops: 0.25, water: 0.2, structures: 0.25, upkeep: 0.15, wild: 0.15 },
+  // crops      = tended / (tended + rotten + withered) tiles; 0.5 with nothing planted
+  // water      = stored water / (2 × upkeepWater), at most 1
+  // structures = mean over reservoir and well of (1 − wear / wearBreakAt); cracked or not dug = 0
+  // upkeep     = 1 − the last upkeep shortfall
+  // wild       = wildStock / wildCap
+  orchardYieldLowHealth: 50, // below this health a tree gives half
+
+  // Level (decision 023): checked at each generation start, rises by at most 1, never falls
+  levelThresholds: [55, 65, 75, 85], // health needed for levels 1–4
+```
+
+A founder world comes out at about **55** (Forest: crops 0.5, water 0.8, structures 0, upkeep 1, wild 0.8), so it
+reaches **Taking root** at the start of generation 2 and the first saplings appear. Trees fruit at **Blooming** (75), which
+needs the reservoir or the well in good repair. With at most one level per generation, the earliest fruit is generation 4
+of 6.
+
+Yields stay as [019](../decisions/019-per-tile-actions-take-time.md) set them: 1 food per field tile, 4 per tree.
+
 ## Balance pre-check (scratch model)
 
 A rough Python model of the rules above, run before the engine exists. It isn't the engine, so treat it as a sanity check only.
@@ -305,6 +352,4 @@ The model doesn't include Harvest and eat yet.
 1. **Idle time in 10-minute turns.** With 100 stamina, most players will spend it all well before nightfall.
    Should there be a way to end the day early (e.g. "Sleep" at the lectern), or is spare time for reading the journal and walking around?
    Touches `04` (HUD/timer) and `07` (lock TTL scales with `turn_seconds`).
-2. **What does the oven do?** The house ([010](../decisions/010-player-house.md)) has an oven that's only furniture for now.
-   Options: cook stored food for stamina (a ninth action, which changes the eight-action lock and decision 003), or make it where
-   "Harvest and eat" happens. Owner: C (design), with A (engine).
+

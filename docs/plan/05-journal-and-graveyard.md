@@ -8,9 +8,9 @@
 - One shared **world journal**. **One page per player turn.** Earlier pages **can't be edited**.
 - Pages hold **free text + a drawing** (single pen, a few colours, eraser).
 - The journal is an **in-world object (lectern), openable any time**.
-- The journal is the **only** information successors get about the past. The world never explains causes.
+- The journal is the **only** information successors get about the past, besides the HUD's health bar and land level ([023](../decisions/023-world-health-and-level.md)). The world never explains causes ([026](../decisions/026-lift-no-explanation-rule.md)).
 - **End flow: Freeze → Journal (write) → Cost summary → Gravestone.**
-- **Cost summary shows only realised outcomes**: costs paid and immediate gains. **Pending benefits are left out.**
+- **Cost summary shows only realised outcomes**: costs paid and immediate gains. **Pending benefits are left out.** Confirmed for `13` on 2026-10-25: it adds tiles sown and watered, seeds used and gathered, and the land's health and level **as they stand at day's end**, nothing still growing.
 - **Gravestone**: name/initials, click to open that player's journal page. The hover label also shows the generation, and E reads the nearest stone ([014](../decisions/014-gravestones.md)).
 - No moderation for the hackathon.
 - Text is limited to **400 characters** ([009](../decisions/009-journal-character-limit.md)).
@@ -31,7 +31,8 @@
 [Cost summary: "What you gave"]
    - Stamina spent, food/water spent, food/water gathered this turn
    - Upkeep: met / short by X
-   - Planted / built: listed as COST ONLY ("Orchard: −25⚡ −5💧"). No mention of what it will become.
+   - Planted / built: listed as COST ONLY ("Crops sown ×6", "Watered ×6"). No mention of what it will become.
+   - Seeds: used and gathered today. The land: its health bar and level name at day's end (`13`).
    - Wording and templates: `docs/content/cost-summary.md`
    ▼
 [Gravestone]

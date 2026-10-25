@@ -15,6 +15,13 @@
 > A judge inherits a flourishing orchard and discovers it was planted by someone whose own final
 > screen showed only its cost.
 
+> **Changed by `13`:** nobody plants the orchard any more. Trees grow from the land's level
+> ([024](../decisions/024-emergent-orchards-and-flowers.md)), so the setup below no longer works as written. The new demo
+> moment is **still to be decided** (`13` open question 1). What still holds: the cost summary shows only realised outcomes,
+> and nothing during play explains causes, so the replay can still be the reveal ([026](../decisions/026-lift-no-explanation-rule.md)).
+> A candidate: the judge inherits a **Blooming** world, and the replay shows whose repairs and harvests raised its health.
+> The table below is the original setup, kept for reference.
+
 ### Setup (example with a 3-generation demo world, so the judge plays Gen 3)
 
 | Gen | Played by | What they do | Their cost summary shows |
@@ -33,7 +40,7 @@ the replay) next to the judge's flourishing orchard.
 
 - **Preferred:** teammates actually play the early generations on the live site (so it's real data).
 - **Backup:** `scripts/seed-demo.ts` creates the same world from a fixed seed + a fixed action log + fixed journal pages, through the same `commit-turn` path. Run it the morning of judging, plus a second copy as a spare.
-- Choose a seed where the orchard plot is near spawn and clearly visible (use the `03` worldgen debug page).
+- Choose a seed where the orchard plot is near spawn and clearly visible (use the `03` worldgen debug page). With `13`, also check a pond or the sea edge is near the fields, so watering doesn't eat the judge's turn.
 - Set a **turn length** the judge can play comfortably in the slot (e.g. 60s). The game designer decides.
 
 ### 5-minute run sheet (draft, for the team to adapt)

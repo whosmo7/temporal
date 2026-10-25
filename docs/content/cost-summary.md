@@ -41,13 +41,16 @@ Left in the store: 4🍎 8💧
 | Upkeep met | For the night: {food}🍎 {water}💧 — enough. | upkeep met |
 | Upkeep short | For the night: {food}🍎 {water}💧 — short by {x}🍎 {y}💧. | any shortfall (omit a zero part) |
 | Store | Left in the store: {food}🍎 {water}💧 | always (after upkeep) |
+| Seeds (`13`) | You used {used} seeds and gathered {gained}. | if any were used or gathered. Drop a half if it's 0 ("You used 6 seeds."); "1 seed" when singular |
+| Land (`13`) | The land: {level name}. + the health bar, no number | always once health exists. As it stands at day's end, after upkeep |
 
 Row labels (cost-only, past tense, no outcomes):
 
 | Action | Row label |
 |---|---|
 | `plantOrchard` | Orchard |
-| `plantCrops` | Crops sown |
+| `plantCrops` | Crops sown (×N = tiles sown) |
+| `water` (`13`) | Watered (×N = tiles watered) |
 | `harvest` | Harvest / Harvest, eaten |
 | `repairReservoir` | Reservoir wall |
 | `digWell` | Well |
@@ -59,6 +62,8 @@ Row labels (cost-only, past tense, no outcomes):
 
 - No "will", "later", "future", "successor", "pay off", "thank you". No yields for anything still growing.
 - No judgement of the shortfall ("You failed", "You neglected"). Just the numbers.
+- Never say what a sown or watered tile will give, or how many are "still growing". The land line shows how it is now,
+  not whether it went up or down, and never "level up".
 - Don't show the successor's weakened stamina here. It belongs to the next player's "You wake up tired".
 - Rows for things that resolved *this turn* (crops sown and harvested) show their real gain. A rushed orchard shows its
   cost, and its harvest shows on its own Harvest row.

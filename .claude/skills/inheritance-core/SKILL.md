@@ -13,9 +13,11 @@ every task.
 
 Each player governs a small seeded farming world (Forest or Island boundary, ~32×32 tiles, Stardew-style
 ¾ view) for one timed turn, called a **generation**. They inherit food, water, structures and pending
-effects from earlier players, act with eight actions while day turns to night, then time freezes and
+effects from earlier players, act with eight actions while day turns to night (fields are worked tile by tile: sow, water from a can filled at a
+well, reservoir, pond or the sea, then harvest), then time freezes and
 they write and draw a journal page. Their cost summary shows only what they paid and gained *now*, and
-a gravestone with their name joins the graveyard. Effects planted earlier mature for later players.
+a gravestone with their name joins the graveyard. Effects started earlier mature for later players. A world health bar and the land's level are shown in the HUD;
+as the level rises, orchard trees and flowers appear on their own (`docs/plan/13-gameplay-mechanics.md`).
 Once the configured number of generations is played, a public replay shows each generation's world
 beside that player's page, with explanations of what caused every shortage or surplus.
 
@@ -25,10 +27,10 @@ Treat these as fixed. If a task seems to need one changed, stop and raise it (se
 `inheritance-task-workflow`) rather than working around it. The full list is in
 `docs/plan/00-decisions-and-glossary.md`.
 
-- Resources: **food, water, stamina** (stamina is the player's energy, called "Labour" in the brief).
-- **Eight actions** (canonical IDs below). Unlimited actions per turn within the time limit.
+- Resources: **food, water, stamina** (stamina is the player's energy, called "Labour" in the brief), plus **hunger** (016) and **seeds** (022). Stamina costs are 0 for now and actions take time (019).
+- **Eight actions** (canonical IDs below). Unlimited actions per turn within the time limit. Section `13` swaps `plantOrchard` for `water` (021, 024); follow `types.ts` until A lands it.
 - Upkeep at end of turn. A shortfall gives the successor a **weakened start** (soft fail, never game over).
-- Decay (food rots, water stagnates) plus structure wear. Seeded events only. **No borrowing. No score.**
+- Decay (food rots, water stagnates) plus structure wear. Seeded events only. **No borrowing.** **World health and level** are shown in the HUD (023), as a bar with no number and a land name, never as a score.
 - Pending effects are **partly hidden**: visible as growth or decay stages, never as numbers or due dates.
 - No NPCs. The graveyard is the population.
 - End flow: **freeze → journal → cost summary (realised only) → gravestone**.
@@ -44,7 +46,7 @@ apply it to cases this list doesn't cover.
 1. **Determinism.** Same seed + same action log = same world, everywhere (browser, Vitest, Edge Function). The replay, the server's re-check and the demo seed script all depend on it. Randomness comes only from the seeded PRNG; time is passed in.
 2. **Append-only history.** Never update or delete actions, transitions, turns, snapshots or journal pages. The replay is built from history, and "earlier pages can't be edited" is a game rule.
 3. **Every transition has a cause.** A state change with no cause is a bug, because the replay could never explain it.
-4. **The world doesn't explain itself during play.** Players learn about the past only from the journal and from how the world looks. See `inheritance-player-facing` for exactly what may be shown.
+4. **The world doesn't explain itself during play.** Players learn about the past only from the journal, from how the world looks, and from the health bar and land level. 026 lifted the stricter rule, but the only new readouts chosen are health and level; due dates, future yields and causes still wait for the replay. See `inheritance-player-facing` for exactly what may be shown.
 5. **The cost summary shows only realised outcomes.** The demo moment depends on the orchard planter's final screen showing only its cost.
 6. **No moralising.** No action is labelled good or bad, and no text praises sacrifice or scolds selfishness. The brief's hardest requirement is to avoid a simplistic morality game.
 

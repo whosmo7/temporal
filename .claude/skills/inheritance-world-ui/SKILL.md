@@ -59,7 +59,7 @@ keyboard → game loop → engine.applyAction(state, action, t) → store.set(st
 Map every `visibleView` stage to a frame named `<kind>/<stage>` (see `inheritance-assets`). World flags
 become filters: `weakened` → desaturation + blight motes + slower walk; `drought` → cracked-ground
 overlay + warm tint. A successor should be able to read the world's health from these alone, because
-the world never explains itself.
+the world never explains itself (the HUD adds only a health bar with no number and the land's level name, 023).
 
 ## End-of-turn flow
 

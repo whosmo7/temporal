@@ -11,6 +11,7 @@ import type {
   TurnSummary,
   WorldState,
 } from '../../engine';
+import { landOf, type Land } from '../hud/land';
 
 /** One per-action row: what that kind of action cost and gave back this turn. */
 export interface SummaryRow {
@@ -27,9 +28,13 @@ export interface CostSummaryView {
   foodLine: string;
   eatenLine: string | null;
   rottedLine: string | null;
+  /** Seeds used and gathered today (13); null when none moved. */
+  seedsLine: string | null;
   rows: SummaryRow[];
   night: { food: number; water: number; short: { food: number; water: number } | null };
   store: { food: number; water: number };
+  /** The land's health and level as they stand at day's end (13); null until the engine has them. */
+  land: Land | null;
 }
 
 const COUNTED: readonly ResourceKey[] = ['stamina', 'water', 'food'];
@@ -64,6 +69,17 @@ export function costSummary(input: {
     byAction.set(own.actionId, sums);
   }
 
+  // Seeds used and gathered by this turn's actions (13). `seeds` isn't a ResourceKey until A adds it.
+  let seedsUsed = 0;
+  let seedsGained = 0;
+  for (const tr of transitions) {
+    if (tr.at.turn !== summary.turn || tr.delta === undefined || !('resource' in tr.target)) continue;
+    if ((tr.target.resource as string) !== 'seeds') continue;
+    if (!tr.causes.some((c) => c.kind === 'action' && turnActions.has(c.actionId))) continue;
+    if (tr.delta < 0) seedsUsed -= tr.delta;
+    else seedsGained += tr.delta;
+  }
+
   const rows = new Map<string, SummaryRow>();
   for (const action of turnActions.values()) {
     const label = rowLabel(action, after, biome, actor, nameOf);
@@ -91,6 +107,7 @@ export function costSummary(input: {
         : summary.cropsRotted === 1
           ? 'One patch of crops rotted in the ground.'
           : `${summary.cropsRotted} patches of crops rotted in the ground.`, // one per field tile (decision 019)
+    seedsLine: seedsLine(seedsUsed, seedsGained),
     rows: [...rows.values()],
     night: {
       food: upkeep.food.required,
@@ -98,7 +115,16 @@ export function costSummary(input: {
       short: upkeep.met ? null : { food: shortFood, water: shortWater },
     },
     store: { food: after.resources.food, water: after.resources.water },
+    land: landOf(after),
   };
+}
+
+function seedsLine(used: number, gained: number): string | null {
+  const n = (k: number) => (k === 1 ? '1 seed' : `${k} seeds`);
+  if (used > 0 && gained > 0) return `You used ${n(used)} and gathered ${gained}.`;
+  if (used > 0) return `You used ${n(used)}.`;
+  if (gained > 0) return `You gathered ${n(gained)}.`;
+  return null;
 }
 
 function waterLine(spent: number, gained: number): string {
@@ -115,6 +141,8 @@ function rowLabel(
   actor: string,
   nameOf: (id: string) => string,
 ): string {
+  // `water` joins ActionType with A's 13 contract PR; until then it can't appear in a log.
+  if ((action.type as string) === 'water') return 'Watered';
   switch (action.type) {
     case 'plantOrchard':
       return 'Orchard';
