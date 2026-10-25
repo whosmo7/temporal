@@ -58,15 +58,15 @@ export function visibleView(state: WorldState, t = 0): VisibleWorld {
 function visibleStage(state: WorldState, plot: PlotState, t: number): PlotStage | undefined {
   switch (plot.kind) {
     case 'field': {
-      if (plot.stage !== 'sown') return plot.stage;
-      // Halfway to ripe, a sown field shows as growing. The ripening time itself stays hidden.
+      if (plot.stage !== 'watered') return plot.stage;
+      // Halfway to ripe, a watered tile shows as growing. The ripening time itself stays hidden.
       const crop = state.pending.find(
         (e) => e.plotId === plot.id && e.kind === 'cropRipe' && e.status === 'pending',
       );
-      if (!crop) return 'sown';
+      if (!crop) return 'watered';
       const start = crop.committedAt.t ?? 0;
       const end = crop.dueAt.t ?? start;
-      return t >= (start + end) / 2 ? 'growing' : 'sown';
+      return t >= (start + end) / 2 ? 'growing' : 'watered';
     }
     case 'orchard':
       return plot.stage === 'fruiting' && plot.wear >= CONFIG.wearHalveAt ? 'worn' : plot.stage;

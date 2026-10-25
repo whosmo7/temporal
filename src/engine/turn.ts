@@ -44,8 +44,9 @@ export function beginTurn(state: WorldState): StepResult {
     // 3. Structure wear +1 (unless maintained last turn)
     applyWear(next, rec);
 
-    // 4. Food rot, water stagnation, hunger
+    // 4. Food rot, water stagnation, hunger, unwatered seeds withering
     applyDecay(next, rec);
+    witherSeeds(next, rec);
 
     // 5. Resource income (reservoir, well), reduced by wear and events
     applyIncome(next, rec);
@@ -55,10 +56,21 @@ export function beginTurn(state: WorldState): StepResult {
     setWorld(next, rec, 'wildStock', regrown, [rule('regrow')]);
   }
 
-  // 7. Starting stamina, applying `weakened`
+  // 7. Starting stamina, applying `weakened`; the watering can starts empty (decision 027)
   applyStartingStamina(next, rec);
+  setResource(next, rec, 'can', 0, [rule('newTurn')]);
 
   return { state: next, transitions: rec.transitions };
+}
+
+/** A sown tile nobody watered withers `witherGens` generations after it was planted (decision 027). */
+function witherSeeds(state: WorldState, rec: Recorder): void {
+  for (const plot of Object.values(state.plots)) {
+    if (plot.kind !== 'field' || plot.stage !== 'sown' || !plot.builtBy) continue;
+    if (state.turn - plot.builtBy.committedTurn < CONFIG.witherGens) continue;
+    setStage(rec, plot, 'withered', [rule('wither'), plot.builtBy]);
+    plot.builtBy = null;
+  }
 }
 
 /** An orchard one generation from fruiting shows as `young`. */
@@ -164,10 +176,11 @@ export function endTurn(state: WorldState): EndTurnResult {
   // Anything due by the final second still lands.
   resolveDue(next, rec, { turn: n, t: next.turnSeconds });
 
-  // Unharvested crops rot
+  // Unharvested crops rot: watered and ripe tiles. Sown tiles nobody watered wait for the next
+  // player (decision 027).
   let cropsRotted = 0;
   for (const plot of Object.values(next.plots)) {
-    if (plot.kind !== 'field' || (plot.stage !== 'sown' && plot.stage !== 'ripe')) continue;
+    if (plot.kind !== 'field' || (plot.stage !== 'watered' && plot.stage !== 'ripe')) continue;
     setStage(rec, plot, 'rotten', [rule('foodRot'), ...builtCause(plot)]);
     plot.builtBy = null;
     cropsRotted++;
@@ -184,11 +197,12 @@ export function endTurn(state: WorldState): EndTurnResult {
   setResource(next, rec, 'food', next.resources.food - foodPaid, [rule('upkeep')]);
   setResource(next, rec, 'water', next.resources.water - waterPaid, [rule('upkeep')]);
 
-  // Shortfall ratio, averaged over food and water
-  const shortfall =
-    ((CONFIG.upkeepFood - foodPaid) / CONFIG.upkeepFood +
-      (CONFIG.upkeepWater - waterPaid) / CONFIG.upkeepWater) /
-    2;
+  // Shortfall ratio, averaged over what the night asks for (food only since decision 027)
+  const asked = [
+    [CONFIG.upkeepFood, foodPaid],
+    [CONFIG.upkeepWater, waterPaid],
+  ].filter(([required]) => required! > 0);
+  const shortfall = asked.length ? asked.reduce((sum, [required, paid]) => sum + (required! - paid!) / required!, 0) / asked.length : 0;
   setWorld(next, rec, 'weakened', shortfall, [rule('upkeep')]);
 
   const { tally } = next;

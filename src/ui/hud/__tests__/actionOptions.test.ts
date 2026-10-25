@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyAction, beginTurn, createWorld, tick, visibleView, type WorldState } from '../../../engine';
 import type { ActionRequest } from '../../../store/game';
-import { plotOptions } from '../actionOptions';
+import { plotOptions, waterEdgeOptions } from '../actionOptions';
 
 const fresh = () => {
   const w = createWorld(7, { worldId: 'w', biome: 'forest' }).state;
@@ -22,15 +22,28 @@ describe('plot options', () => {
     const s = fresh();
     expect(keys(s, FIELD, 'field')).toEqual(['E Sow crops']);
     expect(keys(s, TREE, 'orchard')).toEqual(['E Plant a tree']);
-    expect(keys(s, 'reservoir', 'reservoir')).toEqual(['E Repair the reservoir wall']);
+    // The can starts empty, so it fills first where there's water (decision 027).
+    expect(keys(s, 'reservoir', 'reservoir')).toEqual(['E Fill the can', '5 Repair the reservoir wall']);
     expect(keys(s, 'well', 'well')).toEqual(['E Dig a well']);
     expect(keys(s, 'wild', 'wild')).toEqual(['E Hunt']);
   });
 
-  it('offers harvest on E and eat on Q at a ripe field, and hurry on F while it grows', () => {
-    const sown = applyAction(fresh(), { id: 'a', actorId: 'AL', seq: 0, type: 'plantCrops', plotId: FIELD }, 0).state;
-    expect(keys(sown, FIELD, 'field')).toEqual(['F Hurry this along']);
-    expect(keys(tick(sown, 200).state, FIELD, 'field', 200)).toEqual(["E Harvest", "Q Harvest and eat (You're not hungry)"]);
+  it('sow, then water, then hurry on F while it grows, then harvest on E and eat on Q', () => {
+    const act = (state: WorldState, r: ActionRequest, t = 0) => applyAction(state, { ...r, id: `${r.type}-${t}`, actorId: 'AL', seq: 0 }, t).state;
+    const sown = act(fresh(), { type: 'plantCrops', plotId: FIELD });
+    expect(keys(sown, FIELD, 'field')).toEqual(['E Water (The can is empty)']);
+    const watered = act(act(sown, { type: 'fillCan' }), { type: 'water', plotId: FIELD });
+    expect(keys(watered, FIELD, 'field')).toEqual(['F Hurry this along']);
+    expect(keys(tick(watered, 200).state, FIELD, 'field', 200)).toEqual(["E Harvest", "Q Harvest and eat (You're not hungry)"]);
+  });
+
+  it('a full can is not offered a fill; a rotten tile offers clearing', () => {
+    const s = fresh();
+    s.resources.can = 4;
+    expect(keys(s, 'reservoir', 'reservoir')).toEqual(['E Repair the reservoir wall']);
+    expect(waterEdgeOptions(visibleView(s, 0), checker(s))).toEqual([]);
+    s.plots[FIELD]!.stage = 'rotten';
+    expect(keys(s, FIELD, 'field')).toEqual(['E Clear and till']);
   });
 
   it('greys out what the player cannot afford, with the engine reason', () => {

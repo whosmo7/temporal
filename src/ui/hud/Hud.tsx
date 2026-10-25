@@ -17,12 +17,12 @@ const BOWL = [
 ];
 
 /**
- * Top-left HUD (04 › HUD): food and water counts, the stamina and hunger bars, what upkeep needs by
- * nightfall (decision 002) and the generation. Current, realised values only.
+ * Top-left HUD (04 › HUD): food, the watering can's pours, the stamina and hunger bars and the
+ * generation. Stored water and the nightfall line are gone: nights take food only (decision 027).
  */
 export function Hud() {
   const food = useGameStore((s) => s.view?.resources.food ?? 0);
-  const water = useGameStore((s) => s.view?.resources.water ?? 0);
+  const can = useGameStore((s) => s.view?.resources.can ?? 0);
   const stamina = useGameStore((s) => s.view?.resources.stamina ?? 0);
   const hunger = useGameStore((s) => s.view?.resources.hunger ?? 0);
   const turn = useGameStore((s) => s.view?.turn ?? 1);
@@ -31,7 +31,7 @@ export function Hud() {
     <Panel style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 12px', fontFamily: 'var(--font-ui)', fontSize: 16 }}>
       <div style={{ display: 'flex', gap: 16 }}>
         <Count icon="ui/icon-food" value={food} label="Food" />
-        <Count icon="ui/icon-water" value={water} label="Water" />
+        <Count icon="ui/icon-water" value={can} of={CONFIG.canCapacity} label="Watering can" />
       </div>
       <Bar label="Stamina" value={stamina} max={CONFIG.baseStamina} colour={palette.stamina}>
         <PixelIcon name="ui/icon-stamina" scale={1} />
@@ -39,12 +39,6 @@ export function Hud() {
       <Bar label="Hunger" value={hunger} max={CONFIG.hungerMax} colour={palette.food}>
         <PixelBitmap rows={BOWL} inks={{ b: palette.clay, f: palette.paper }} scale={2} />
       </Bar>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, color: 'var(--highlight)' }}>
-        Needed by nightfall: {CONFIG.upkeepFood}
-        <PixelIcon name="ui/icon-food" scale={1} label="food" />
-        {CONFIG.upkeepWater}
-        <PixelIcon name="ui/icon-water" scale={1} label="water" />
-      </div>
       <div style={{ fontSize: 14, color: 'var(--muted)' }}>
         Generation {turn} of {gens}
       </div>
@@ -52,11 +46,14 @@ export function Hud() {
   );
 }
 
-function Count({ icon, value, label }: { icon: 'ui/icon-food' | 'ui/icon-water'; value: number; label: string }) {
+function Count({ icon, value, of, label }: { icon: 'ui/icon-food' | 'ui/icon-water'; value: number; of?: number; label: string }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} aria-label={`${label} ${value}`}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} aria-label={`${label} ${value}${of ? ` of ${of}` : ''}`}>
       <PixelIcon name={icon} scale={2} />
-      <span style={{ fontSize: 20, minWidth: '2ch' }}>{value}</span>
+      <span style={{ fontSize: 20, minWidth: '2ch' }}>
+        {value}
+        {of !== undefined && <span style={{ fontSize: 14, color: 'var(--muted)' }}>/{of}</span>}
+      </span>
     </span>
   );
 }

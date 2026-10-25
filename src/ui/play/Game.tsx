@@ -7,7 +7,7 @@ import { PixiStage } from '../../render/PixiStage';
 import { founderLook, lookIds, type WorldLook, type WorldView } from '../../render/world-view';
 import { isTimeUp, useGameStore, type ActionRequest } from '../../store/game';
 import type { Biome, TileMap } from '../../worldgen';
-import { plotOptions, type ActionOption } from '../hud/actionOptions';
+import { plotOptions, waterEdgeOptions, type ActionOption } from '../hud/actionOptions';
 import { ActionError } from '../hud/ActionError';
 import { Clock } from '../hud/Clock';
 import { HOTBAR } from '../hud/copy';
@@ -114,11 +114,15 @@ export function Game({
   // The lectern opens the latest page; at the graveyard, E reads the nearest stone's page.
   const playing = step === 'play' && !journalOpen && !fastTrack;
   const readable = !playing ? null : nearby === 'lectern' ? 'lectern' : nearby === 'graveyard' && nearbyStone ? nearbyStone : null;
-  // `nearby` is a field or orchard tile you face, or a whole plot (decision 019).
+  // `nearby` is a field or orchard tile you face, or a whole plot (decision 019). At a pond or the
+  // sea edge with nothing else to use, the can fills (decision 027).
+  const facingWater = useGameStore((s) => s.facingWater);
   const options = useMemo(() => {
-    const plot = nearby ? vis?.plots[nearby] : undefined;
-    return vis && plot && playing ? plotOptions(vis, plot, check) : [];
-  }, [vis, nearby, playing, check]);
+    if (!vis || !playing) return [];
+    const plot = nearby ? vis.plots[nearby] : undefined;
+    if (plot) return plotOptions(vis, plot, check);
+    return facingWater ? waterEdgeOptions(vis, check) : [];
+  }, [vis, nearby, facingWater, playing, check]);
   const biome = vis?.biome ?? map.biome;
 
   const act = useCallback((request: ActionRequest) => {
@@ -286,7 +290,11 @@ function hotbar(
 }
 
 function sfxFor(request: ActionRequest, biome: Biome): SfxName {
-  return request.type === 'fishHunt' ? `fishHunt-${biome}` : request.type;
+  if (request.type === 'fishHunt') return `fishHunt-${biome}`;
+  // No sounds of their own yet: a splash for watering, the well's for filling the can.
+  if (request.type === 'water') return 'fishHunt-island';
+  if (request.type === 'fillCan') return 'digWell';
+  return request.type;
 }
 
 /** The parts of the view the renderer draws, as a string that only changes when one does. */

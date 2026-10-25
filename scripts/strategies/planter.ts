@@ -1,7 +1,7 @@
 // Invests for later players: orchard and reservoir first, keeps them maintained, eats the orchard.
 
 import { CONFIG } from '../../src/engine';
-import { tilesOf, type PlannedAction, type Strategy } from './run';
+import { growTiles, tilesOf, type PlannedAction, type Strategy } from './run';
 
 export const planter: Strategy = {
   name: 'planter',
@@ -25,11 +25,7 @@ export const planter: Strategy = {
       plan.push({ type: 'maintain', plotId: 'reservoir', t: 2 });
     }
 
-    tilesOf(state, 'field-1').forEach((tile, i) => {
-      const t = 3 + i * CONFIG.actionSeconds.plantCrops;
-      plan.push({ type: 'plantCrops', plotId: tile.id, t });
-      plan.push({ type: 'harvest', plotId: tile.id, t: t + state.turnSeconds * CONFIG.cropRipenPct });
-    });
+    plan.push(...growTiles(tilesOf(state, 'field-1'), 3, state.turnSeconds * CONFIG.cropRipenPct));
     return plan;
   },
 };

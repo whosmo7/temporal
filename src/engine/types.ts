@@ -17,8 +17,11 @@ export interface TimePoint {
 
 // ---- Resources ----
 
-/** `hunger` runs 0..hungerMax and carries between generations (decision 016). */
-export type ResourceKey = 'food' | 'water' | 'stamina' | 'hunger';
+/**
+ * `hunger` runs 0..hungerMax and carries between generations (decision 016). `can` is the pours
+ * in the watering can, 0..canCapacity; it starts every turn empty (decision 027).
+ */
+export type ResourceKey = 'food' | 'water' | 'stamina' | 'hunger' | 'can';
 
 // ---- Actions ----
 
@@ -30,7 +33,11 @@ export type ActionType =
   | 'digWell'
   | 'fishHunt'
   | 'maintain'
-  | 'fastTrack';
+  | 'fastTrack'
+  /** Pour the can on a sown field tile: it starts to grow (decision 027). */
+  | 'water'
+  /** Fill the can at a well, the reservoir (`plotId`) or a pond or the sea edge (no `plotId`). Free. */
+  | 'fillCan';
 
 /** One entry in the append-only action log. Never mutated once written. */
 export interface ActionEntry {
@@ -86,7 +93,9 @@ export type CauseRule =
   | 'weakened'
   | 'income'
   | 'newTurn'
-  | 'hunger';
+  | 'hunger'
+  /** A sown tile nobody watered withers (decision 027). */
+  | 'wither';
 
 export interface ActionCause {
   kind: 'action';
@@ -119,7 +128,8 @@ export interface Transition {
 
 // ---- Plots ----
 
-export type FieldStage = 'empty' | 'sown' | 'growing' | 'ripe' | 'rotten';
+/** `sown` waits for water; `watered` is growing; `withered` and `rotten` need tending to clear (decision 027). */
+export type FieldStage = 'empty' | 'sown' | 'watered' | 'growing' | 'ripe' | 'rotten' | 'withered';
 export type OrchardStage = 'empty' | 'sapling' | 'young' | 'fruiting' | 'worn' | 'dead';
 export type ReservoirStage = 'cracked' | 'low' | 'full';
 export type WellStage = 'none' | 'clear' | 'stagnant';

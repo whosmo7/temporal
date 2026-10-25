@@ -130,6 +130,10 @@ function rowLabel(
       return biome === 'island' ? 'Fishing' : 'Hunt';
     case 'maintain':
       return 'Tending';
+    case 'water':
+      return 'Crops watered';
+    case 'fillCan':
+      return 'Can filled';
     case 'fastTrack': {
       const effect = after.pending.find((e) => e.id === action.targetEffectId);
       const kind = (effect?.kind ?? action.targetEffectId?.split(':').pop()) as EffectKind | undefined;

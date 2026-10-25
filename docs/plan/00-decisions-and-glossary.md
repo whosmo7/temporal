@@ -46,6 +46,7 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Labour | The **player's energy/stamina**. Actions spend it. |
 | Personal needs | **Player must meet food + water upkeep** at end of turn |
 | Eating | **Harvest and eat**: a free Harvest option (Q) that turns the fresh yield into hunger, up to full. Not a ninth action ([003](../decisions/003-eating-via-harvest.md), [016](../decisions/016-hunger.md)) |
+| Watering | Sow, then water from the can, then it grows. The can (4 pours) starts each day empty and fills at a pond, the sea edge, the well or the reservoir. Tend clears a rotten tile for replanting; nights take **food only** [027](../decisions/027-watering-can-tilling-food-only-nights.md) |
 | Hunger | Inherited meter, 0..100: **−30 at each new generation**, eating refills it, at 0 the player walks slower ([016](../decisions/016-hunger.md)) |
 | Upkeep visibility | Screen order unchanged. HUD shows **"Needed by nightfall"** during play ([002](../decisions/002-upkeep-timing.md)) |
 | Failure | **Soft fail**: if upkeep isn't met, the successor gets a **weakened start** (low stamina, visibly blighted world) |

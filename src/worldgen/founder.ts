@@ -34,7 +34,7 @@ export const FOUNDER_STAGE: Partial<Record<PlotKind, string>> = {
 export interface FounderState {
   map: TileMap;
   biome: Biome;
-  resources: { food: number; water: number; stamina: number; hunger: number };
+  resources: { food: number; water: number; stamina: number; hunger: number; can: number };
   wildStock: number;
   wildCap: number;
   plots: Record<PlotId, { kind: PlotKind; stage?: string }>;
@@ -58,7 +58,7 @@ export function founderState(
   return {
     map,
     biome,
-    resources: { food: start.food, water: start.water, stamina: cfg.baseStamina, hunger: cfg.hungerMax },
+    resources: { food: start.food, water: start.water, stamina: cfg.baseStamina, hunger: cfg.hungerMax, can: 0 },
     wildStock: start.wildStock,
     wildCap: start.wildCap,
     plots: Object.fromEntries(

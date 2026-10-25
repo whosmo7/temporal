@@ -79,8 +79,8 @@ empty ─plant→ sown ─water→ watered/growing ─(ripen time)→ ripe ─ha
 
 ### Watering can
 
-- Capacity `[PLACEHOLDER 4]` pours. It starts every turn empty (`[PLACEHOLDER]`: or full).
-- Sources: dug well (not a stagnant one, `[PLACEHOLDER]`), reservoir (`[OPEN]` even when cracked?), ponds, sea edge.
+- Capacity `[PLACEHOLDER 4]` pours. It starts every turn empty ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
+- Sources: a dug well (clear or stagnant), the reservoir (cracked or not), ponds, the sea edge ([027](../decisions/027-watering-can-tilling-food-only-nights.md)). The HUD's water count shows the can's pours.
 - The toolbar shows the fill level. The can's sprite shows full or empty.
 
 ### Seeds
@@ -147,14 +147,14 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 **Engine (A)**
 
 - [ ] **[A]** `plantCrops` (already per tile): costs 1 seed, leaves the tile `sown` with no ripening effect scheduled
-- [ ] **[A]** `water` action: needs a pour and a `sown` tile; schedules that tile's ripening effect
-- [ ] **[A]** Can fill as a non-logged interaction with a source check; the can resets at turn start
+- [x] **[A]** `water` action: needs a pour and a `sown` tile; schedules that tile's ripening effect *(built by B, [027](../decisions/027-watering-can-tilling-food-only-nights.md))*
+- [x] **[A]** Can fill as a non-logged interaction with a source check; the can resets at turn start *(built by B as a free **logged** `fillCan`, so the server re-run sees the pours; [027](../decisions/027-watering-can-tilling-food-only-nights.md))*
 - [ ] **[A]** Harvest returns seeds; tree harvest scaled by health; add `water` to `actionSeconds`
-- [ ] **[A]** Unwatered `sown` tiles carry over; `beginTurn` withers them 2 generations after planting
+- [x] **[A]** Unwatered `sown` tiles carry over; `beginTurn` withers them 2 generations after planting *(built by B, [027](../decisions/027-watering-can-tilling-food-only-nights.md); tending clears a withered or rotten tile)*
 - [ ] **[A]** Remove `plantOrchard`; the four tree tiles' stages follow level
 - [ ] **[A]** Health recompute with causes, and the level-up rule (never down)
 - [ ] **[A]** Oven eat from store (refills hunger)
-- [ ] **[A]** Fast Track on a watered tile and on the other pending effects
+- [x] **[A]** Fast Track on a watered tile and on the other pending effects *(works unchanged: watering schedules the tile's ripening)*
 - [ ] **[A]** Vitest: plant without water never ripens; water starts the clock; can empties; wither at +2 gens; seeds conserved; health causes; level never drops; still deterministic
 - [ ] **[A]** `scripts/simulate.ts` strategies updated for tiles, can trips and seeds
 
@@ -162,8 +162,8 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 
 - [ ] **[B]** Worldgen: mark water-source tiles (pond edge, sea edge, well, reservoir) for can filling
 - [ ] **[B]** Worldgen: flower spawn spots
-- [ ] **[B]** Render the new tile stages (sown, watered dark soil, withered) next to the existing ones
-- [ ] **[B]** Held-tool state in the store, number-key switching, "Fill can" at sources
+- [x] **[B]** Render the new tile stages (sown, watered dark soil, withered) next to the existing ones *(borrowed frames with a tint until the atlas has their own; [027](../decisions/027-watering-can-tilling-food-only-nights.md))*
+- [ ] **[B]** Held-tool state in the store, number-key switching, "Fill can" at sources *("Fill the can" at ponds, the sea edge, the well and the reservoir is done, [027](../decisions/027-watering-can-tilling-food-only-nights.md); held tool not yet)*
 - [ ] **[B]** Watering FX (splash on the tile) and the can's full/empty sprite in hand
 - [ ] **[B]** Trees and flowers appear and grow with level; flowers spread
 - [ ] **[B]** Oven interaction prompt in the house
@@ -209,7 +209,7 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 2. **What may the world explain during play** now that rule 4 is lifted (026)? Due dates, future yields, causes, or
    only health and level?
 3. With stamina free (019), time and can trips are the only limits. Is that enough pressure, or does stamina come back?
-4. Does the can start each turn empty or full? Can a cracked reservoir fill it? A stagnant well?
+4. ~~Does the can start each turn empty or full? Can a cracked reservoir fill it? A stagnant well?~~ Settled: empty; every source works ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
 5. Is harvest's seed return fixed or seeded-random?
 6. Level-up check: only at generation start, or any time health crosses the threshold?
 7. Do trees still wear, or does health replace wear for them? What does level 4+ add?

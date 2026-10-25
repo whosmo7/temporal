@@ -9,7 +9,7 @@ import { gameHour, lightAt } from './daylight';
 import { createFx } from './fx';
 import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
 import { KeyboardInput } from './input';
-import { interactTarget } from './interact';
+import { facingWater, interactTarget } from './interact';
 import { stepWalker, type CollisionGrid, type Walker } from './movement';
 import { P, paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
@@ -345,7 +345,12 @@ export function createWorldView(
       const plot = map.plots.find((p) => p.id === id)!;
       sprite.texture = plotTexture(plot, look.plots[id] ?? defaultStage(plot));
     }
-    for (const [id, t] of tileSprites) t.sprite.texture = tileTexture(t.plot, t.x, t.y, look.plots[id] ?? defaultStage(t.plot));
+    for (const [id, t] of tileSprites) {
+      const stage = look.plots[id] ?? defaultStage(t.plot);
+      const borrowed = t.plot.kind === 'field' && !art[`field/${stage}`] ? STAGE_LOOK[stage] : undefined;
+      t.sprite.texture = tileTexture(t.plot, t.x, t.y, borrowed?.frame ?? stage);
+      t.sprite.tint = borrowed?.tint ?? 0xffffff;
+    }
     if (cabinet) cabinet.texture = frame(`store/${look.store}`);
     fx.setMotes(look.weakened);
     // One swarm per plot with anything rotten in it.
@@ -391,7 +396,11 @@ export function createWorldView(
     player.position.set(Math.round(walker.x * TILE), Math.round(walker.y * TILE));
     player.zIndex = walker.y * TILE;
     const near = timeUp ? null : interactTarget(map, walker);
-    store.setNearby(near, near === 'graveyard' && graveyard ? (nearestStone(graveyard, spots, walker)?.stone ?? null) : null);
+    store.setNearby(
+      near,
+      near === 'graveyard' && graveyard ? (nearestStone(graveyard, spots, walker)?.stone ?? null) : null,
+      !timeUp && facingWater(map, walker),
+    );
 
     // Outline the tile an action would go to (or is going to), so you can see which one you face.
     const target = store.work?.request.plotId ?? (timeUp || externallyPaused ? null : near);
@@ -507,7 +516,16 @@ export function createWorldView(
 const store = () => useGameStore.getState();
 
 /** Actions that put water in the ground get a splash; the rest a pop. */
-const SPLASH_ACTIONS = new Set<ActionType>(['plantCrops', 'plantOrchard', 'digWell', 'repairReservoir']);
+const SPLASH_ACTIONS = new Set<ActionType>(['plantCrops', 'plantOrchard', 'digWell', 'repairReservoir', 'water', 'fillCan']);
+
+/**
+ * Field stages with no frame of their own yet (decision 027) borrow one and a tint: a watered tile
+ * is sown soil gone dark, a withered one is rotten stalks gone grey.
+ */
+const STAGE_LOOK: Record<string, { frame: string; tint: number }> = {
+  watered: { frame: 'sown', tint: 0x9a8a80 },
+  withered: { frame: 'rotten', tint: 0xb8b0a8 },
+};
 
 interface Dust {
   g: Graphics;

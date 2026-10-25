@@ -10,7 +10,7 @@ export const CONFIG = {
   // Stamina, upkeep, soft fail
   baseStamina: 100,
   upkeepFood: 12,
-  upkeepWater: 10,
+  upkeepWater: 0, // nights take food only (decision 027; was 10)
   weakenFactor: 0.6,
   minStaminaPct: 0.4,
 
@@ -29,7 +29,9 @@ export const CONFIG = {
   orchardYield: 4, // per tree, once per generation (was 15 per orchard)
   plantCropsCost: 0, // was 8
   plantCropsWater: 0, // sowing a tile is free (decision 019; was 1 per field)
-  cropRipenPct: 0.25, // fraction of turnSeconds
+  cropRipenPct: 0.25, // fraction of turnSeconds, counted from watering (decision 027)
+  canCapacity: 4, // pours; the can starts each turn empty (decision 027)
+  witherGens: 2, // a sown tile nobody waters withers this many generations after planting
   plantOrchardCost: 0, // was 25
   plantOrchardWater: 1, // per tree (was 5 per orchard)
   orchardMatureGens: 2,
@@ -55,6 +57,8 @@ export const CONFIG = {
     fishHunt: 3,
     maintain: 3,
     fastTrack: 2,
+    water: 1,
+    fillCan: 1.5,
   },
 
   // Decay and wear

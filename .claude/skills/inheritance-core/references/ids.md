@@ -11,6 +11,7 @@ same PR as any change.
 | `water` | Stored water | Yes, minus stagnation |
 | `stamina` | The player's energy for this turn | No, reset each turn (reduced if weakened) |
 | `hunger` | How fed the family is, 0..100; eating refills it (decision 016) | Yes, minus 30 at each new generation |
+| `can` | Pours in the watering can, 0..`canCapacity` (decision 027) | No, empty at the start of each turn |
 
 ## Actions (`ActionType`)
 
@@ -24,6 +25,8 @@ same PR as any change.
 | `fishHunt` | Fish (Island) / Hunt (Forest) | `wild` |
 | `maintain` | Maintain | `well`, `reservoir` or `orchard` |
 | `fastTrack` | Fast Track | a pending `ScheduledEffect` (anyone's) |
+| `water` | Water | a `sown` field tile; takes a pour from the can (decision 027) |
+| `fillCan` | Fill the can (an interaction, not on the hotbar) | `well`, `reservoir`, or no plot for a pond or the sea edge |
 
 ## Plot kinds and plot IDs
 
@@ -68,7 +71,7 @@ in tall grass, `wild/many-island` fish in a pool).
 
 | Kind | Stages |
 |---|---|
-| `field` | `empty`, `sown`, `growing`, `ripe`, `rotten` |
+| `field` | `empty` (tilled), `sown` (dry), `watered`, `growing`, `ripe`, `rotten`, `withered` (decision 027) |
 | `orchard` | `empty`, `sapling`, `young`, `fruiting`, `worn`, `dead` (per tree; one-tile frames `orchard/tree-<stage>`) |
 | `reservoir` | `cracked`, `low`, `full` |
 | `well` | `none`, `clear`, `stagnant` |
@@ -97,7 +100,7 @@ World-level visual flags: `weakened` (blight filter), `drought` (cracked-ground 
 | `rule` | `rule` | one of the rules below |
 
 Rules: `foodRot`, `waterStagnate`, `wear`, `upkeep`, `regrow`, `weakened`, `income`, `newTurn`
-(stamina refilled at the start of a generation), `hunger` (the drop at the start of a generation).
+(stamina refilled at the start of a generation), `hunger` (the drop at the start of a generation), `wither` (a sown tile nobody watered).
 
 ## Events (`SeededEvent.kind`)
 

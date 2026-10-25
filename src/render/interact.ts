@@ -34,6 +34,16 @@ export function facedTile(map: TileMap, w: Walker): PlotId | null {
   return null;
 }
 
+/** True if the tile in front of the player is a pond or the sea, where the can fills (decision 027). */
+export function facingWater(map: TileMap, w: Walker): boolean {
+  const step = STEP[w.facing];
+  const x = Math.floor(w.x) + step.x;
+  const y = Math.floor(w.y - 0.01) + step.y;
+  if (x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
+  const i = y * map.width + x;
+  return map.layers.terrain[i] === 'water' || map.layers.boundary[i] === 'sea';
+}
+
 /**
  * The whole plot the player can use: the nearest one whose rectangle comes within `REACH` of the
  * player's hitbox, preferring the one they're facing. Fields and orchards are left out: their

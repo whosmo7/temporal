@@ -25,6 +25,9 @@ Fields and orchards are worked a tile at a time, and every action takes a moment
 | `maintain` (reservoir) | Tend | Shore up the wall | Fill the small cracks before they spread. |
 | `maintain` (orchard) | Tend | Prune the tree | Cut back the dead wood. |
 | `fastTrack` | Hurry | Hurry this along · {cost} | Push someone's work along now, at twice the effort. |
+| `water` | Water | Water | One pour from the can. Only now does it start to grow. |
+| `fillCan` (at a pond, the sea edge, the well, the reservoir) | — | Fill the can | It never costs the stored water. |
+| `maintain` (a rotten or withered tile) | Tend | Clear and till | Dig out what's spoiled, so you can sow again. |
 
 Fast Track menu: title **"Hurry something along"**. Each row: `{what} — started by {name}, Generation {n}` + its current stage name + cost.
 No due dates or yields. One row per tile, numbered across the plot. Example: *"Tree 2 — started by AL, Generation 1 · Young tree · 2💧"*.
@@ -35,7 +38,7 @@ Plot name, then the name of each visual stage from `visibleView()`.
 
 | Kind | Plot name | Stages |
 |---|---|---|
-| `field` | Field | `empty` Bare earth · `sown` Sown · `growing` Coming up · `ripe` Ripe · `rotten` Rotten |
+| `field` | Field (per tile) | `empty` Tilled earth · `sown` Sown, dry · `watered` Watered · `growing` Coming up · `ripe` Ripe · `rotten` Rotten · `withered` Withered |
 | `orchard` | Orchard (one tree per tile) | `empty` Bare ground · `sapling` Sapling · `young` Young tree · `fruiting` Fruiting · `worn` Untended tree · `dead` Dead tree |
 | `reservoir` | Reservoir | `cracked` Cracked · `low` Low · `full` Full |
 | `well` | Well | `none` Soft ground · `clear` Clear water · `stagnant` Green water |
@@ -66,12 +69,18 @@ Say what's missing, in a few words.
 | Tend something already tended this turn | Already seen to today |
 | Hurry with nothing pending | Nothing to hurry |
 | Harvest and eat when not hungry ([016](../decisions/016-hunger.md)) | You're not hungry |
+| Sow on a rotten or withered tile ([027](../decisions/027-watering-can-tilling-food-only-nights.md)) | Clear it first |
+| Water with an empty can | The can is empty |
+| Water a tile that's already watered | Already watered |
+| Water what isn't sown | Nothing to water here |
+| Fill a full can | The can is full |
+| Fill where there's no water (an undug well) | There's no water here |
 
 ## HUD and other short lines
 
 | Where | Text |
 |---|---|
-| HUD upkeep reminder (decision 002) | Needed by nightfall: 12🍎 10💧 |
+| ~~HUD upkeep reminder (decision 002)~~ | removed ([027](../decisions/027-watering-can-tilling-food-only-nights.md)); the water count shows the can: "3/4" |
 | HUD generation badge | Generation {n} of {m} |
 | HUD hunger bar ([016](../decisions/016-hunger.md)) | (a bowl icon and a bar, no words; screen readers hear "Hunger") |
 | Weakened start ("You are inheriting…") | You wake up tired. |

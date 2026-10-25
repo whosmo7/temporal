@@ -27,10 +27,15 @@ export function plotOptions(view: VisibleWorld, plot: { id: PlotId; kind: PlotKi
   const stage = view.plots[plot.id]?.stage;
   const pending = view.fastTrackable.find((e) => e.plotId === plot.id);
   const rows: { type: ActionType; eat?: boolean }[] = [];
+  // At a water source the can comes first while it has room (decision 027).
+  const fill = view.resources.can < CONFIG.canCapacity ? [{ type: 'fillCan' as const }] : [];
   switch (plot.kind) {
     case 'field':
+      // Sow, water, wait, harvest; a rotten or withered tile is tended (cleared and tilled) first.
       if (stage === 'ripe') rows.push({ type: 'harvest' }, { type: 'harvest', eat: true });
-      else if (stage === 'empty' || stage === 'rotten') rows.push({ type: 'plantCrops' });
+      else if (stage === 'empty') rows.push({ type: 'plantCrops' });
+      else if (stage === 'sown') rows.push({ type: 'water' });
+      else if (stage === 'rotten' || stage === 'withered') rows.push({ type: 'maintain' });
       break;
     case 'orchard':
       if (stage === 'empty' || stage === 'dead') rows.push({ type: 'plantOrchard' });
@@ -40,12 +45,14 @@ export function plotOptions(view: VisibleWorld, plot: { id: PlotId; kind: PlotKi
       }
       break;
     case 'reservoir':
+      rows.push(...fill);
       if (stage === 'cracked') {
         if (!pending) rows.push({ type: 'repairReservoir' });
       } else rows.push({ type: 'maintain' });
       break;
     case 'well':
-      rows.push({ type: stage === 'none' ? 'digWell' : 'maintain' });
+      if (stage === 'none') rows.push({ type: 'digWell' });
+      else rows.push(...fill, { type: 'maintain' });
       break;
     case 'wild':
       rows.push({ type: 'fishHunt' });
@@ -77,6 +84,13 @@ export function plotOptions(view: VisibleWorld, plot: { id: PlotId; kind: PlotKi
   return options;
 }
 
+/** Facing a pond or the sea: fill the can there, while it has room (decision 027). */
+export function waterEdgeOptions(view: VisibleWorld, check: Check): ActionOption[] {
+  if (view.resources.can >= CONFIG.canCapacity) return [];
+  const request: ActionRequest = { type: 'fillCan' };
+  return [{ key: 'E', request, label: promptLabel('fillCan', 'well', view.biome), cost: costOf('fillCan'), error: check(request) }];
+}
+
 /** What an action costs up front (Fast Track's price comes from its effect). */
 export function costOf(type: ActionType, eat = false): { stamina: number; water: number } {
   switch (type) {
@@ -95,6 +109,8 @@ export function costOf(type: ActionType, eat = false): { stamina: number; water:
     case 'maintain':
       return { stamina: CONFIG.maintainCost, water: 0 };
     case 'fastTrack':
+    case 'water':
+    case 'fillCan':
       return { stamina: 0, water: 0 };
   }
 }

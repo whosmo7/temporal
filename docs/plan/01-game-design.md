@@ -17,7 +17,7 @@
 
 Settled game-design questions (records in `docs/decisions/`):
 
-- **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. The HUD shows "Needed by nightfall", so players know where they stand before they write.
+- **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. ~~The HUD shows "Needed by nightfall"~~: the line is gone, and nights take **food only** ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
 - **Eating** ([003](../decisions/003-eating-via-harvest.md)): yes, as an option on **Harvest** ("Harvest and eat"). It's not a ninth action.
 - **Hunger** ([016](../decisions/016-hunger.md)): a meter the family inherits. It drops at each new generation; eating (free) refills it; empty, you walk slower.
 - **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. The 2× cost is the price.
@@ -46,7 +46,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 3. **Freeze.** The timer hits 0, the world freezes, and input locks.
 4. **Journal.** Write or draw your page. Earlier pages are read-only.
 5. **Cost summary.** Shows only what was **realised** this turn, including whether upkeep was met. Pending benefits are left out.
-6. **Upkeep check.** Food/water are deducted. A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
+6. **Upkeep check.** Food is deducted (water no longer, {D}). A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
 7. **Gravestone.** Your stone is placed in the graveyard. The turn is committed.
 8. **Between turns (engine).** Decay, wear, due effects, seeded events and wild stock regrowth are applied for the next generation.
 
@@ -55,7 +55,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 | Resource | Source | Sink | Between-generation rule |
 |---|---|---|---|
 | **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
-| **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
+| **Water** | Reservoir income, Well, starter stock | Plant Orchard, Fast Track (no longer upkeep, {D}). Crops are watered from the **can**, which fills free at a pond, the sea edge, the well or the reservoir | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
 | **Labour (stamina)** | Full pool at turn start (reduced if weakened) | Every action | Doesn't carry over |
 | **Hunger** | Eating (Harvest and eat), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
 
