@@ -13,14 +13,18 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  /* Banded, not smooth: the sky steps like a pixel-art backdrop. */
+  /* Banded, not smooth: the sky steps like a pixel-art backdrop. Late afternoon: a muted blue-green
+     overhead, warming to a gold haze towards the horizon. */
   background: linear-gradient(
     to bottom,
-    var(--sky) 0 38%,
-    #57b2c0 38% 56%,
-    #4ea4b7 56% 70%,
-    var(--sky-mid) 70% 84%,
-    var(--sky-deep) 84% 100%
+    #3f7f8f 0 16%,
+    #4b8c98 16% 30%,
+    #5c9a9f 30% 44%,
+    #77aba5 44% 56%,
+    #98bba6 56% 66%,
+    #bcc5a2 66% 75%,
+    #dccb9f 75% 84%,
+    #ecd2a2 84% 100%
   );
 }
 
@@ -150,20 +154,72 @@
   background-color: rgb(255 255 255);
 }
 
-.landing > :not(.landing__light, .island) {
+.landing > :not(.landing__light, .island, .scenery) {
   position: relative;
   z-index: 2;
 }
 
+/* Scenery sits under the light with the island; DOM order sets which is in front. */
+.scenery {
+  position: fixed;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.scenery--far {
+  top: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.scenery--bank {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 180px;
+  /* The tile's puffs, then solid cloud below where the tile's own fill starts. */
+  background-repeat: repeat-x, no-repeat;
+  background-position: 0 0, 0 0;
+  animation: bank-drift 120s linear infinite;
+}
+
+@keyframes bank-drift {
+  to {
+    background-position: -960px 0, 0 0;
+  }
+}
+
 .landing__wordmark {
-  margin: 0;
+  margin: 0 0 calc(var(--px) * 2);
   font-size: inherit;
   font-weight: normal;
 }
 
-/* Paper with an ink outline, like the logo, so it reads at noon and at night. */
+/* The cloud bank covers the island's lowest rock; the words sit on the cloud. */
+.landing > .island {
+  margin-bottom: -60px;
+}
+
+/* Short screens (down to 720 px): the bank hides more rock and the island tucks under the title. */
+@media (max-height: 860px) {
+  .shell__main:has(.landing) {
+    padding-bottom: calc(var(--px) * 3);
+  }
+
+  .landing > .island {
+    margin-top: calc(var(--px) * -10);
+    margin-bottom: -148px;
+  }
+
+  .landing__credits {
+    margin-top: 0;
+  }
+}
+
+/* Paper with an ink outline, like the logo, so it reads at noon and at night, on sky or cloud. */
 .landing__premise,
-.landing__credits {
+.landing__credits,
+.landing__actions .kit-button--quiet {
   margin: 0;
   color: var(--paper);
   text-shadow:

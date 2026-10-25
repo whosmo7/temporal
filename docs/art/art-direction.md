@@ -89,6 +89,12 @@ Ninja Adventure covers terrain, trees, deco and the player. These are likely cus
 ## Title, landing and gallery: the floating island
 
 - **Landing:** sky gradient `sky` → `sky-deep`, two parallax cloud layers in `cloud`/`cloud-shade`, and one island in the centre that bobs ±2 px over about 4 s. The island's top is a live render of a sample world (`04` renderer, read-only). Its underside is a shared `bark`/`ledge`/`clay` cliff sprite. The logo sits above it in `paper` with an `ink` outline.
+- **Landing, revised 2026-10-25 (C):** late afternoon instead of noon. The banded sky runs from a muted blue-green overhead to a gold haze at the horizon, on every screen outside the game. The landing is built in layers, back to front: sky, pale distant islands, the island, a cloud bank in front of its underside that the words and buttons sit on, then the UI. On the island (`src/ui/shell/IslandScene.tsx`, `islandArt.ts`):
+  - **Composition:** the house and courtyard are the hub, and worn paths lead to the fields, up steps to a graveyard terrace, and down to the reservoir. One old tree on the terrace is the landmark that breaks the skyline.
+  - **Terrain:** an irregular outline with ledges, and a faceted rock underside that tapers to a tip, with cracks, roots and loose floating chunks.
+  - **Light:** sun from the upper left. Contact shadows share one colour (`#3a2b4c`), and one grade warms the highlights towards gold and cools the shadows towards violet-brown, which turns the salmon roof terracotta.
+  - **History:** an old foundation, a slate patch on the roof, mossy old stones beside a fresh mound, and one field resting while the other is worked. Each nightfall the orchard and fields move on a stage as the stone rises.
+  - **Pixel size:** everything on the landing is drawn at 2×.
 - **Gallery:** each completed world is a small floating island. The top is the world's final-generation snapshot, rendered small and clipped to an island shape, over the same cliff sprite. The grid floats on the sky background.
 - **Dusk version** for the replay's ending card: the same island under a `peach` → `plum` sky.
 

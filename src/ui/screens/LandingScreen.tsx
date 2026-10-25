@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ButtonLink } from '../kit';
 import { IslandScene } from '../shell/IslandScene';
+import { CloudBank, DistantIslands } from '../shell/LandingScenery';
 import { Logo } from '../shell/Logo';
 
 /**
@@ -26,10 +27,13 @@ export function LandingScreen() {
   return (
     <div className="landing">
       <div ref={light} className="landing__light" aria-hidden />
+      {/* Back to front: far islands, the island, the cloud bank, then the words. */}
+      <DistantIslands />
       <h1 className="landing__wordmark">
         <Logo size="landing" />
       </h1>
       <IslandScene lightRef={light} />
+      <CloudBank />
       <p className="landing__premise">You inherit a world. You leave it to a stranger.</p>
       <div className="landing__actions">
         <ButtonLink to="/play" variant="primary">
