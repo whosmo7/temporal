@@ -26,7 +26,8 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
       },
       {
         path: 'dev/replay-screen',
-        lazy: () => import('./dev/ReplayScreenBench').then((m) => ({ Component: m.ReplayScreenBench })),
+        lazy: () =>
+          import('./dev/ReplayScreenBench').then((m) => ({ Component: m.ReplayScreenBench })),
       },
     ]
   : [];
@@ -56,6 +57,12 @@ const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
  * own, open to anyone (decision 033).
  */
 export const router = createHashRouter([
+  {
+    path: '/presentation',
+    lazy: () =>
+      import('./screens/PresentationScreen').then((m) => ({ Component: m.PresentationScreen })),
+    HydrateFallback: () => null,
+  },
   {
     path: '/',
     element: <AppShell />,
