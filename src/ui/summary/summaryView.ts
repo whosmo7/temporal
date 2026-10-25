@@ -105,8 +105,8 @@ export function costSummary(input: {
       summary.cropsRotted === 0
         ? null
         : summary.cropsRotted === 1
-          ? 'One patch of crops rotted in the ground.'
-          : `${summary.cropsRotted} patches of crops rotted in the ground.`, // one per field tile (decision 019)
+          ? 'One tile of crops rotted in the ground.'
+          : `${summary.cropsRotted} tiles of crops rotted in the ground.`, // one per field tile (decision 019)
     seedsLine: seedsLine(seedsUsed, seedsGained),
     rows: [...rows.values()],
     night: {
