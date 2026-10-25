@@ -73,6 +73,9 @@ export const CONFIG = {
   wildRegrow: 1,
 
   // Events (decision 005; drought timing decision 008)
+  // Droughts are off (decision 030): none is seeded in new worlds, and the engine ignores any an
+  // older world already has. `true` brings them back with the numbers below.
+  droughts: false as boolean,
   droughtLengthFraction: 0.1,
   droughtMaxLength: 5,
   droughtIncomeMult: 0.3,

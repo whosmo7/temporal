@@ -8,6 +8,7 @@ function eventConfig(generationCount: number, overrides: Partial<EventConfig> = 
   return {
     ...FOUNDER_CONFIG,
     generationCount,
+    droughts: true, // the generator's drought rules, whatever the game's switch (decision 030)
     stormBiomes: { forest: false, island: true },
     ...overrides,
   };
@@ -55,6 +56,14 @@ describe('generateEvents', () => {
     }
     expect(Math.min(...longStarts)).toBe(2);
     expect(Math.max(...longStarts)).toBe(14); // 2-gen drought must end by gen 15
+  });
+
+  it('with droughts off, seeds none and leaves the other events where they were', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const on = generateEvents(seed, 'island', eventConfig(6));
+      const off = generateEvents(seed, 'island', eventConfig(6, { droughts: false }));
+      expect(off).toEqual(on.filter((e) => e.kind !== 'drought'));
+    }
   });
 
   it('places one good harvest outside the drought', () => {
@@ -130,7 +139,7 @@ describe('founderState', () => {
   it('is deterministic and carries the seeded events', () => {
     const a = founderState(5, 'island', FOUNDER_CONFIG);
     expect(founderState(5, 'island', FOUNDER_CONFIG)).toEqual(a);
-    expect(a.events).toEqual(generateEvents(5, 'island', eventConfig(6)));
-    expect(a.events.some((e) => e.kind === 'drought')).toBe(true);
+    expect(a.events).toEqual(generateEvents(5, 'island', eventConfig(6, { droughts: FOUNDER_CONFIG.droughts })));
+    expect(a.events.some((e) => e.kind === 'drought')).toBe(false); // droughts are off (decision 030)
   });
 });

@@ -104,7 +104,7 @@ What the founder sees: `beginTurn` for gen 1 applies no decay, wear or income.
 ### Seeded events
 
 Generated at world creation from the seed (event list stored in state, see `02`/`01`). The
-generator places **at least one drought** so the reservoir decision always matters. Event set and timing: `01` › Seeded events
+generator places **at least one drought** so the reservoir decision always matters (**off for now**: `droughts: false` seeds none, [030](../decisions/030-droughts-off.md)). Event set and timing: `01` › Seeded events
 ([005](../decisions/005-seeded-events.md)).
 
 ## Tasks

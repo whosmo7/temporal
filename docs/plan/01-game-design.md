@@ -24,7 +24,7 @@ Settled game-design questions (records in `docs/decisions/`):
 - **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. *No longer applies once orchards grow from the level ([024](../decisions/024-emergent-orchards-and-flowers.md)).*
 - **Plant, then water** ([021](../decisions/021-per-tile-farming-and-watering.md)): a sown tile grows only after one pour from the watering can. Unwatered seeds carry over and wither after 2 generations.
 - **Oven** ([025](../decisions/025-oven-cooks-stored-food.md), [029](../decisions/029-eat-at-the-oven.md)): the only place to eat, from the cabinet's store.
-- **Events** ([005](../decisions/005-seeded-events.md)): drought (always), good harvest, storm (Island only).
+- **Events** ([005](../decisions/005-seeded-events.md)): drought (always, but **off for now**, [030](../decisions/030-droughts-off.md)), good harvest, storm (Island only).
 - **Wild spot** ([006](../decisions/006-wild-spot-per-biome.md)): Forest = hunt, Island = fish, same numbers.
 - **Defaults** ([007](../decisions/007-turn-and-generation-defaults.md)): **10-minute turns**, **6 generations**.
 - **Fields** (B's [001](../decisions/001-worldgen-map-size-and-presets.md)): configurable per map preset, default **2**. All numbers here are balanced for 2. The `small` (1 field) and `large` (3 fields) presets are untuned.

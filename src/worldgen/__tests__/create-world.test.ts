@@ -32,7 +32,7 @@ describe('createWorld uses worldgen', () => {
   it('carries the founder events for its own length', () => {
     const state = createWorld(21, { ...opts, biome: 'island', generationCount: 12 }).state;
     expect(state.events).toEqual(founderState(21, 'island', { ...CONFIG, generationCount: 12 }).events);
-    expect(state.events.filter((e) => e.kind === 'drought')).toHaveLength(2); // ceil(12 / 10)
+    expect(state.events.filter((e) => e.kind === 'drought')).toHaveLength(0); // droughts are off (decision 030)
   });
 
   it('picks the biome from the seed when none is given', () => {

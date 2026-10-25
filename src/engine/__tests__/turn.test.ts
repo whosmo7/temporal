@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CONFIG } from '../config';
 import { asActor, newGame, sowAndWater } from '../__fixtures__/play';
 import { explain } from '../replay';
@@ -81,42 +81,58 @@ describe('beginTurn and endTurn', () => {
     expect(decay?.delta).toBe(-Math.round(50 * CONFIG.waterStagnateStagnantWellPct));
   });
 
-  it('a drought hurts water unless the reservoir was repaired', () => {
-    const play = (repair: boolean) => {
+  // Droughts are off in the game (decision 030); these check the rules for when they're back on.
+  describe('with droughts on', () => {
+    const config = CONFIG as { droughts: boolean };
+    beforeEach(() => void (config.droughts = true));
+    afterEach(() => void (config.droughts = false));
+
+    it('a drought hurts water unless the reservoir was repaired', () => {
+      const play = (repair: boolean) => {
+        const game = newGame();
+        game.state.events = [{ id: 'drought-3', kind: 'drought', turn: 3 }];
+        game.turn((g) => {
+          if (repair) g.act('repairReservoir', { plotId: 'reservoir' });
+        });
+        game.turn();
+        game.begin();
+        return game;
+      };
+      const protectedGame = play(true);
+      const exposed = play(false);
+
+      const droughtCauses = (game: ReturnType<typeof play>) =>
+        game.transitions.filter((t) =>
+          t.causes.some((c) => c.kind === 'event' && c.eventId === 'drought-3'),
+        );
+      expect(droughtCauses(protectedGame)).toEqual([]);
+      expect(droughtCauses(exposed).length).toBeGreaterThan(0);
+      expect(protectedGame.state.resources.water).toBeGreaterThan(exposed.state.resources.water);
+    });
+
+    it('reservoir income cut by drought splits the change between its causes', () => {
       const game = newGame();
-      game.state.events = [{ id: 'drought-3', kind: 'drought', turn: 3 }];
-      game.turn((g) => {
-        if (repair) g.act('repairReservoir', { plotId: 'reservoir' });
-      });
+      game.state.events = [{ id: 'drought-2', kind: 'drought', turn: 2 }];
       game.turn();
       game.begin();
-      return game;
-    };
-    const protectedGame = play(true);
-    const exposed = play(false);
-
-    const droughtCauses = (game: ReturnType<typeof play>) =>
-      game.transitions.filter((t) =>
-        t.causes.some((c) => c.kind === 'event' && c.eventId === 'drought-3'),
+      const income = game.transitions.find((t) =>
+        t.causes.some((c) => c.kind === 'rule' && c.rule === 'income'),
       );
-    expect(droughtCauses(protectedGame)).toEqual([]);
-    expect(droughtCauses(exposed).length).toBeGreaterThan(0);
-    expect(protectedGame.state.resources.water).toBeGreaterThan(exposed.state.resources.water);
+      const shares = income?.causes.reduce((sum, c) => sum + (c.share ?? 0), 0);
+      expect(shares).toBe(income?.delta);
+      expect(income?.delta).toBe(
+        Math.round(CONFIG.reservoirIncomeCracked * CONFIG.droughtIncomeMult),
+      );
+    });
   });
 
-  it('reservoir income cut by drought splits the change between its causes', () => {
+  it('droughts are off: one in an older world\'s list does nothing and is not shown', () => {
     const game = newGame();
     game.state.events = [{ id: 'drought-2', kind: 'drought', turn: 2 }];
     game.turn();
     game.begin();
-    const income = game.transitions.find((t) =>
-      t.causes.some((c) => c.kind === 'rule' && c.rule === 'income'),
-    );
-    const shares = income?.causes.reduce((sum, c) => sum + (c.share ?? 0), 0);
-    expect(shares).toBe(income?.delta);
-    expect(income?.delta).toBe(
-      Math.round(CONFIG.reservoirIncomeCracked * CONFIG.droughtIncomeMult),
-    );
+    expect(game.transitions.some((t) => t.causes.some((c) => c.kind === 'event' && c.eventId === 'drought-2'))).toBe(false);
+    expect(visibleView(game.state).drought).toBe(false);
   });
 
   it('an upkeep shortfall weakens the next player, with a weakened cause', () => {

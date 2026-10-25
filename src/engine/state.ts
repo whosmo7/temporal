@@ -41,6 +41,7 @@ export function eventAt(
   kind: SeededEvent['kind'],
   turn = state.turn,
 ): SeededEvent | undefined {
+  if (kind === 'drought' && !CONFIG.droughts) return undefined; // off (decision 030), even in older worlds
   return state.events.find((e) => e.kind === kind && e.turn === turn);
 }
 
