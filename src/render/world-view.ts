@@ -161,21 +161,24 @@ export function createWorldView(
   };
   // Field and orchard tiles (decision 019): a field tile is its cell of the 3×3 field frame (edge
   // cells for edge tiles, so any size keeps its border); a tree is drawn on its own tile.
+  // Cells cut from the atlas share its source, which the asset loader owns: they're released
+  // without it (`atlasCells`), while painted tiles own theirs (`plotTextures`).
+  const atlasCells = new Map<string, Texture>();
   const tileTexture = (p: Plot, x: number, y: number, stage: string) => {
-    const key = `${p.kind}/${stage}@${p.kind === 'field' ? `${edge(x, p.w)},${edge(y, p.h)}` : 'tree'}`;
-    let tex = plotTextures.get(key);
-    if (tex) return tex;
-    const whole = p.kind === 'field' ? art[`field/${stage}`] : undefined;
     const tree = p.kind === 'orchard' ? art[`orchard/tree-${stage}`] : undefined;
+    if (tree) return tree;
+    const key = `${p.kind}/${stage}@${p.kind === 'field' ? `${edge(x, p.w)},${edge(y, p.h)}` : 'tree'}`;
+    const cached = atlasCells.get(key) ?? plotTextures.get(key);
+    if (cached) return cached;
+    const whole = p.kind === 'field' ? art[`field/${stage}`] : undefined;
     if (whole) {
       const f = whole.frame;
       const cell = new Rectangle(f.x + edge(x, p.w) * TILE, f.y + edge(y, p.h) * TILE, TILE, TILE);
-      tex = new Texture({ source: whole.source, frame: cell });
-    } else if (tree) {
-      tex = tree;
-    } else {
-      tex = Texture.from(paintPlot(p.kind, stage, 1, 1, map.biome));
+      const tex = new Texture({ source: whole.source, frame: cell });
+      atlasCells.set(key, tex);
+      return tex;
     }
+    const tex = Texture.from(paintPlot(p.kind, stage, 1, 1, map.biome));
     plotTextures.set(key, tex);
     return tex;
   };
@@ -495,6 +498,7 @@ export function createWorldView(
       colour.destroy();
       groundTexture?.destroy(true);
       for (const t of plotTextures.values()) t.destroy(true);
+      for (const t of atlasCells.values()) t.destroy(false);
       atlas.destroyAll();
     },
   };

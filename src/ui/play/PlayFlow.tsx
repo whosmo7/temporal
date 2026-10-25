@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { backend, type ClaimedWorld, type CommitInput } from '../../api';
-import { useGameStore } from '../../store/game';
+import { isTimeUp, useGameStore } from '../../store/game';
 import { useSession } from '../../store/session';
 import { generateMap, type TileMap } from '../../worldgen';
 import { Button, Panel } from '../kit';
 import { SkyBackdrop } from '../shell/SkyBackdrop';
 import { Game, type SealedTurn, type TurnStart } from './Game';
+import { useHeartbeat } from './heartbeat';
 import { Inheriting } from './Inheriting';
 import { clearUnsaved, keepUnsaved, loadUnsaved, turnStart } from './turnStart';
 
@@ -15,6 +16,8 @@ type Phase =
   /** A page sealed last time never reached the backend. */
   | { kind: 'unsaved'; input: CommitInput; error: string }
   | { kind: 'claimFailed'; error: string }
+  /** The lock ran out while the clock was stopped (a long read): the turn is gone. */
+  | { kind: 'voided' }
   | { kind: 'inheriting' | 'playing'; claim: ClaimedWorld; map: TileMap; start: TurnStart };
 
 /**
@@ -34,6 +37,8 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
   const claim = useCallback(() => (running.current ??= next().finally(() => (running.current = null))), []);
   async function next() {
     setPhase({ kind: 'loading' });
+    saving.current = 'idle';
+    setSaved(false);
     try {
       const unsaved = loadUnsaved();
       if (unsaved) {
@@ -54,16 +59,36 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
   useEffect(() => void claim(), [claim]);
 
   const worldId = phase.kind === 'playing' ? phase.claim.worldId : null;
+  // `saving` is read by the heartbeat, which must not take the lock the commit just released for a voided turn.
+  const saving = useRef<'idle' | 'saving' | 'saved'>('idle');
+  const [saved, setSaved] = useState(false);
   const save = useCallback(
     async ({ page, log }: SealedTurn) => {
       if (!worldId) throw new Error('No world');
       const input: CommitInput = { worldId, actions: log, journal: page };
       keepUnsaved(input);
-      await backend.commitTurn(input);
+      saving.current = 'saving';
+      try {
+        await backend.commitTurn(input);
+      } catch (e) {
+        saving.current = 'idle';
+        throw e;
+      }
+      saving.current = 'saved';
+      setSaved(true);
       clearUnsaved();
     },
     [worldId],
   );
+
+  // While the clock is stopped (journal open, end of the day) real time still runs against the
+  // lock, so keep it alive until the turn is saved.
+  const clockStopped = useGameStore((s) => s.journalOpen || isTimeUp(s));
+  useHeartbeat(worldId, clockStopped && !saved, () => {
+    if (saving.current !== 'idle') return; // the commit decides
+    clearUnsaved(); // it can never be committed now
+    setPhase({ kind: 'voided' });
+  });
   const endActions = useMemo(
     () => [
       { label: 'Play another', onClick: () => void claim() },
@@ -118,6 +143,20 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
               >
                 Let it go
               </Button>
+            </>
+          }
+        />
+      )}
+      {phase.kind === 'voided' && (
+        <Notice
+          title="Your day ran out"
+          text="You were away too long, and the world moved on without you. Nothing from this day was kept."
+          actions={
+            <>
+              <Button variant="primary" onClick={() => void claim()} autoFocus>
+                Play another
+              </Button>
+              <Button onClick={() => navigate('/')}>Home</Button>
             </>
           }
         />
