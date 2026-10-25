@@ -47,6 +47,8 @@ export interface GameStore {
   turnSeconds: number;
   /** The journal is open: time and movement are frozen (decision 012). */
   journalOpen: boolean;
+  /** "How to play" is open: time and movement are frozen, as for the journal. */
+  helpOpen: boolean;
   /** Generation the journal opens at (a gravestone's page); null = the latest page. */
   journalPage: number | null;
   /** Plot the player is standing next to, for the interact prompt. */
@@ -80,9 +82,10 @@ export interface GameStore {
    */
   lastAction: { n: number; request: ActionRequest; error?: string; done?: boolean } | null;
 
-  /** Advances the clock unless the journal is open; stops at turnSeconds. */
+  /** Advances the clock unless the journal or "How to play" is open; stops at turnSeconds. */
   advance(dt: number): void;
   setJournalOpen(open: boolean): void;
+  setHelpOpen(open: boolean): void;
   /** Opens the journal, at `page`'s generation if given. */
   openJournal(page?: number): void;
   setNearby(id: PlotId | null, stone?: Gravestone | null, facing?: Spot | null): void;
@@ -126,6 +129,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     t: 0,
     turnSeconds: CONFIG.turnSeconds,
     journalOpen: false,
+    helpOpen: false,
     journalPage: null,
     nearby: null,
     nearbyStone: null,
@@ -143,7 +147,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     advance: (dt) => {
       const before = get();
-      if (before.journalOpen || before.t >= before.turnSeconds) return;
+      if (before.journalOpen || before.helpOpen || before.t >= before.turnSeconds) return;
       const next = Math.min(before.turnSeconds, before.t + dt);
       // The action under way lands first, at the time it finishes.
       if (before.work && next >= before.work.until) land(before.work);
@@ -160,6 +164,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
     setJournalOpen: (open) => set(open ? { journalOpen: true } : { journalOpen: false, journalPage: null }),
     openJournal: (page) => set({ journalOpen: true, journalPage: page ?? null, hoveredStone: null }),
+    setHelpOpen: (open) => set({ helpOpen: open }),
     setNearby: (id, stone = null, facing = null) => {
       const s = get();
       if (s.nearby !== id || s.nearbyStone?.turn !== stone?.turn || s.facing !== facing) {
@@ -175,6 +180,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         t: 0,
         turnSeconds: world.turnSeconds,
         journalOpen: false,
+        helpOpen: false,
         journalPage: null,
         nearby: null,
         nearbyStone: null,

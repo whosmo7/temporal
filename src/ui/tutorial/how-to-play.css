@@ -1,0 +1,84 @@
+/* "How to play": four pictures in a 2×2 grid. The kit's dialog is narrower than two pictures,
+   so this one widens it, and the pictures shrink with the window's height so it fits at 1280×720. */
+
+.kit-dialog:has(.how-to-play) {
+  max-width: min(94vw, 900px);
+  max-height: 96vh;
+  overflow-y: auto;
+}
+
+.how-to-play {
+  display: grid;
+  gap: calc(var(--px) * 3);
+  /* Two 8:5 pictures across; about 380px of the height goes to the words, title and button. */
+  width: min(86vw, 840px, calc((100vh - 380px) * 1.6 + 20px));
+  font-family: var(--font-ui);
+}
+
+/* Beside the button, pushed to the left of the actions row. */
+.how-to-play__move {
+  margin: 0 auto 0 0;
+  align-self: center;
+  font-family: var(--font-ui);
+  font-size: 16px;
+}
+
+.how-to-play__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--px) * 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 640px) {
+  .how-to-play {
+    width: 86vw;
+  }
+  .how-to-play__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.how-to-play__card {
+  display: grid;
+  gap: calc(var(--px) * 2);
+  align-content: start;
+}
+
+.how-to-play__shot {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #101418;
+  box-shadow: 0 0 0 var(--px) var(--panel-edge);
+}
+
+.how-to-play__shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* The prompt as it would sit under the player, a little smaller. */
+.how-to-play__prompt {
+  position: absolute;
+  bottom: calc(var(--px) * 2);
+  left: 50%;
+  transform: translateX(-50%) scale(0.85);
+  transform-origin: bottom center;
+  white-space: nowrap;
+}
+
+.how-to-play__title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.how-to-play__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3;
+}

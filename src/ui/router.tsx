@@ -7,6 +7,7 @@ import { NotFoundScreen } from './screens/NotFoundScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import { ReplayScreen } from './screens/ReplayScreen';
 import { AppShell } from './shell/AppShell';
+import { TutorialScreen } from './tutorial/TutorialScreen';
 import { RequireAdmin } from './shell/RequireAdmin';
 import { RequireUser } from './shell/RequireUser';
 
@@ -45,7 +46,7 @@ const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
 /**
  * Hash routes (GitHub Pages). Everything but the game sits in the shell's sky; the game is
  * full-screen. Play needs a signed-in player; the gallery and replays are public (decision 017).
- * `/admin` needs an admin. Later screens slot in here: `tutorial`.
+ * `/admin` needs an admin. `tutorial` is "How to play" on its own.
  */
 export const router = createHashRouter([
   {
@@ -56,6 +57,7 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <LandingScreen /> },
       { path: 'auth', element: <AuthScreen /> },
+      { path: 'tutorial', element: <TutorialScreen /> },
       { path: 'gallery', element: <GalleryScreen /> },
       { path: 'world/:id/replay', element: <ReplayScreen /> },
       {

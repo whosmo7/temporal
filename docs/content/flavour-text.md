@@ -110,3 +110,17 @@ Say what's missing, in a few words.
 Things deliberately **not** written: no tooltip says what anything becomes or when (the Sow tooltip says a seed *needs* water, not what it will give),
 no line says how to raise the land's health or what the next level brings, nothing explains why a plot looks
 the way it does, and no event (drought, storm, good harvest) is ever named during play.
+
+## How to play ([033](../decisions/033-how-to-play-pop-up.md))
+
+Words for the four pictures (`src/ui/tutorial/copy.ts`). How to act only, never how long anything takes. Drafted by B, for C to review.
+
+| Picture | Title | Line |
+|---|---|---|
+| 1 | Sow and water | Face a field tile and press E to sow. Water it from the can and it starts to grow. |
+| 2 | Fill the can | The can starts each day empty. Fill it at a pond, the sea, a well or the reservoir. |
+| 3 | Harvest | Face a ripe crop and press E to bring it into the store. Left too long, it rots. |
+| 4 | Eat | Hungry? Go inside, face the oven and press E. Each meal takes one food from the store. |
+| (beside the button) | — | Walk with WASD or the arrow keys. |
+| Button / title | How to play · Got it | — |
+

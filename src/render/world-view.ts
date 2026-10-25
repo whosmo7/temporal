@@ -10,7 +10,7 @@ import { createFx } from './fx';
 import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
 import { KeyboardInput } from './input';
 import { facedSpot, interactTarget } from './interact';
-import { stepWalker, type CollisionGrid, type Walker } from './movement';
+import { stepWalker, type CollisionGrid, type Facing, type Walker } from './movement';
 import { P, paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
 // Pixel art: never smooth when scaling.
@@ -69,6 +69,12 @@ export interface WorldView {
 export interface ReplayMode {
   /** A plot or field/orchard tile was clicked, at this point on the canvas (CSS px). */
   onPlotClick?: (id: PlotId, at: { x: number; y: number }) => void;
+  /** Frame these tiles instead of the whole map (the tutorial's snapshots). */
+  frame?: { x: number; y: number; w: number; h: number };
+  /** Show the player standing still, feet at this tile point, facing this way. In the house, the roof is off. */
+  player?: { x: number; y: number; facing: Facing };
+  /** Outline this field or orchard tile, as play does for the one you face. */
+  mark?: PlotId;
 }
 
 /** The look `visibleView()` describes: every plot and tile's stage and the world flags. */
@@ -352,8 +358,14 @@ export function createWorldView(
 
   const player = new Sprite(frame('player/walk-down-0'));
   player.anchor.set(0.5, 1);
-  player.visible = !replay;
+  player.visible = !replay || !!replay.player;
   sorted.addChild(player);
+  if (replay?.player) {
+    const { x, y, facing } = replay.player;
+    player.texture = frame(`player/walk-${facing}-0`);
+    player.position.set(Math.round(x * TILE), Math.round(y * TILE));
+    player.zIndex = y * TILE;
+  }
 
   let groundTexture: RenderTexture | null = null;
   let bakedDrought: boolean | null = null;
@@ -422,12 +434,21 @@ export function createWorldView(
     });
   }
 
-  /** The replay's still world: the whole map framed, midday light, changed plots pulsing. */
+  // A still shot's player inside the house: the roof is off and the outside dimmed, as in play.
+  if (replay?.player && house && shell && isInside(house, { ...replay.player, moving: false })) {
+    shell.alpha = 0;
+    dim.alpha = OUTSIDE_DIM;
+  }
+  const replayMark = replay?.mark ? rectOf(replay.mark) : null;
+  if (replayMark) marker.rect(replayMark.x * TILE + 0.5, replayMark.y * TILE + 0.5, TILE - 1, TILE - 1).stroke({ width: 1, color: P.cloud, alpha: 0.9 });
+
+  /** The replay's still world: the whole map (or `frame`) in view, midday light, changed plots pulsing. */
   const updateReplay = (dt: number) => {
     const dpr = app.renderer.resolution;
     const view = { w: app.screen.width, h: app.screen.height };
-    const zoom = pickZoom(view.w, view.h, dpr, { x: map.width, y: map.height });
-    const focus = { x: (map.width * TILE) / 2, y: (map.height * TILE) / 2 };
+    const area = replay?.frame ?? { x: 0, y: 0, w: map.width, h: map.height };
+    const zoom = pickZoom(view.w, view.h, dpr, { x: area.w, y: area.h });
+    const focus = { x: (area.x + area.w / 2) * TILE, y: (area.y + area.h / 2) * TILE };
     const offset = cameraOffset(focus, view, { w: map.width * TILE, h: map.height * TILE }, zoom, dpr);
     world.scale.set(zoom);
     world.position.set(offset.x, offset.y);
@@ -451,7 +472,8 @@ export function createWorldView(
     // The game loop owns the clock. It stands still while the journal is open (decision 012).
     const store = useGameStore.getState();
     store.advance(dt);
-    const { t, turnSeconds, journalOpen } = useGameStore.getState();
+    const { t, turnSeconds, helpOpen } = useGameStore.getState();
+    const journalOpen = useGameStore.getState().journalOpen || helpOpen; // both stop the clock
     const timeUp = isTimeUp({ t, turnSeconds });
     // Acting takes real turn time: the player stands still while they work (04).
     const busy = t < store.busyUntil || store.fastTrack !== null;

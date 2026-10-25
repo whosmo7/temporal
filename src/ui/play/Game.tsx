@@ -20,6 +20,7 @@ import { StoneLabel } from '../hud/StoneLabel';
 import { Button } from '../kit';
 import { JournalModal, type SealedPage } from '../journal';
 import { CostSummary } from '../summary/CostSummary';
+import { HOW_TO_PLAY, HowToPlay, seenHowToPlay } from '../tutorial';
 import { costSummary, type CostSummaryView } from '../summary/summaryView';
 
 /** One turn to play: the world after `beginTurn`, and the pages and stones of those before. */
@@ -112,7 +113,17 @@ export function Game({
   useEffect(() => () => stopMusic(), []);
 
   // The lectern opens the latest page; at the graveyard, E reads the nearest stone's page.
-  const playing = step === 'play' && !journalOpen && !fastTrack;
+  // "How to play" opens by itself on your first day, and from its button; it stops the clock.
+  const helpOpen = useGameStore((s) => s.helpOpen);
+  const setHelpOpen = useGameStore((s) => s.setHelpOpen);
+  useEffect(() => {
+    if (!seenHowToPlay.get()) setHelpOpen(true);
+  }, [setHelpOpen]);
+  const closeHelp = useCallback(() => {
+    seenHowToPlay.set();
+    setHelpOpen(false);
+  }, [setHelpOpen]);
+  const playing = step === 'play' && !journalOpen && !fastTrack && !helpOpen;
   const readable = !playing ? null : nearby === 'lectern' ? 'lectern' : nearby === 'graveyard' && nearbyStone ? nearbyStone : null;
   // `nearby` is a field or orchard tile you face, or a whole plot (decision 019). With nothing else
   // to use, the can fills at a pond or the sea edge (027), and you eat at the oven (029).
@@ -223,6 +234,11 @@ export function Game({
       </div>
       <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
         <Clock />
+        {playing && (
+          <Button size="sm" onClick={() => setHelpOpen(true)}>
+            {HOW_TO_PLAY.open}
+          </Button>
+        )}
         {/* TODO(B): testing only, remove before the demo. Jumps the clock to 6 am. */}
         {playing && (
           <Button size="sm" onClick={() => useGameStore.setState((s) => ({ t: s.turnSeconds }))}>
@@ -250,6 +266,7 @@ export function Game({
           onClose={closeFastTrack}
         />
       )}
+      <HowToPlay open={helpOpen && step === 'play'} onClose={closeHelp} />
       {journalOpen && step === 'play' && (
         // Reading the journal stops the clock (decision 012).
         <JournalModal

@@ -98,9 +98,9 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
     [worldId],
   );
 
-  // While the clock is stopped (journal open, end of the day) real time still runs against the
-  // lock, so keep it alive until the turn is saved.
-  const clockStopped = useGameStore((s) => s.journalOpen || isTimeUp(s));
+  // While the clock is stopped (journal or "How to play" open, end of the day) real time still runs
+  // against the lock, so keep it alive until the turn is saved.
+  const clockStopped = useGameStore((s) => s.journalOpen || s.helpOpen || isTimeUp(s));
   useHeartbeat(worldId, clockStopped && !saved, () => {
     if (saving.current !== 'idle') return; // the commit decides
     clearUnsaved(); // it can never be committed now

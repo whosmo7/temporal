@@ -70,6 +70,16 @@ describe('play session store', () => {
     expect(store().check({ type: 'harvest', plotId: FIELD })).toBeNull();
   });
 
+  it('"How to play" stops the clock while it is open', () => {
+    store().advance(10);
+    store().setHelpOpen(true);
+    store().advance(5);
+    expect(store().t).toBe(10);
+    store().setHelpOpen(false);
+    store().advance(5);
+    expect(store().t).toBe(15);
+  });
+
   it('a meal at the oven takes half a second, then one food is gone', () => {
     const food = store().view!.resources.food;
     expect(CONFIG.actionSeconds.eat).toBe(0.5);
