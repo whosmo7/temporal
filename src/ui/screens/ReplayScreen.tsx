@@ -9,6 +9,7 @@ import { explainGeneration, signed } from '../replay/causeSentences';
 import { DUSK_LIGHT, IslandScene } from '../shell/IslandScene';
 import { PlotPopover } from './replay/PlotPopover';
 import { Timeline } from './replay/Timeline';
+import { GHOST_FADE_SECONDS } from '../../render/constants';
 import { legacyOf, PACE_MS, type Pace } from './replay/words';
 
 type Load = { state: 'loading' } | { state: 'missing' } | { state: 'ready'; replay: Replay };
@@ -77,6 +78,9 @@ export function ReplayViewer({ replay }: { replay: Replay }) {
   const [playing, setPlaying] = useState(false);
   const [pace, setPace] = useState<Pace>('normal');
   const [held, setHeld] = useState(false);
+  // Ghosts replay each generation's day (decision 038). While playing, a day fits the time on screen.
+  const [ghosts, setGhosts] = useState(true);
+  const ghostSeconds = playing ? PACE_MS[pace] / 1000 - GHOST_FADE_SECONDS : undefined;
   useEffect(() => {
     if (at === 'end') setPlaying(false);
     if (!playing || held || typeof at !== 'number') return;
@@ -122,6 +126,8 @@ export function ReplayViewer({ replay }: { replay: Replay }) {
       page={page(at)}
       nameOf={nameOf}
       onHold={setHeld}
+      ghosts={ghosts}
+      ghostSeconds={ghostSeconds}
       timeline={
         <Timeline
           turn={at}
@@ -133,6 +139,8 @@ export function ReplayViewer({ replay }: { replay: Replay }) {
           onPlaying={setPlaying}
           pace={pace}
           onPace={setPace}
+          ghosts={ghosts}
+          onGhosts={setGhosts}
         />
       }
     />
@@ -146,6 +154,8 @@ function GenerationView({
   page,
   nameOf,
   onHold,
+  ghosts,
+  ghostSeconds,
   timeline,
 }: {
   replay: Replay;
@@ -155,6 +165,8 @@ function GenerationView({
   nameOf: (turn: number) => string;
   /** True while a plot's history is open, so auto-play waits. */
   onHold: (held: boolean) => void;
+  ghosts: boolean;
+  ghostSeconds: number | undefined;
   timeline: ReactNode;
 }) {
   const changes = useMemo(
@@ -177,7 +189,13 @@ function GenerationView({
       </p>
       <div className="replay__stage">
         <div ref={world} className="replay__world">
-          <ReplayWorld replay={replay} turn={turn} onPlotClick={(id, at) => setPicked({ id, at })} />
+          <ReplayWorld
+            replay={replay}
+            turn={turn}
+            onPlotClick={(id, at) => setPicked({ id, at })}
+            ghosts={ghosts}
+            ghostSeconds={ghostSeconds}
+          />
           {picked && (
             <PlotPopover
               replay={replay}

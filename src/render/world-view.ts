@@ -4,7 +4,19 @@ import { CONFIG, TILED_KINDS, tileId, tileOf, type ActionType, type VisibleWorld
 import { isTimeUp, useGameStore } from '../store/game';
 import { BASE_OPTIONS, buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
 import { cameraOffset, pickZoom } from './camera';
-import { FIXED_STEP, INDOOR_DARKNESS, NIGHT_LIGHT_TILES, TILE, VIEW_TILES_INSIDE, WALK_SPEED, WEAKENED_WALK } from './constants';
+import {
+  FIXED_STEP,
+  GHOST_ALPHA,
+  GHOST_DAY_SECONDS,
+  GHOST_FADE_SECONDS,
+  GHOST_TINT,
+  INDOOR_DARKNESS,
+  NIGHT_LIGHT_TILES,
+  TILE,
+  VIEW_TILES_INSIDE,
+  WALK_SPEED,
+  WEAKENED_WALK,
+} from './constants';
 import { gameHour, lightAt } from './daylight';
 import { createFx } from './fx';
 import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
@@ -58,6 +70,11 @@ export interface WorldView {
   actionFx(type: ActionType, plotId: PlotId | undefined): void;
   /** Replay (06): these plots and tiles glow, as the ones that changed this generation. */
   setHighlights(ids: PlotId[]): void;
+  /**
+   * Replay: a faint figure replays this generation's day on a loop (decision 038), the whole day in
+   * `realSeconds` (then a short fade). Null hides it.
+   */
+  setGhost(ghost: GhostTrack | null, realSeconds?: number): void;
   /** The next generation wakes up: player back at the spawn, camera back on them. */
   newTurn(): void;
   /** Frames per second, for the perf readout. */
@@ -75,6 +92,12 @@ export interface ReplayMode {
   player?: { x: number; y: number; facing: Facing };
   /** Outline this field or orchard tile, as play does for the one you face. */
   mark?: PlotId;
+}
+
+/** A replay ghost: its day's length in turn seconds, and where it is (feet, in tiles) at each second. */
+export interface GhostTrack {
+  seconds: number;
+  poseAt(t: number): { x: number; y: number; facing: Facing; moving: boolean; working: boolean };
 }
 
 /** The look `visibleView()` describes: every plot and tile's stage and the world flags. */
@@ -367,6 +390,34 @@ export function createWorldView(
     player.zIndex = y * TILE;
   }
 
+  // The replay's ghost: the player's sprite, blue and see-through, sorted with everything else.
+  const ghostSprite = new Sprite(frame('player/walk-down-0'));
+  ghostSprite.anchor.set(0.5, 1);
+  ghostSprite.tint = GHOST_TINT;
+  ghostSprite.visible = false;
+  sorted.addChild(ghostSprite);
+  let ghost: GhostTrack | null = null;
+  let ghostT = 0;
+  let ghostAnim = 0;
+  let ghostReal = GHOST_DAY_SECONDS;
+
+  /** Plays the ghost's day in `ghostReal` seconds, fades it out, and starts it again. */
+  const updateGhost = (dt: number) => {
+    if (!ghost) return;
+    const day = ghost.seconds;
+    const fade = (day * GHOST_FADE_SECONDS) / ghostReal; // in turn seconds
+    ghostT += (dt * day) / ghostReal;
+    if (ghostT > day + fade) ghostT = 0;
+    ghostAnim += dt;
+    const pose = ghost.poseAt(Math.min(ghostT, day));
+    const step = pose.moving ? Math.floor(ghostAnim * 8) % 4 : 0;
+    const bob = pose.working ? Math.round(Math.sin(ghostAnim * 10)) : 0;
+    ghostSprite.texture = frame(`player/walk-${pose.facing}-${step}`);
+    ghostSprite.position.set(Math.round(pose.x * TILE), Math.round(pose.y * TILE) + bob);
+    ghostSprite.zIndex = pose.y * TILE;
+    ghostSprite.alpha = GHOST_ALPHA * (ghostT > day ? 1 - (ghostT - day) / fade : Math.min(1, ghostT / fade));
+  };
+
   let groundTexture: RenderTexture | null = null;
   let bakedDrought: boolean | null = null;
   let look = initialLook;
@@ -463,6 +514,7 @@ export function createWorldView(
     frozen.alpha = 0;
     glowT += dt;
     glow.alpha = 0.55 + 0.35 * Math.sin(glowT * 3);
+    updateGhost(dt);
   };
 
   const update = () => {
@@ -583,6 +635,12 @@ export function createWorldView(
         const r = rectOf(id);
         if (r) glow.rect(r.x * TILE + 0.5, r.y * TILE + 0.5, r.w * TILE - 1, r.h * TILE - 1).fill({ color: P.cloud, alpha: 0.3 }).stroke({ width: 1, color: P.cloud });
       }
+    },
+    setGhost: (next, realSeconds = GHOST_DAY_SECONDS) => {
+      ghost = next;
+      ghostReal = Math.max(1, realSeconds);
+      ghostT = 0;
+      ghostSprite.visible = !!next;
     },
     actionFx: (type, plotId) => {
       const r = plotId ? rectOf(plotId) : null;

@@ -26,3 +26,10 @@ export const NIGHT_LIGHT_TILES = 3.5;
 
 /** Night is this much darker outdoors than in the lamp-lit house. */
 export const INDOOR_DARKNESS = 0.3;
+
+/** Replay ghosts (decision 038): real seconds a generation's day takes when nothing else sets it, and the fade before it starts again. */
+export const GHOST_DAY_SECONDS = 12;
+export const GHOST_FADE_SECONDS = 1.5;
+/** How solid a ghost is at most, and its cool tint (multiplied in), so it reads against grass. */
+export const GHOST_ALPHA = 0.7;
+export const GHOST_TINT = 0x9cb8ff;

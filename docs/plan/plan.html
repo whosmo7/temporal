@@ -680,6 +680,10 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <td><strong>From the seed</strong>, <code>worldName(seed, biome)</code>, e.g. "Hollow Elm" (<a href="../decisions/020-claim-and-lock-rules.md">020</a>)</td>
 </tr>
 <tr>
+<td>Replay ghosts</td>
+<td><strong>A faint figure of each generation's player replays their day</strong> in the replay, built from the action log; a Ghosts toggle; never during play (<a href="../decisions/038-replay-ghosts.md">038</a>)</td>
+</tr>
+<tr>
 <td>Admin panel</td>
 <td>One shared <strong><code>admin</code></strong> account. Lists worlds in progress; <strong>Delete removes a world from the game but keeps its history</strong>, refused while locked; a <strong>Create demo world</strong> button; an append-only log of admin actions (<a href="../decisions/036-admin-panel-scope.md">036</a>)</td>
 </tr>
@@ -742,6 +746,10 @@ body[data-filter="C"] .task-item[data-owner="C"] { display: block; }
 <tr>
 <td>Tutorial</td>
 <td>A <strong>"How to play" pop-up</strong>: four live pictures (sow and water, fill the can, harvest, eat), on the first day and from a button; the clock stops while it's open <a href="../decisions/033-how-to-play-pop-up.md">033</a>, replacing <a href="../decisions/032-tutorial-first-play-skippable.md">032</a>'s walkthrough</td>
+</tr>
+<tr>
+<td>World score</td>
+<td><strong>Counted from a finished world's history</strong>: crop +1, tree +3, catch +2, rotted crop −2, withered seed −1 (<code>CONFIG.score</code>). Shown on gallery cards and the replay's ending card only, never during play; the gallery sorts by most recent, highest or lowest <a href="../decisions/037-world-score-and-leaderboard.md">037</a></td>
 </tr>
 <tr>
 <td>Explaining the world</td>
@@ -2029,7 +2037,7 @@ For each generation g = 1..N:
 </div><div class="block block-plain"><h2 id="s06-gallery">Gallery</h2>
 <ul>
 <li>Grid of completed worlds: thumbnail (snapshot of the final gen), world name, biome, generation count, player names (from gravestones).</li>
-<li>Sort: newest first. Filter by biome (stretch).</li>
+<li>Sort: Most recent (default), Highest score, Lowest score; each card shows the world's score <a href="../decisions/037-world-score-and-leaderboard.md">037</a>. Filter by biome (stretch).</li>
 <li>Click → replay.</li>
 <li>"Your worlds" filter for the signed-in user (worlds they contributed to). This is optional, since repeat play and identity exist.</li>
 </ul>
@@ -2074,7 +2082,8 @@ plotHistory(replay: Replay, plotId: PlotId): { turn: number; stage: string; acts
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t9"><span class="owner o-c" title="Owner C">C</span><span class="tt">Route <code>/#/world/:id/replay</code> and <code>/#/gallery</code> <em>(Both public (<a href="../decisions/017-public-gallery.md">017</a>). <code>GalleryScreen</code> lists completed worlds newest first as text cards, with empty and error states; each card shows its world as a floating island. <code>ReplayScreen</code> loads <code>getReplay</code>; see the title and ending card task.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t10"><span class="owner o-c" title="Owner C">C</span><span class="tt">Admin "skip to replay" hook (<code>08</code>) <em>(Skip to replay in the admin world list asks to confirm, calls <code>markComplete</code> (the world ends with the generations played so far, its lock cleared) and opens its replay. Completed worlds get a Replay link instead.)</em></span></label></li>
 <li class="task-item" data-owner="C"><label><input type="checkbox" class="task" id="s06-t11"><span class="owner o-c" title="Owner C">C</span><span class="tt">(Stretch) Legacy view per player <em>(on the ending card, "After they left" (<a href="../decisions/031-replay-viewer-pacing-and-legacy.md">031</a>); <code>legacyOf()</code> in <code>src/ui/screens/replay/words.ts</code>)</em></span></label></li>
-<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t12"><span class="owner o-b" title="Owner B">B</span><span class="tt">(Stretch) Animate drawing strokes in the journal panel</span></label></li>
+<li class="task-item" data-owner="A"><label><input type="checkbox" class="task" id="s06-t12"><span class="owner o-a" title="Owner A">A</span><span class="tt">Ghosts: each generation's player replays their day on the map, from the action log <em>(<code>src/ui/replay/ghosts.ts</code>, a "Ghosts" toggle beside the pace; replay only, off for reduced motion (<a href="../decisions/038-replay-ghosts.md">038</a>))</em></span></label></li>
+<li class="task-item" data-owner="B"><label><input type="checkbox" class="task" id="s06-t13"><span class="owner o-b" title="Owner B">B</span><span class="tt">(Stretch) Animate drawing strokes in the journal panel</span></label></li>
 </ul>
 </div><div class="block block-accept"><h2 id="s06-acceptance">Acceptance</h2>
 <ul>
