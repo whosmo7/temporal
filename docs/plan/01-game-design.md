@@ -333,7 +333,7 @@ The planter strategy eats at the oven when hungry ([029](../decisions/029-eat-at
 ## Balance after section 13 (engine run, 2026-10-25)
 
 `npm run simulate -- --gens 6`, seed 1, on the engine as it stands: per-tile farming and watering (027), stamina a
-placeholder at 0, nights taking 12 food and no water, two-minute days with one-minute crops (028), no seeds, health or
+placeholder at 0, nights taking 12 food and no water, two-minute days with one-minute crops (028), droughts off (030), no seeds, health or
 level yet.
 
 | Strategy | Forest food, gen 1 → 6 | Missed upkeep | Final world |

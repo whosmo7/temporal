@@ -53,7 +53,7 @@ earlier generation than the one shown.
 
 Food and water are shown by default. Stamina can be asked for (`resources` argument); hunger isn't shown.
 
-## The screen around the causes (06, [030](../decisions/030-replay-viewer-pacing-and-legacy.md))
+## The screen around the causes (06, [031](../decisions/031-replay-viewer-pacing-and-legacy.md))
 
 Built in `src/ui/screens/replay/words.ts`.
 
