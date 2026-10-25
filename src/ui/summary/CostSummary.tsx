@@ -10,7 +10,7 @@ const ICON: Record<string, { name: PixelIconName; label: string }> = {
 };
 
 /**
- * "What you gave" (05): shown after the page is sealed, before the stone rises. Realised outcomes
+ * "Your day" (05): shown after the page is sealed, before the stone rises. Realised outcomes
  * only, from `costSummary()`. Wording: docs/content/cost-summary.md.
  */
 export function CostSummary({ view, onContinue }: { view: CostSummaryView; onContinue: () => void }) {
@@ -20,7 +20,7 @@ export function CostSummary({ view, onContinue }: { view: CostSummaryView; onCon
     <div className="cost-summary" role="dialog" aria-modal="true" aria-labelledby="cost-summary-title">
       <Panel tone="paper" className="cost-summary__panel">
         <h2 id="cost-summary-title" className="cost-summary__title">
-          What you gave
+          Your day
         </h2>
         <div className="cost-summary__lines">
           {[view.spentLine, view.waterLine, view.foodLine, view.eatenLine, view.rottedLine, view.seedsLine]
@@ -43,7 +43,8 @@ export function CostSummary({ view, onContinue }: { view: CostSummaryView; onCon
         <p>
           <WithIcons
             text={
-              `For the night: ${night.food}🍎 ${night.water}💧 — ` +
+              // Nights take food only for now (decision 027): water shows only if upkeep asks for it.
+              `For the night: ${night.food}🍎${night.water > 0 ? ` ${night.water}💧` : ''} — ` +
               (short ? `short by ${[short.food > 0 && `${short.food}🍎`, short.water > 0 && `${short.water}💧`].filter(Boolean).join(' ')}.` : 'enough.')
             }
           />

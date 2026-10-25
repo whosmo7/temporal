@@ -1,7 +1,8 @@
 // Whether this browser has seen "How to play", so it opens by itself only on the first day.
 // Storage can be missing or blocked; then it opens every time, which is the safe side.
 
-const KEY = 'inheritance.howToPlaySeen';
+// The key C's walkthrough tutorial used, so anyone who finished or skipped it isn't shown this again.
+const KEY = 'inheritance.tutorialSeen';
 
 export const seenHowToPlay = {
   get(): boolean {

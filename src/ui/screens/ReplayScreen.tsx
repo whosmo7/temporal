@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import { backend, type JournalPage, type Replay } from '../../api';
 import { asDrawing, StrokeRenderer } from '../journal';
 import { Button, ButtonLink, Panel } from '../kit';
+import type { PlotId } from '../../engine';
+import { ReplayWorld } from '../replay';
 import { explainGeneration, signed } from '../replay/causeSentences';
 import { DUSK_LIGHT, IslandScene } from '../shell/IslandScene';
+import { PlotPopover } from './replay/PlotPopover';
+import { Timeline } from './replay/Timeline';
+import { legacyOf, PACE_MS, type Pace } from './replay/words';
 
 type Load = { state: 'loading' } | { state: 'missing' } | { state: 'ready'; replay: Replay };
 
@@ -15,8 +20,8 @@ const BIOME_NAME: Record<Replay['biome'], string> = { forest: 'A forest', island
 
 /**
  * `/world/:id/replay`. Public (decision 017). Title card → each generation → ending card, stepped
- * with the buttons or the arrow keys. The generation view is a stand-in (the page and the causes)
- * until B's replay layout adds the snapshot render and the timeline (`06`).
+ * with the timeline, the arrow keys or Play. Each generation shows B's `ReplayWorld` beside that
+ * player's page and what changed (`06`).
  */
 export function ReplayScreen() {
   const { id = '' } = useParams();
@@ -49,7 +54,7 @@ export function ReplayScreen() {
   return <ReplayViewer replay={load.replay} />;
 }
 
-function ReplayViewer({ replay }: { replay: Replay }) {
+export function ReplayViewer({ replay }: { replay: Replay }) {
   const generations = Math.max(replay.snapshots.length, replay.journal.length);
   const [at, setAt] = useState<At>('title');
   const page = (turn: number) => replay.journal.find((p) => p.turn === turn);
@@ -67,6 +72,17 @@ function ReplayViewer({ replay }: { replay: Replay }) {
       }),
     [generations],
   );
+
+  // Auto-play: off until Play, steps on its own at the chosen pace, stops at the ending card.
+  const [playing, setPlaying] = useState(false);
+  const [pace, setPace] = useState<Pace>('normal');
+  const [held, setHeld] = useState(false);
+  useEffect(() => {
+    if (at === 'end') setPlaying(false);
+    if (!playing || held || typeof at !== 'number') return;
+    const timer = window.setTimeout(() => step(1), PACE_MS[pace]);
+    return () => window.clearTimeout(timer);
+  }, [playing, held, pace, at, step]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -96,9 +112,31 @@ function ReplayViewer({ replay }: { replay: Replay }) {
     );
   }
 
-  if (at === 'end') return <EndingCard generations={generations} nameOf={nameOf} onAgain={() => setAt('title')} />;
+  if (at === 'end') return <EndingCard replay={replay} generations={generations} nameOf={nameOf} onAgain={() => setAt('title')} />;
 
-  return <GenerationView replay={replay} turn={at} generations={generations} page={page(at)} nameOf={nameOf} step={step} />;
+  return (
+    <GenerationView
+      replay={replay}
+      turn={at}
+      generations={generations}
+      page={page(at)}
+      nameOf={nameOf}
+      onHold={setHeld}
+      timeline={
+        <Timeline
+          turn={at}
+          generations={generations}
+          nameOf={nameOf}
+          onJump={setAt}
+          onStep={step}
+          playing={playing}
+          onPlaying={setPlaying}
+          pace={pace}
+          onPace={setPace}
+        />
+      }
+    />
+  );
 }
 
 function GenerationView({
@@ -107,20 +145,29 @@ function GenerationView({
   generations,
   page,
   nameOf,
-  step,
+  onHold,
+  timeline,
 }: {
   replay: Replay;
   turn: number;
   generations: number;
   page: JournalPage | undefined;
   nameOf: (turn: number) => string;
-  step: (by: 1 | -1) => void;
+  /** True while a plot's history is open, so auto-play waits. */
+  onHold: (held: boolean) => void;
+  timeline: ReactNode;
 }) {
   const changes = useMemo(
     () => explainGeneration(turn, { actions: replay.actions, transitions: replay.transitions, nameOf, biome: replay.biome }),
     [turn, replay, nameOf],
   );
   const drawing = asDrawing(page?.drawing);
+  const world = useRef<HTMLDivElement>(null);
+  const [picked, setPicked] = useState<{ id: PlotId; at: { x: number; y: number } } | null>(null);
+  const close = useCallback(() => setPicked(null), []);
+
+  useEffect(() => setPicked(null), [turn]);
+  useEffect(() => onHold(picked !== null), [picked, onHold]);
 
   return (
     <div className="replay replay--generation">
@@ -128,53 +175,68 @@ function GenerationView({
       <p className="replay__kicker">
         Generation {turn} of {generations} · {nameOf(turn)}
       </p>
-      <div className="replay__panels">
-        <Panel tone="paper" className="replay__page">
-          {page?.text ? <p className="replay__text">{page.text}</p> : <p className="replay__text replay__text--none">They left no words.</p>}
-          {drawing.length > 0 && <StrokeRenderer drawing={drawing} width={320} label={`Sketch by ${nameOf(turn)}`} />}
-        </Panel>
-        <Panel title="What changed" className="replay__causes">
-          {changes.length === 0 && <p>Nothing changed.</p>}
-          {changes.map((change) => (
-            <section key={change.resource} className="replay__resource">
-              <h3>
-                {change.label} {signed(change.net)}
-              </h3>
-              <ul>
-                {change.lines.map((line) => (
-                  <li key={line.text} className={line.earlier ? 'replay__line replay__line--earlier' : 'replay__line'}>
-                    <span className="replay__amount">{signed(line.amount)}</span> {line.text}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </Panel>
+      <div className="replay__stage">
+        <div ref={world} className="replay__world">
+          <ReplayWorld replay={replay} turn={turn} onPlotClick={(id, at) => setPicked({ id, at })} />
+          {picked && (
+            <PlotPopover
+              replay={replay}
+              turn={turn}
+              plotId={picked.id}
+              at={picked.at}
+              bounds={{ width: world.current?.clientWidth ?? 0, height: world.current?.clientHeight ?? 0 }}
+              onClose={close}
+            />
+          )}
+        </div>
+        <div className="replay__side">
+          <Panel tone="paper" className="replay__page">
+            {page?.text ? <p className="replay__text">{page.text}</p> : <p className="replay__text replay__text--none">They left no words.</p>}
+            {drawing.length > 0 && <StrokeRenderer drawing={drawing} width={300} label={`Sketch by ${nameOf(turn)}`} />}
+          </Panel>
+          <Panel title="What actually changed" className="replay__causes">
+            {changes.length === 0 && <p>Nothing changed.</p>}
+            {changes.map((change) => (
+              <section key={change.resource} className="replay__resource">
+                <h3>
+                  {change.label} {signed(change.net)}
+                </h3>
+                <ul>
+                  {change.lines.map((line) => (
+                    <li key={line.text} className={line.earlier ? 'replay__line replay__line--earlier' : 'replay__line'}>
+                      <span className="replay__amount">{signed(line.amount)}</span>
+                      <span>
+                        {line.earlier && <span className="replay__mark" aria-hidden>← </span>}
+                        {line.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </Panel>
+        </div>
       </div>
-      <div className="replay__actions">
-        <Button icon="left" onClick={() => step(-1)}>
-          {turn === 1 ? 'Title' : `Generation ${turn - 1}`}
-        </Button>
-        <Button variant="primary" icon="right" onClick={() => step(1)} autoFocus>
-          {turn === generations ? 'The end' : `Generation ${turn + 1}`}
-        </Button>
-      </div>
+      {timeline}
     </div>
   );
 }
 
 /** The dusk island with a stone for everyone who lived here, and their names in order. */
 function EndingCard({
+  replay,
   generations,
   nameOf,
   onAgain,
 }: {
+  replay: Replay;
   generations: number;
   nameOf: (turn: number) => string;
   onAgain: () => void;
 }) {
   const light = useRef<HTMLDivElement>(null);
   const turns = Array.from({ length: generations }, (_, i) => i + 1);
+  const legacy = useMemo(() => legacyOf(replay, nameOf), [replay, nameOf]);
   return (
     <div className="replay replay--card replay--end">
       <div className="replay__sky" aria-hidden />
@@ -190,6 +252,15 @@ function EndingCard({
           </li>
         ))}
       </ol>
+      {legacy.length > 0 && (
+        <Panel title="After they left" className="replay__legacy">
+          <ul>
+            {legacy.map((l) => (
+              <li key={l.text}>{l.text}</li>
+            ))}
+          </ul>
+        </Panel>
+      )}
       <div className="replay__actions">
         <Button onClick={onAgain}>Watch again</Button>
         <ButtonLink to="/gallery" variant="primary" autoFocus>

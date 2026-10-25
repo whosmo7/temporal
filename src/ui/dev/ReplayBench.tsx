@@ -45,7 +45,7 @@ const SCRIPT: { player: string; acts: Act[] }[] = [
 ];
 
 /** Plays SCRIPT through the engine into a finished-world Replay, as the backend would store it. */
-function scriptedReplay(): Replay {
+export function scriptedReplay(): Replay {
   let state: WorldState = createWorld(123, { worldId: 'bench', biome: 'forest', generationCount: SCRIPT.length }).state;
   const snapshots: WorldState[] = [];
   const actions: ActionEntry[] = [];

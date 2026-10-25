@@ -130,12 +130,16 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
         save={save}
         endActions={endActions}
         showFps={showFps}
+        onLeave={() => {
+          clearUnsaved();
+          navigate('/');
+        }}
       />
     );
   }
 
   return (
-    <Backdrop>
+    <Backdrop onHome={() => navigate('/')}>
       {phase.kind === 'loading' && <Panel>…</Panel>}
       {phase.kind === 'inheriting' && (
         <Inheriting
@@ -202,10 +206,15 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
 }
 
 /** The shell's sky behind the cards before and between games. */
-function Backdrop({ children }: { children: ReactNode }) {
+function Backdrop({ children, onHome }: { children: ReactNode; onHome: () => void }) {
   return (
     <div className="shell">
       <SkyBackdrop />
+      <header className="shell__header">
+        <Button variant="quiet" size="sm" icon="left" onClick={onHome}>
+          Home
+        </Button>
+      </header>
       <main className="shell__main">{children}</main>
     </div>
   );

@@ -22,6 +22,10 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
         path: 'dev/journal',
         lazy: () => import('./dev/JournalScreen').then((m) => ({ Component: m.JournalScreen })),
       },
+      {
+        path: 'dev/replay-screen',
+        lazy: () => import('./dev/ReplayScreenBench').then((m) => ({ Component: m.ReplayScreenBench })),
+      },
     ]
   : [];
 
@@ -46,7 +50,7 @@ const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
 /**
  * Hash routes (GitHub Pages). Everything but the game sits in the shell's sky; the game is
  * full-screen. Play needs a signed-in player; the gallery and replays are public (decision 017).
- * `/admin` needs an admin. `tutorial` is "How to play" on its own.
+ * `/admin` needs an admin. `tutorial` is "How to play" on its own, open to anyone (decision 033).
  */
 export const router = createHashRouter([
   {

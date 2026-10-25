@@ -183,17 +183,17 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 
 **Carried over from the first plan** (also listed in their own sections; tick both)
 
-- [ ] **[C]** `01` Write the "medium world" tuning scenario and check the dilemma holds (scenario written; re-run for tiles)
-- [ ] **[C]** `01` Write 3 balance test scenarios as Vitest fixtures: hoarder, planter, quick-fixer
-- [ ] **[C]** `05` Copywriting pass with Game design (tone: quiet, reflective, no moralising)
-- [x] **[C]** `08` Tutorial scene (now: plant, water, fill the can, harvest) *(built by B as the "How to play" pop-up, with eating too, [033](../decisions/033-how-to-play-pop-up.md))*
+- [ ] **[C]** `01` Write the "medium world" tuning scenario and check the dilemma holds (scenario written; re-run for tiles) *(re-run 2026-10-25: doesn't hold yet; tune after A's seeds, health and level, `01` › Balance after section 13)*
+- [x] **[C]** `01` Write 3 balance test scenarios as Vitest fixtures: hoarder, planter, quick-fixer
+- [x] **[C]** `05` Copywriting pass with Game design (tone: quiet, reflective, no moralising)
+- [x] **[C]** `08` Tutorial scene (now: plant, water, fill the can, harvest) *(now the "How to play" pop-up built by B, with eating too, [033](../decisions/033-how-to-play-pop-up.md))*
 - [ ] **[B]** `08` Error states: no network (claim and commit failed are done)
 - [ ] **[B]** `06` Replay viewer, the world and its data: `ReplayWorld` (read-only snapshot render), `changedPlots` (per tile), `plotHistory` and plot clicks, health and level per generation (split in `06` › Replay viewer: who builds what)
-- [ ] **[C]** `06` Replay viewer, the screen around it: layout, timeline and stepping, auto-play, plot history popover, causes panel, copy (same split)
+- [x] **[C]** `06` Replay viewer, the screen around it: layout, timeline and stepping, auto-play, plot history popover, causes panel, copy (same split)
 - [ ] **[C]** `10` Decide the new demo moment (the planted orchard is gone; see Open questions)
 - [ ] **[C]** `10` Pick the demo seed, generation count and turn length
 - [ ] **[C]** `10` Write the founder journal pages
-- [ ] **[C]** `06` (Stretch) Legacy view per player
+- [x] **[C]** `06` (Stretch) Legacy view per player
 - [ ] **[B]** `06` (Stretch) Animate drawing strokes in the journal panel
 
 ## Acceptance

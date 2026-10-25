@@ -41,7 +41,7 @@
 **"How to play" pop-up** ([033](../decisions/033-how-to-play-pop-up.md)): four live pictures from a fixed tutorial world in a 2×2 grid, each with its prompt and
 one line: sow and water, fill the can, harvest (left too long, it rots), eat at the oven. It opens by itself on a
 browser's first day, and from a "How to play" button under the clock; the clock stops while it's open. `#/tutorial`
-shows it on its own. Code in `src/ui/tutorial/`.
+shows it on its own. Code in `src/ui/tutorial/`. It replaces the walkthrough tutorial of [032](../decisions/032-tutorial-first-play-skippable.md) (a first Play no longer redirects there).
 
 ## Admin panel
 

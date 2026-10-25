@@ -9,7 +9,7 @@ who will benefit, or when. The demo moment depends on the orchard planter's scre
 ## Layout
 
 ```
-What you gave
+Your day
 
 You spent 92⚡.
 You used 6💧 and gathered 8💧.
@@ -22,7 +22,7 @@ You gathered 17🍎.
   Well                    −20⚡   +8💧
   Tending ×1              −10⚡
 
-For the night: 12🍎 10💧 — enough.
+For the night: 12🍎 — enough.
 
 Left in the store: 4🍎 8💧
 ```
@@ -31,14 +31,14 @@ Left in the store: 4🍎 8💧
 
 | Line | Template | Shown when |
 |---|---|---|
-| Heading | What you gave | always |
+| Heading | Your day | always (was "What you gave"; changed in the `05` copy pass so the day isn't framed as a sacrifice) |
 | Stamina | You spent {n}⚡. | always (even 0) |
 | Water | You used {spent}💧 and gathered {gained}💧. | always. Drop a half if it's 0 ("You used 6💧."); if both are 0: "You used no water." |
 | Food | You gathered {gained}🍎. | always ("You gathered nothing." if 0) |
 | Eating | You ate {n}🍎. | only if they ate at the oven ([029](../decisions/029-eat-at-the-oven.md)) |
-| Rotted | One patch of crops rotted in the ground. / {n} patches of crops rotted in the ground. | only if crops were left in the ground at the end (`summary.cropsRotted`, one per field tile, [019](../decisions/019-per-tile-actions-take-time.md)) |
+| Rotted | One tile of crops rotted in the ground. / {n} tiles of crops rotted in the ground. | only if crops were left in the ground at the end (`summary.cropsRotted`, one per field tile, [019](../decisions/019-per-tile-actions-take-time.md)) |
 | Per-action rows | `{label}  −{stamina}⚡  {±water}💧  {+food}🍎` | one row per action type used; group repeats as "×N" |
-| Upkeep met | For the night: {food}🍎 {water}💧 — enough. | upkeep met |
+| Upkeep met | For the night: {food}🍎 {water}💧 — enough. | upkeep met; the water part only when nights take water (none since [027](../decisions/027-watering-can-tilling-food-only-nights.md)) |
 | Upkeep short | For the night: {food}🍎 {water}💧 — short by {x}🍎 {y}💧. | any shortfall (omit a zero part) |
 | Store | Left in the store: {food}🍎 {water}💧 | always (after upkeep) |
 | Seeds (`13`) | You used {used} seeds and gathered {gained}. | if any were used or gathered. Drop a half if it's 0 ("You used 6 seeds."); "1 seed" when singular |
@@ -73,7 +73,7 @@ Row labels (cost-only, past tense, no outcomes):
 ## Example: the demo planter (Gen 1)
 
 ```
-What you gave
+Your day
 
 You spent 33⚡.
 You used 5💧.
@@ -82,7 +82,7 @@ You gathered 4🍎.
   Orchard                 −25⚡  −5💧
   Hunt ×1                  −8⚡  +4🍎
 
-For the night: 12🍎 10💧 — enough.
+For the night: 12🍎 — enough.
 
 Left in the store: 4🍎 1💧
 ```

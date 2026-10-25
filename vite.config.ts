@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'tests/**/*.test.ts', 'scripts/**/*.test.ts'],
     coverage: {
       include: ['src/engine/**', 'src/worldgen/**'],
     },

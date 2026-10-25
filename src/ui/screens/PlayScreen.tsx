@@ -14,7 +14,7 @@ import { PlayFlow } from '../play/PlayFlow';
  * world to the next generation and nothing is saved. Sandbox params: `turn=60` shortens the turn
  * to 60 s, `name=JO` is you, `graves=AL,MO,KE` plays that many idle generations first (their stones
  * and pages too), and `look=healthy|neglected` swaps the engine's look for a fixed preview.
- * `fps=1` shows the frame rate in both.
+ * `fps=1` shows the frame rate in both. A first day shows "How to play" (decision 033).
  */
 export function PlayScreen() {
   const [params] = useSearchParams();

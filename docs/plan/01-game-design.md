@@ -49,7 +49,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 3. **Freeze.** The timer hits 0, the world freezes, and input locks.
 4. **Journal.** Write or draw your page. Earlier pages are read-only.
 5. **Cost summary.** Shows only what was **realised** this turn, including whether upkeep was met. Pending benefits are left out.
-6. **Upkeep check.** Food is deducted (water no longer, {D}). A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
+6. **Upkeep check.** Food is deducted (water no longer, [027](../decisions/027-watering-can-tilling-food-only-nights.md)). A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
 7. **Gravestone.** Your stone is placed in the graveyard. The turn is committed.
 8. **Between turns (engine).** Decay, wear, due effects, seeded events and wild stock regrowth are applied for the next generation.
 
@@ -58,7 +58,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 | Resource | Source | Sink | Between-generation rule |
 |---|---|---|---|
 | **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, meals at the oven | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
-| **Water** | Reservoir income, Well, starter stock | Plant Orchard, Fast Track (no longer upkeep, {D}). Crops are watered from the **can**, which fills free at a pond, the sea edge, the well or the reservoir | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
+| **Water** | Reservoir income, Well, starter stock | Plant Orchard, Fast Track (no longer upkeep, [027](../decisions/027-watering-can-tilling-food-only-nights.md)). Crops are watered from the **can**, which fills free at a pond, the sea edge, the well or the reservoir | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
 | **Labour (stamina)** | Full pool at turn start (reduced if weakened) | Every action | Doesn't carry over |
 | **Seeds** | Founder stock `seedStart` (9); +1 per harvested field tile, +2 per tree harvest | Plant Crops (1 per tile); withered tiles lose theirs | **Carries over** in full ([022](../decisions/022-seed-stock.md)) |
 | **Hunger** | Cook and eat at the oven ([029](../decisions/029-eat-at-the-oven.md)), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
@@ -328,15 +328,39 @@ A rough Python model of the rules above, run before the engine exists. It isn't 
 What it shows: short-term play holds up until the drought and then fails, which is the "invisible protection" working.
 **Known gap:** the pure-sacrifice run leaves the investing generations with almost nothing spare, but doesn't actually miss upkeep.
 The acceptance line asks for missed upkeep, so check this in task 4. The levers, in order: starter food 12 → 11, repair 60 → 65.
-The planter strategy eats at the oven when hungry ([029]({D})).
+The planter strategy eats at the oven when hungry ([029](../decisions/029-eat-at-the-oven.md)).
+
+## Balance after section 13 (engine run, 2026-10-25)
+
+`npm run simulate -- --gens 6`, seed 1, on the engine as it stands: per-tile farming and watering (027), stamina a
+placeholder at 0, nights taking 12 food and no water, two-minute days with one-minute crops (028), droughts off (030), no seeds, health or
+level yet.
+
+| Strategy | Forest food, gen 1 → 6 | Missed upkeep | Final world |
+|---|---|---|---|
+| Hoarder (well, crops on every tile) | 36 → 66, +6 a generation | none | reservoir cracked, no orchard |
+| Planter (orchard + reservoir, eats at the oven) | 18 → 52 | none | everything standing |
+| Repair first | 36 → 66 | none | reservoir full |
+| Quick-fixer (well + hunting) | 32 → 0 | gen 6 | wild stock 0 |
+
+Island is the same within a few points. **The dilemma doesn't hold.** Hoarding costs the hoarder nothing, investing never
+costs upkeep, and in the medium world one day fits both the repair and comfortable feeding. Nothing in a day binds:
+stamina is 0, and even in a two-minute day the actions leave time over (the simulator doesn't count walking, which will
+bind more than it shows).
+
+The fixtures in `scripts/__tests__/balance.test.ts` hold the `01` targets. The three that fail today are marked `it.fails`
+with these gaps, and turn red once the numbers fix them. **Tune after A lands seeds ([022](../decisions/022-seed-stock.md),
+caps sowing) and health and level ([023](../decisions/023-world-health-and-level.md), gives investment a payoff)**, as
+both change this picture (decided 2026-10-25 by the user). Levers then, in order: `seedStart` and `seedsPerCrop`,
+`upkeepFood`, `cropYield`, `foodRotPct`.
 
 ## Tasks
 
 - [x] **[C]** Confirm the action table (costs, yields, delays) and record it as `config.ts` values with the engine dev
 - [x] **[C]** Decide defaults for `turnSeconds` and `generationCount`
 - [x] **[C]** Decide the open questions above (eating, rushed-orchard yield, event set, fishing vs hunting per biome)
-- [ ] **[C]** Write the **"medium world" tuning scenario** and check the dilemma holds (use the engine's simulated playthrough script from `02`). *Scenario written above; the check waits on `scripts/simulate.ts`.*
-- [ ] **[C]** Write 3 balance test scenarios as Vitest fixtures: *hoarder*, *planter*, *quick-fixer*. Check no single strategy dominates over N gens.
+- [ ] **[C]** Write the **"medium world" tuning scenario** and check the dilemma holds (use the engine's simulated playthrough script from `02`). *Scenario written and checked (`scripts/__tests__/balance.test.ts`): it doesn't hold yet. Tune after seeds, health and level land; see "Balance after section 13".*
+- [x] **[C]** Write 3 balance test scenarios as Vitest fixtures: *hoarder*, *planter*, *quick-fixer*. Check no single strategy dominates over N gens. *(`scripts/__tests__/balance.test.ts`, 6 gens, both biomes, plus the medium world. Today the hoarder dominates; the missed targets are `it.fails` until tuning, see "Balance after section 13".)*
 - [x] **[C]** Write the in-world flavour text: action names, plot names, short tooltips (no numbers on delayed effects). See `docs/content/flavour-text.md`.
 - [x] **[C]** Write the founder/Gen-0 starter conditions per biome (see `03`)
 - [x] **[C]** Hand `05` the cost-summary wording ("You spent… You gathered…") with no mention of future yields. See `docs/content/cost-summary.md`.

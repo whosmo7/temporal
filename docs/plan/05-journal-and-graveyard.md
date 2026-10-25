@@ -28,7 +28,7 @@
    - "Seal page" button → irreversible confirm → **the turn is committed to the server** (07, [018](../decisions/018-commit-on-seal-refresh-restarts.md))
    - (Time limit for writing: team to define; see open questions)
    ▼
-[Cost summary: "What you gave"]
+[Cost summary: "Your day"]
    - Stamina spent, food/water spent, food/water gathered this turn
    - Upkeep: met / short by X
    - Planted / built: listed as COST ONLY ("Crops sown ×6", "Watered ×6"). No mention of what it will become.
@@ -81,7 +81,7 @@
 - [x] **[B]** Graveyard rendering and interaction (with `04`) *(hover label, click and E open the page; `JournalModal` got an optional `openAt`. Dev: `#/play?graves=AL,MO,KE&turn=20`.)*
 - [x] **[B]** Lectern interaction → read-only journal during play *(the world's pages are passed in by the play flow, `08`; for now the list is empty)*
 - [x] **[B]** Hand off to `07` commit; handle a commit failure (retry, keep the local copy) *(`Game` in `src/ui/play/` calls `save` on the seal; `PlayFlow` commits through `backend` and keeps the copy, see `src/ui/play/turnStart.ts`.)*
-- [ ] **[C]** Copywriting pass with Game design (tone: quiet, reflective, no moralising)
+- [x] **[C]** Copywriting pass with Game design (tone: quiet, reflective, no moralising) *(2026-10-25: the summary is headed "Your day", not "What you gave"; the night line drops water while nights take none (027); rotted crops are counted in tiles. The journal, stones, "You are inheriting…" and end cards read fine as they are.)*
 
 ## Acceptance
 

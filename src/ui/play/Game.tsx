@@ -17,7 +17,7 @@ import { Hotbar } from '../hud/Hotbar';
 import { Hud } from '../hud/Hud';
 import { InteractPrompt, type PromptRow } from '../hud/InteractPrompt';
 import { StoneLabel } from '../hud/StoneLabel';
-import { Button } from '../kit';
+import { Button, Dialog } from '../kit';
 import { JournalModal, type SealedPage } from '../journal';
 import { CostSummary } from '../summary/CostSummary';
 import { HOW_TO_PLAY, HowToPlay, seenHowToPlay } from '../tutorial';
@@ -56,6 +56,7 @@ export function Game({
   endActions,
   previewLook,
   showFps,
+  onLeave,
 }: {
   map: TileMap;
   start: TurnStart;
@@ -67,7 +68,10 @@ export function Game({
   /** A fixed look in place of the engine's (dev previews). */
   previewLook?: WorldLook | null;
   showFps?: boolean;
+  /** Back to the home page mid-day. Asks first, since the day is not kept. */
+  onLeave?: () => void;
 }) {
+  const [leaving, setLeaving] = useState(false);
   const [view, setView] = useState<WorldView | null>(null);
   const viewRef = useRef(view);
   viewRef.current = view;
@@ -239,6 +243,11 @@ export function Game({
             {HOW_TO_PLAY.open}
           </Button>
         )}
+        {onLeave && step === 'play' && (
+          <Button size="sm" variant="quiet" icon="left" onClick={() => setLeaving(true)}>
+            Home
+          </Button>
+        )}
         {/* TODO(B): testing only, remove before the demo. Jumps the clock to 6 am. */}
         {playing && (
           <Button size="sm" onClick={() => useGameStore.setState((s) => ({ t: s.turnSeconds }))}>
@@ -252,6 +261,23 @@ export function Game({
           <ActionError />
           {vis && <Hotbar biome={vis.biome} options={options} />}
         </div>
+      )}
+      {onLeave && (
+        <Dialog
+          open={leaving}
+          title="Leave this day?"
+          onClose={() => setLeaving(false)}
+          actions={
+            <>
+              <Button variant="primary" onClick={() => setLeaving(false)} autoFocus>
+                Stay
+              </Button>
+              <Button onClick={onLeave}>Home</Button>
+            </>
+          }
+        >
+          <p>Nothing from this day is kept.</p>
+        </Dialog>
       )}
       {!journalOpen && <StoneLabel />}
       {fastTrack && vis && step === 'play' && (

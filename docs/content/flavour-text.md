@@ -111,7 +111,7 @@ Things deliberately **not** written: no tooltip says what anything becomes or wh
 no line says how to raise the land's health or what the next level brings, nothing explains why a plot looks
 the way it does, and no event (drought, storm, good harvest) is ever named during play.
 
-## How to play ([033](../decisions/033-how-to-play-pop-up.md))
+## How to play ([033](../decisions/033-how-to-play-pop-up.md), replacing the walkthrough tutorial of [032](../decisions/032-tutorial-first-play-skippable.md))
 
 Words for the four pictures (`src/ui/tutorial/copy.ts`). How to act only, never how long anything takes. Drafted by B, for C to review.
 
