@@ -17,7 +17,7 @@ same PR as any change.
 
 | ID | Player-facing name | Target |
 |---|---|---|
-| `harvest` | Harvest / Harvest and eat (`eat: true`, decision 003) | ripe `field` or fruiting `orchard` |
+| `harvest` | Harvest (`eat: true` only in logs saved before decision 029) | ripe `field` or fruiting `orchard` |
 | `plantCrops` | Plant Crops | empty `field` |
 | `plantOrchard` | Plant Orchard | empty `orchard` |
 | `repairReservoir` | Repair Reservoir | `reservoir` |
@@ -27,6 +27,7 @@ same PR as any change.
 | `fastTrack` | Fast Track | a pending `ScheduledEffect` (anyone's) |
 | `water` | Water | a `sown` field tile; takes a pour from the can (decision 027) |
 | `fillCan` | Fill the can (an interaction, not on the hotbar) | `well`, `reservoir`, or no plot for a pond or the sea edge |
+| `eat` | Cook and eat: one food from the store (decision 029; at the oven, not on the hotbar) | no plot |
 
 ## Plot kinds and plot IDs
 

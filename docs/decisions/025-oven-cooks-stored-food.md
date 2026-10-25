@@ -2,6 +2,8 @@
 
 **Status:** decided 2026-10-24 by the user · **Settles:** the oven question in [010](010-player-house.md)
 
+> **Eating replaced by [029](029-eat-at-the-oven.md):** you eat only at the oven, one food a meal, and Harvest and eat is gone.
+
 ## Decision
 
 At the oven, "Cook and eat" eats food from the cabinet to refill hunger (`hungerPerFoodEaten`). It's free, and refused

@@ -173,6 +173,7 @@ const MADE: Record<ActionEntry['type'], (a: ActionEntry) => [string, string]> = 
   fastTrack: (a) => [`the ${HURRIED[a.targetEffectId?.split(':').pop() ?? ''] ?? 'work'}`, 'hurried'],
   water: () => ['the crops', 'watered'],
   fillCan: () => ['the can', 'filled'],
+  eat: () => ['the meal', 'ate'],
 };
 
 const HURRIED: Record<string, string> = {

@@ -2,6 +2,8 @@
 
 **Status:** decided 2026-10-24 by C (game design) · **Section:** `01` Q2 · **Partly replaced by [016](016-hunger.md):** eating is now free and refills hunger instead of stamina
 
+> **Eating replaced by [029](029-eat-at-the-oven.md):** you eat only at the oven, one food a meal, and Harvest and eat is gone.
+
 ## Context
 `01` asked whether a player can eat mid-turn to restore stamina. The game is locked at eight actions.
 

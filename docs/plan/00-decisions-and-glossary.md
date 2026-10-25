@@ -45,7 +45,7 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Resources | **Food, Water, Labour** |
 | Labour | The **player's energy/stamina**. Actions spend it. |
 | Personal needs | **Player must meet food + water upkeep** at end of turn |
-| Eating | **Harvest and eat**: a free Harvest option (Q) that turns the fresh yield into hunger, up to full. Not a ninth action ([003](../decisions/003-eating-via-harvest.md), [016](../decisions/016-hunger.md)) |
+| Eating | **At the oven only**: "Cook and eat" takes one food from the store and refills hunger. A free logged `eat` action, 0.5 s, allowed when full. Harvest and eat is gone ([029](../decisions/029-eat-at-the-oven.md), replacing [003](../decisions/003-eating-via-harvest.md) and [016](../decisions/016-hunger.md)'s Q) |
 | Watering | Sow, then water from the can, then it grows. The can (4 pours) starts each day empty and fills at a pond, the sea edge, the well or the reservoir. Tend clears a rotten tile for replanting; nights take **food only** [027](../decisions/027-watering-can-tilling-food-only-nights.md) |
 | Hunger | Inherited meter, 0..100: **−30 at each new generation**, eating refills it, at 0 the player walks slower ([016](../decisions/016-hunger.md)) |
 | Upkeep visibility | Screen order unchanged. HUD shows **"Needed by nightfall"** during play ([002](../decisions/002-upkeep-timing.md)) |
@@ -151,7 +151,7 @@ flourishing. The slot is **5 minutes**.
 | Seeds | **Shared stock** carried between generations; harvest gives some back ([022](../decisions/022-seed-stock.md)) |
 | Health & level | **World health bar + level badge in the HUD**; level only rises. Replaces "No score" ([023](../decisions/023-world-health-and-level.md)) |
 | Orchards & flowers | **Emergent** from the world's level; no planting ([024](../decisions/024-emergent-orchards-and-flowers.md)) |
-| Oven | **Cooks stored food** to refill hunger ([025](../decisions/025-oven-cooks-stored-food.md)) |
+| Oven | **Where you eat**, from the store, one food a meal ([025](../decisions/025-oven-cooks-stored-food.md), [029](../decisions/029-eat-at-the-oven.md)) |
 | Explaining the world | The blanket rule is **lifted**, but the only new readouts are the **health bar and land level**. Due dates, yields and causes still wait for the replay; the cost summary stays realised-only ([026](../decisions/026-lift-no-explanation-rule.md)) |
 | Level names | **Bare, Taking root, Green, Blooming, Abundant** (levels 0–4), shown by name, never as a number ([023](../decisions/023-world-health-and-level.md)) |
 | First-pass numbers | Can 4 pours, empty each morning (027); 9 starting seeds, +1 per field tile, +2 per tree; level thresholds 55/65/75/85 (`01` › Section 13 values) |

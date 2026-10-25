@@ -68,7 +68,7 @@
   used **one tile at a time**: the tile in front of you (the way you face) is outlined and gets the prompt
   ([019](../decisions/019-per-tile-actions-take-time.md), `facedTile` in `src/render/interact.ts`). Other plots use the
   nearest one, as before.
-- `E` / `Space` uses the **held tool** on the faced tile (`13`): hands harvest or interact, seeds sow, the can waters. At a water source with the can held, E fills it ("Fill the can"). `Q` is Harvest and eat (free, refills hunger, [016](../decisions/016-hunger.md)). Number keys `1–3` pick the tool and `4–8` the structure actions. Invalid actions are greyed out with a reason ("Not enough stamina").
+- `E` / `Space` uses the **held tool** on the faced tile (`13`): hands harvest or interact, seeds sow, the can waters. At a water source with the can held, E fills it ("Fill the can"). Facing the oven in the house, E is "Cook and eat" (one food from the store, [029](../decisions/029-eat-at-the-oven.md)); there's no Q. Number keys `1–3` pick the tool and `4–8` the structure actions. Invalid actions are greyed out with a reason ("Not enough stamina").
 - **Every action takes time** (`CONFIG.actionSeconds`, e.g. sow 1.5 s, repair 8 s): the player stands still with a bar
   over their head while the clock runs, and the engine applies the action when it's done (`work` in the store). Its
   sound and burst play then.
@@ -100,7 +100,7 @@ These visuals should be enough to inherit the world without reading anything. No
 - **Land:** a world-health bar with **no number** and the level's name, e.g. "Taking root" ([023](../decisions/023-world-health-and-level.md)). It's the only readout of how the world is doing.
 - **Generation badge:** "Generation 3 of 5" + world name/seed.
 - ~~**Upkeep reminder:** "Needed by nightfall"~~, removed: nights take food only, and the HUD's water count shows the **watering can's pours** ("3/4") instead of stored water ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
-- **Hunger bar** next to stamina: it carries between generations and drops at each new one; Harvest and eat (Q, free) refills it, and at 0 the player walks slower ([016](../decisions/016-hunger.md)). Stamina no longer rises mid-turn.
+- **Hunger bar** next to stamina: it carries between generations and drops at each new one; a meal at the oven refills it ([029](../decisions/029-eat-at-the-oven.md)), and at 0 the player walks slower ([016](../decisions/016-hunger.md)). Stamina no longer rises mid-turn.
 
 ## Day/night
 
@@ -120,7 +120,7 @@ hour, so noon is at 25%, 6 pm at 50% and midnight at 75%.
 - [x] **[B]** Player avatar: 4-direction walk animation, collision against the grid
 - [x] **[B]** Y-sorting for trees/structures vs the player
 - [x] **[B]** Plot sprites driven by `visibleView()` stages *(`PlayScreen` maps the store's `visibleView()` to `WorldLook`; plots re-texture only when a stage or flag changes)*
-- [x] **[B]** Interact prompt + key handling + hotbar *(`plotOptions()` in `src/ui/hud/actionOptions.ts` lists what fits the plot's stage; E default, Q harvest and eat, F hurry, 1–8 hotbar)*
+- [x] **[B]** Interact prompt + key handling + hotbar *(`plotOptions()` in `src/ui/hud/actionOptions.ts` lists what fits the plot's stage; E default, F hurry, 1–8 hotbar; `ovenOptions()` at the oven, 029)*
 - [x] **[B]** Wire actions → engine `applyAction` → store → re-render. Show an invalid-action reason. *(`useGameStore().act()`; greyed rows and a short flash show the engine's error as is; the engine `tick` runs at 4 Hz in `advance()`)*
 - [x] **[B]** Fast Track menu (lists pending effects, with the originating player's name, no due dates) *(key 8; F at a pending plot hurries it straight from the prompt)*
 - [x] **[B]** Day/night lighting + timer *(6 am → 6 am in-game clock, decision 012)*

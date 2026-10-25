@@ -37,7 +37,9 @@ export type ActionType =
   /** Pour the can on a sown field tile: it starts to grow (decision 027). */
   | 'water'
   /** Fill the can at a well, the reservoir (`plotId`) or a pond or the sea edge (no `plotId`). Free. */
-  | 'fillCan';
+  | 'fillCan'
+  /** Eat one food from the store at the oven: refills hunger (decision 029). Free, and allowed when full. */
+  | 'eat';
 
 /** One entry in the append-only action log. Never mutated once written. */
 export interface ActionEntry {
@@ -49,7 +51,10 @@ export interface ActionEntry {
   plotId?: PlotId;
   /** For `fastTrack`: the pending effect being pulled forward. */
   targetEffectId?: string;
-  /** For `harvest`: eat now instead of storing; free, and refills hunger (decisions 003, 016). */
+  /**
+   * For `harvest`: eat now instead of storing (decisions 003, 016). Nothing offers it since 029
+   * (eating is at the oven); kept so logs saved before then re-run the same.
+   */
   eat?: boolean;
   committedAt: TimePoint;
   /** When the main effect lands. Equals `committedAt` for immediate actions. */

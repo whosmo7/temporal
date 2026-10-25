@@ -7,7 +7,7 @@ import { PixiStage } from '../../render/PixiStage';
 import { founderLook, lookOf, type WorldLook, type WorldView } from '../../render/world-view';
 import { isTimeUp, useGameStore, type ActionRequest } from '../../store/game';
 import type { Biome, TileMap } from '../../worldgen';
-import { plotOptions, waterEdgeOptions, type ActionOption } from '../hud/actionOptions';
+import { ovenOptions, plotOptions, waterEdgeOptions, type ActionOption } from '../hud/actionOptions';
 import { ActionError } from '../hud/ActionError';
 import { Clock } from '../hud/Clock';
 import { HOTBAR } from '../hud/copy';
@@ -114,15 +114,16 @@ export function Game({
   // The lectern opens the latest page; at the graveyard, E reads the nearest stone's page.
   const playing = step === 'play' && !journalOpen && !fastTrack;
   const readable = !playing ? null : nearby === 'lectern' ? 'lectern' : nearby === 'graveyard' && nearbyStone ? nearbyStone : null;
-  // `nearby` is a field or orchard tile you face, or a whole plot (decision 019). At a pond or the
-  // sea edge with nothing else to use, the can fills (decision 027).
-  const facingWater = useGameStore((s) => s.facingWater);
+  // `nearby` is a field or orchard tile you face, or a whole plot (decision 019). With nothing else
+  // to use, the can fills at a pond or the sea edge (027), and you eat at the oven (029).
+  const facing = useGameStore((s) => s.facing);
   const options = useMemo(() => {
     if (!vis || !playing) return [];
     const plot = nearby ? vis.plots[nearby] : undefined;
     if (plot) return plotOptions(vis, plot, check);
-    return facingWater ? waterEdgeOptions(vis, check) : [];
-  }, [vis, nearby, facingWater, playing, check]);
+    if (facing === 'oven') return ovenOptions(vis, check);
+    return facing === 'water' ? waterEdgeOptions(vis, check) : [];
+  }, [vis, nearby, facing, playing, check]);
   const biome = vis?.biome ?? map.biome;
 
   const act = useCallback((request: ActionRequest) => {
@@ -274,8 +275,8 @@ export function Game({
 }
 
 /**
- * A hotbar key: the matching action at this plot if there is one (harvest stores rather than
- * eats), the Fast Track menu for 8, otherwise the action anyway so the engine says why not.
+ * A hotbar key: the matching action at this plot if there is one, the Fast Track menu for 8,
+ * otherwise the action anyway so the engine says why not.
  */
 function hotbar(
   type: ActionRequest['type'],
@@ -285,15 +286,16 @@ function hotbar(
   openFastTrack: (plotId?: string | null) => void,
 ) {
   if (type === 'fastTrack') return openFastTrack(nearby);
-  const here = options.find((o) => o.request.type === type && !o.request.eat);
+  const here = options.find((o) => o.request.type === type);
   act(here ? here.request : nearby ? { type, plotId: nearby } : { type });
 }
 
 function sfxFor(request: ActionRequest, biome: Biome): SfxName {
   if (request.type === 'fishHunt') return `fishHunt-${biome}`;
-  // No sounds of their own yet: a splash for watering, the well's for filling the can.
+  // No sounds of their own yet: a splash for watering, the well's for filling the can, the harvest's for a meal.
   if (request.type === 'water') return 'fishHunt-island';
   if (request.type === 'fillCan') return 'digWell';
+  if (request.type === 'eat') return 'harvest';
   return request.type;
 }
 

@@ -3,6 +3,8 @@
 **Status:** accepted (B, 2026-10-24, at the user's request) · **Changes:** [003](003-eating-via-harvest.md) (what eating restores
 and costs), `01` › Resources, `02` › Between-generation order, `04` › HUD
 
+> **Eating replaced by [029](029-eat-at-the-oven.md):** you eat only at the oven, one food a meal, and Harvest and eat is gone.
+
 ## Context
 
 Wiring the hotbar raised how "Harvest and eat" should work. Under 003 it cost the usual 5 stamina and turned the fresh yield
