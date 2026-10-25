@@ -4,7 +4,7 @@ import type { FounderConfig } from '../worldgen/founder';
 
 export const CONFIG = {
   // World defaults (decision 007)
-  turnSeconds: 600,
+  turnSeconds: 120, // a two-minute day (decision 028; was 600)
   generationCount: 6,
 
   // Stamina, upkeep, soft fail
@@ -29,7 +29,8 @@ export const CONFIG = {
   orchardYield: 4, // per tree, once per generation (was 15 per orchard)
   plantCropsCost: 0, // was 8
   plantCropsWater: 0, // sowing a tile is free (decision 019; was 1 per field)
-  cropRipenPct: 0.25, // fraction of turnSeconds, counted from watering (decision 027)
+  cropRipenSeconds: 60, // a watered tile ripens a minute later (decision 028; was 25% of the day)
+  overnightGrowth: 0.5, // a crop still growing at day's end carries over with this much of its time left (decision 028)
   canCapacity: 4, // pours; the can starts each turn empty (decision 027)
   witherGens: 2, // a sown tile nobody waters withers this many generations after planting
   plantOrchardCost: 0, // was 25

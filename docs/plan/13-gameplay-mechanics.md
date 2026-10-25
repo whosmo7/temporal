@@ -66,16 +66,18 @@ can's fill level is part of the turn's state: `can: { pours, capacity }`.
 ### Tile lifecycle
 
 ```
-empty ─plant→ sown ─water→ watered/growing ─(ripen time)→ ripe ─harvest→ empty
-               │                                           │
-               │ not watered by end of turn: stays sown    └ not harvested by time-up: rotten
-               │ and carries over to the next player
-               └ still unwatered 2 generations after planting: withered (counts as rotten; replant to clear)
+empty ─plant→ sown ─water→ watered/growing ─(1 min)→ ripe ─harvest→ empty
+               │              │                       │
+               │              │ still growing at dusk: │ ripe at dusk: left ripe for the next player.
+               │              │ carries over, half its │ Still unpicked at the end of a generation
+               │              │ time left              │ that began with it ripe: rotten (tend to clear)
+               │ not watered: stays sown and carries over
+               └ still unwatered 2 generations after planting: withered (tend to clear)
 ```
 
-- Tiles are already separate plots (`field-1:0,0` … `field-1:2,2`, from 019). Each tile's state gains
-  `plantedTurn` and `wateredAt?`.
-- Watering happens **once**. After that the tile ripens with no more care.
+- Tiles are already separate plots (`field-1:0,0` … `field-1:2,2`, from 019). Each tile's state has `ripeSince` for
+  the rot rule ([028](../decisions/028-two-minute-days-crops-carry-over.md)).
+- Watering happens **once**. After that the tile ripens with no more care, in `cropRipenSeconds` (60).
 - Unwatered `sown` tiles stay through the generation change. Watering one in a later generation starts it then.
 
 ### Watering can

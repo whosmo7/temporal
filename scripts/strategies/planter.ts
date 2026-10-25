@@ -25,7 +25,7 @@ export const planter: Strategy = {
       plan.push({ type: 'maintain', plotId: 'reservoir', t: 2 });
     }
 
-    plan.push(...growTiles(tilesOf(state, 'field-1'), 3, state.turnSeconds * CONFIG.cropRipenPct));
+    plan.push(...growTiles(tilesOf(state, 'field-1'), 3, CONFIG.cropRipenSeconds));
     return plan;
   },
 };

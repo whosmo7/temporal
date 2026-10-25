@@ -30,7 +30,7 @@ const STORAGE_KEY = 'inheritance.local';
 // Matches the settings defaults in the migrations (decision 007, 020).
 export const DEFAULT_SETTINGS: Settings = {
   inheritRatio: 0.7,
-  defaultTurnSeconds: 600,
+  defaultTurnSeconds: 120, // decision 028
   defaultGenerationCount: 6,
 };
 /** Lock timing (settings columns the admin panel doesn't edit). */

@@ -48,46 +48,47 @@ const TILE = 'field-1:0,0';
 const TREE = 'orchard-1:0,0';
 
 describe('replay data', () => {
-  // Gen 1, AL: sows and waters one tile too late in the day (it rots), plants a tree, starts the repair.
-  // Gen 2, MO: tends the rotten tile, and hurries AL's tree.
+  // Gen 1, AL: grows one tile to ripe and leaves it, plants a tree, starts the repair.
+  // Gen 2, MO: hurries AL's tree, and leaves the ripe tile, which rots (ripe all generation).
+  // Gen 3, KE: tends the rotten tile.
   const world = () =>
     played([
       [
-        { type: 'plantCrops', plotId: TILE, t: 500 },
-        { type: 'fillCan', t: 501 },
-        { type: 'water', plotId: TILE, t: 502 },
-        { type: 'plantOrchard', plotId: TREE, t: 503 }, // action 1-3: its effect is 1-3:orchardMature
-        { type: 'repairReservoir', plotId: 'reservoir', t: 504 },
+        { type: 'plantCrops', plotId: TILE, t: 1 },
+        { type: 'fillCan', t: 2 },
+        { type: 'water', plotId: TILE, t: 3 },
+        { type: 'plantOrchard', plotId: TREE, t: 4 }, // action 1-3: its effect is 1-3:orchardMature
+        { type: 'repairReservoir', plotId: 'reservoir', t: 5 },
       ],
-      [
-        { type: 'maintain', plotId: TILE, t: 1 },
-        { type: 'fastTrack', targetEffectId: '1-3:orchardMature', t: 2 },
-      ],
+      [{ type: 'fastTrack', targetEffectId: '1-3:orchardMature', t: 2 }],
+      [{ type: 'maintain', plotId: TILE, t: 1 }],
     ]);
 
   it('generation 0 is the founder world', () => {
     const r = world();
     expect(viewAt(r, 0).plots[TILE]?.stage).toBe('empty');
     expect(viewAt(r, 0).plots['reservoir']?.stage).toBe('cracked');
-    expect(viewAt(r, 1).plots[TILE]?.stage).toBe('rotten');
+    expect(viewAt(r, 1).plots[TILE]?.stage).toBe('ripe');
   });
 
   it('lists exactly the tiles and plots whose look changed that generation', () => {
     const r = world();
     const gen1 = changedPlots(r, 1);
-    expect(gen1).toContain(TILE); // empty → rotten
+    expect(gen1).toContain(TILE); // empty → ripe
     expect(gen1).toContain(TREE); // empty → sapling
     expect(gen1).not.toContain('field-1:1,0');
     expect(gen1).not.toContain('reservoir'); // the repair lands next generation
     const gen2 = changedPlots(r, 2);
-    expect(gen2).toEqual(expect.arrayContaining([TILE, TREE, 'reservoir']));
+    expect(gen2).toEqual(expect.arrayContaining([TILE, TREE, 'reservoir'])); // rotted, fruiting, repaired
     expect(gen2).not.toContain('field-1:1,0');
+    expect(changedPlots(r, 3)).toEqual([TILE]); // tended
   });
 
   it("tells one tile's story, generation by generation, with who acted on it", () => {
     expect(plotHistory(world(), TILE)).toEqual([
-      { turn: 1, stage: 'rotten', acts: [{ actor: 'AL', type: 'plantCrops' }, { actor: 'AL', type: 'water' }] },
-      { turn: 2, stage: 'empty', acts: [{ actor: 'MO', type: 'maintain' }] },
+      { turn: 1, stage: 'ripe', acts: [{ actor: 'AL', type: 'plantCrops' }, { actor: 'AL', type: 'water' }] },
+      { turn: 2, stage: 'rotten', acts: [] },
+      { turn: 3, stage: 'empty', acts: [{ actor: 'KE', type: 'maintain' }] },
     ]);
   });
 
@@ -95,6 +96,7 @@ describe('replay data', () => {
     expect(plotHistory(world(), TREE)).toEqual([
       { turn: 1, stage: 'sapling', acts: [{ actor: 'AL', type: 'plantOrchard' }] },
       { turn: 2, stage: 'fruiting', acts: [{ actor: 'MO', type: 'fastTrack' }] },
+      { turn: 3, stage: 'fruiting', acts: [] },
     ]);
   });
 
@@ -102,7 +104,7 @@ describe('replay data', () => {
     const r = world();
     expect(playerOf(r, 2)).toBe('MO');
     expect(stonesAt(r, 1)).toEqual([{ turn: 1, username: 'AL' }]);
-    expect(stonesAt(r, 2)).toHaveLength(2);
+    expect(stonesAt(r, 3)).toHaveLength(3);
   });
 });
 
@@ -122,7 +124,7 @@ describe('stored snapshots', () => {
     await backend.signUp('admin', 'secret1');
     const worldId = await backend.createSeededWorld({ seed: 9, biome: 'island', generationCount: 2 });
     for (const [turn, acts] of [
-      [1, [{ type: 'plantCrops', plotId: TILE, t: 10 }, { type: 'fillCan', t: 12 }, { type: 'water', plotId: TILE, t: 14 }, { type: 'harvest', plotId: TILE, t: 170 }]],
+      [1, [{ type: 'plantCrops', plotId: TILE, t: 10 }, { type: 'fillCan', t: 12 }, { type: 'water', plotId: TILE, t: 14 }, { type: 'harvest', plotId: TILE, t: 80 }]],
       [2, [{ type: 'digWell', plotId: 'well', t: 5 }, { type: 'fishHunt', plotId: 'wild', t: 20 }]],
     ] as const) {
       await backend.forceAssign(worldId, 'admin');

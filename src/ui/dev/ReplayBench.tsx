@@ -6,8 +6,8 @@ import { changedPlots, playerOf, plotHistory, ReplayWorld } from '../replay';
 
 type Act = Pick<ActionInput, 'type' | 'plotId' | 'targetEffectId' | 'eat'> & { t: number };
 
-const RIPE = CONFIG.cropRipenPct * CONFIG.turnSeconds;
-/** Three generations on seed 123: AL farms and starts the reservoir, MO tends and hurries, KE picks. */
+const RIPE = CONFIG.cropRipenSeconds;
+/** Three generations on seed 123: AL farms and starts the reservoir, MO digs and hurries, KE picks and tends. */
 const FIRST: Act[] = [
   { type: 'fillCan', t: 1 },
   ...['field-1:0,0', 'field-1:1,0', 'field-1:2,0'].flatMap((plotId, i): Act[] => [
@@ -17,7 +17,7 @@ const FIRST: Act[] = [
   ]),
   { type: 'plantCrops', plotId: 'field-1:0,1', t: 20 }, // left dry: it waits, then withers
   { type: 'plantCrops', plotId: 'field-1:1,1', t: 21 },
-  { type: 'water', plotId: 'field-1:1,1', t: 22 }, // never picked: it rots
+  { type: 'water', plotId: 'field-1:1,1', t: 22 }, // left ripe: rots once it's stood ripe all of gen 2
   { type: 'plantOrchard', plotId: 'orchard-1:0,0', t: 30 },
   { type: 'repairReservoir', plotId: 'reservoir', t: 40 },
 ];
@@ -30,12 +30,18 @@ const SCRIPT: { player: string; acts: Act[] }[] = [
   {
     player: 'mo',
     acts: [
-      { type: 'maintain', plotId: 'field-1:1,1', t: 5 },
       { type: 'digWell', plotId: 'well', t: 10 },
       { type: 'fastTrack', targetEffectId: TREE_EFFECT, t: 20 },
     ],
   },
-  { player: 'ke', acts: [{ type: 'harvest', plotId: 'orchard-1:0,0', t: 5 }, { type: 'fishHunt', plotId: 'wild', t: 10 }] },
+  {
+    player: 'ke',
+    acts: [
+      { type: 'harvest', plotId: 'orchard-1:0,0', t: 5 },
+      { type: 'maintain', plotId: 'field-1:1,1', t: 8 },
+      { type: 'fishHunt', plotId: 'wild', t: 10 },
+    ],
+  },
 ];
 
 /** Plays SCRIPT through the engine into a finished-world Replay, as the backend would store it. */

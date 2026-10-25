@@ -62,7 +62,7 @@ describe('play session store', () => {
     wait(CONFIG.actionSeconds.fillCan + 0.05);
     expect(store().view?.resources.can).toBe(CONFIG.canCapacity);
     store().act({ type: 'water', plotId: FIELD });
-    const ripe = CONFIG.cropRipenPct * 600;
+    const ripe = CONFIG.cropRipenSeconds;
     wait(CONFIG.actionSeconds.water + ripe / 2 + 1);
     expect(store().view?.plots[FIELD]?.stage).toBe('growing');
     wait(ripe);

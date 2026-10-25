@@ -46,7 +46,10 @@ export function resolveEffect(
   if (plot) {
     switch (effect.kind) {
       case 'cropRipe':
-        if (plot.stage === 'watered') setStage(rec, plot, 'ripe', causes);
+        if (plot.stage === 'watered') {
+          setStage(rec, plot, 'ripe', causes);
+          plot.ripeSince = state.turn;
+        }
         break;
       case 'orchardMature':
         if (plot.stage === 'sapling' || plot.stage === 'young') {

@@ -196,4 +196,5 @@ const RULE: Record<CauseRule, string> = {
   newTurn: 'a night’s rest',
   hunger: 'hunger',
   wither: 'seeds left dry',
+  overnight: 'crops growing on overnight',
 };

@@ -94,7 +94,7 @@ They passed a rough scratch-model check (see **Balance pre-check**). The real ch
 | # | Action | Target | Immediate | Delayed / tail | Cost |
 |---|---|---|---|---|---|
 | 1 | **Harvest** | ripe field or fruiting orchard | +5 food (field) or +15 food (orchard, once per gen, halved at wear ≥ 2). **Harvest and eat** option: see below. | — | 5 stamina |
-| 2 | **Plant Crops** | empty field | — | Ripens after `cropRipenPct` × turn (25%, so 150 s at the default) **in the same turn**. Rots at end of turn if not harvested. | 8 stamina, 1 water |
+| 2 | **Plant Crops** | empty field | — | Ripens `cropRipenSeconds` (60 s) after watering; still growing at day's end, it finishes overnight in half its time left. Rots only if left ripe a whole generation ([028](../decisions/028-two-minute-days-crops-carry-over.md)). | 8 stamina, 1 water |
 | 3 | **Plant Orchard** | empty or dead orchard plot | — | Fruits from gen +2. Harvestable once per later gen while it survives wear. | 25 stamina, 5 water |
 | 4 | **Repair Reservoir** | cracked or low reservoir | — | From gen +1: water income 4 → 12/gen (6 at wear 2), and drought protection while wear < 2. Wear resets to 0. | **60 stamina** (the dilemma) |
 | 5 | **Dig Well** | well site, not yet dug | +8 water | +6 water/gen while wear < 3 (3 at wear 2). At wear 3 it stagnates: 0 income and stored water stagnates at 40%. Maintain brings a stagnant well back. | 20 stamina |
@@ -196,7 +196,7 @@ Anything they invest comes out of the margin they leave the next player.
 
 ## Configurable per world
 
-`turnSeconds` (default **600**), `generationCount` (default **6**), plus the admin-set global `inheritRatio` (see `07`).
+`turnSeconds` (default **120**, [028](../decisions/028-two-minute-days-crops-carry-over.md)), `generationCount` (default **6**), plus the admin-set global `inheritRatio` (see `07`).
 The demo world sets its own shorter values (`10`).
 
 ## Config values
@@ -206,7 +206,7 @@ For `src/engine/config.ts`. Names are a proposal for the engine dev; the numbers
 ```ts
 export const CONFIG = {
   // World defaults (decision 007)
-  turnSeconds: 600,
+  turnSeconds: 120, // decision 028 (was 600)
   generationCount: 6,
   // fields: a worldgen preset option (src/worldgen/options.ts, default 2), not engine config
 
@@ -232,7 +232,8 @@ export const CONFIG = {
   orchardYield: 4, // per tree, once per generation (was 15 per orchard)
   plantCropsCost: 0, // was 8
   plantCropsWater: 0, // was 1 per field
-  cropRipenPct: 0.25, // fraction of turnSeconds
+  cropRipenSeconds: 60, // from watering (decision 028; was cropRipenPct 0.25 of the day)
+  overnightGrowth: 0.5, // a crop still growing at dusk carries over with half its time left
   plantOrchardCost: 0, // was 25
   plantOrchardWater: 1, // per tree (was 5 per orchard)
   orchardMatureGens: 2,

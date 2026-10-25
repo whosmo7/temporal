@@ -176,19 +176,27 @@ export function endTurn(state: WorldState): EndTurnResult {
   // Anything due by the final second still lands.
   resolveDue(next, rec, { turn: n, t: next.turnSeconds });
 
-  // Unharvested crops rot: watered and ripe tiles. Sown tiles nobody watered wait for the next
-  // player (decision 027).
+  // A crop rots only once it has stood ripe for a whole generation: ripe when this one began and
+  // still unpicked at its end. Ripe since today, it waits for the next player (decision 028).
   let cropsRotted = 0;
   for (const plot of Object.values(next.plots)) {
-    if (plot.kind !== 'field' || (plot.stage !== 'watered' && plot.stage !== 'ripe')) continue;
+    if (plot.kind !== 'field' || plot.stage !== 'ripe' || (plot.ripeSince ?? n) >= n) continue;
     setStage(rec, plot, 'rotten', [rule('foodRot'), ...builtCause(plot)]);
     plot.builtBy = null;
     cropsRotted++;
   }
-  for (const effect of next.pending) {
-    if (effect.kind === 'cropRipe' && effect.status === 'pending') {
-      setEffectStatus(rec, effect, 'cancelled', [rule('foodRot')]);
-    }
+  // A crop still growing grows on overnight: it carries over with half its time left, as a new
+  // effect from the same watering, and the old one is closed.
+  for (const effect of [...next.pending]) {
+    if (effect.kind !== 'cropRipe' || effect.status !== 'pending') continue;
+    const left = Math.max(0, (effect.dueAt.t ?? 0) - next.turnSeconds);
+    setEffectStatus(rec, effect, 'cancelled', [rule('overnight')]);
+    next.pending.push({
+      ...effect,
+      id: `${effect.id}:${n + 1}`,
+      dueAt: { turn: n + 1, t: left * CONFIG.overnightGrowth },
+      status: 'pending',
+    });
   }
 
   // Upkeep

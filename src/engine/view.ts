@@ -64,6 +64,8 @@ function visibleStage(state: WorldState, plot: PlotState, t: number): PlotStage 
         (e) => e.plotId === plot.id && e.kind === 'cropRipe' && e.status === 'pending',
       );
       if (!crop) return 'watered';
+      // Carried over from the day before: it came up overnight.
+      if (crop.dueAt.turn > crop.committedAt.turn) return 'growing';
       const start = crop.committedAt.t ?? 0;
       const end = crop.dueAt.t ?? start;
       return t >= (start + end) / 2 ? 'growing' : 'watered';

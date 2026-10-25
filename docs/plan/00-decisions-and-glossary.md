@@ -81,7 +81,8 @@ fully repair the reservoir *and* comfortably meet their own upkeep in the same t
 
 | Topic | Decision |
 |---|---|
-| Turn length | **Configurable** per world. Default **10 minutes** (600 s) ([007](../decisions/007-turn-and-generation-defaults.md)) |
+| Turn length | **Configurable** per world. Default **2 minutes** (120 s, [028](../decisions/028-two-minute-days-crops-carry-over.md); was 10 minutes in [007](../decisions/007-turn-and-generation-defaults.md)) |
+| Crops and rot | A watered tile ripens **a minute** later. Unpicked, it's left ripe for the next player and rots only after standing ripe a whole generation; one still growing at dusk carries over with half its time left [028](../decisions/028-two-minute-days-crops-carry-over.md) |
 | Generations per world | **Configurable** (not fixed at 4). Default **6** ([007](../decisions/007-turn-and-generation-defaults.md)) |
 | Actions per turn | **Unlimited** within the time limit (stamina and resources still apply) |
 | In-turn time | **Day/night cycle** plays out across the turn |
