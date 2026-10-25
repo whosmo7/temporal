@@ -859,3 +859,28 @@
   gap: calc(var(--px) * 2);
   justify-content: flex-end;
 }
+
+/* Admin: demo world, player scores and the admin log (decisions 036, 039) */
+.admin__panel > .kit-button {
+  margin-top: calc(var(--px) * 4);
+  justify-self: start;
+}
+
+.admin__scroll {
+  margin-top: calc(var(--px) * 4);
+  overflow-x: auto;
+}
+
+.admin__log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--px) * 2);
+  font-size: var(--text-sm);
+}
+
+.admin__log time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

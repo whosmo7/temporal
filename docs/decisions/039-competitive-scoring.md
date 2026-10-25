@@ -46,7 +46,8 @@ on the cost summary.
 - **Locking:** `endTurn` appends the generation's score to `state.scores` and records a transition with cause
   `assessed`. Later generations append their own; nothing changes an earlier entry. Generation 6 is assessed the same
   way, so emptying the store at the end costs its own exit bonus.
-- **Visibility:** scores appear only on the replay's ending card ("What each one left with") and on the **Scores page**
+- **Visibility:** scores appear only on the replay's ending card ("What each one left with"), the admin panel's
+  **Player scores** and the **Scores page**
   (`/scores`). The home screen shows a Scores button once someone signs in. The page lists that player's own
   generations, then the ten highest, and draws only on finished worlds, so it never reveals a world still being played.
   During play, and on the cost summary, nothing shows a score; the cost summary lists "Kept for yourself" only as a

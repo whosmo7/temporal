@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { backend, type AdminWorld, type Settings } from '../../api';
+import { backend, type AdminAction, type AdminWorld, type CompletedWorld, type Settings } from '../../api';
 import { Button, ButtonLink, Dialog, Panel, TextInput } from '../kit';
+import { ScoreTable } from '../scores/ScoreTable';
+import { byTotal, scoreRows } from '../scores/scoresData';
 
 const BIOME_NAME: Record<AdminWorld['biome'], string> = { forest: 'Forest', island: 'Island' };
 
@@ -12,21 +14,35 @@ const isLocked = (w: AdminWorld) => !!w.lockedBy && !!w.lockExpiresAt && Date.pa
 const worldLabel = (w: AdminWorld) =>
   `${shortId(w.worldId)} · ${BIOME_NAME[w.biome]} · ${played(w)} of ${w.generationCount} played${w.players.length ? ` · ${w.players.join(', ')}` : ''}${isLocked(w) ? ` · in play (${w.lockedBy})` : ''}`;
 
+/** How many admin log rows and player scores the panel shows. */
+const RECENT = 20;
+const SCORES = 30;
+
 /**
- * `/admin` (08), behind `RequireAdmin`. Force-assign comes first, so handing the demo world to a
- * judge takes one pick, one name and Enter. Then every world with its lock and settings, with
- * clear lock and skip to replay, then the defaults for new worlds.
+ * `/admin` (08, decision 036), behind `RequireAdmin`. Force-assign comes first, so handing the demo
+ * world to a judge takes one pick, one name and Enter. Then the demo world button, the worlds in
+ * progress (clear lock, skip to replay, delete), the defaults for new worlds, the player scores
+ * from finished worlds (decision 039) and the recent admin actions.
  */
 export function AdminScreen() {
   const [worlds, setWorlds] = useState<AdminWorld[] | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [actions, setActions] = useState<AdminAction[]>([]);
+  const [completed, setCompleted] = useState<CompletedWorld[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const [w, s] = await Promise.all([backend.listWorlds(), backend.getSettings()]);
+      const [w, s, a, c] = await Promise.all([
+        backend.listWorlds(),
+        backend.getSettings(),
+        backend.listAdminActions(RECENT),
+        backend.listCompletedWorlds(),
+      ]);
       setWorlds([...w].sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')));
       setSettings(s);
+      setActions(a);
+      setCompleted(c);
       setError(null);
     } catch (e) {
       setError(message(e));
@@ -65,8 +81,11 @@ export function AdminScreen() {
         Admin
       </h1>
       <ForceAssign worlds={open} run={run} />
+      <DemoWorld run={run} />
       <WorldList worlds={worlds} run={run} />
       <Defaults settings={settings} run={run} />
+      <PlayerScores worlds={completed} />
+      <RecentActions actions={actions} />
     </section>
   );
 }
@@ -124,6 +143,7 @@ function ForceAssign({ worlds, run }: { worlds: AdminWorld[]; run: Run }) {
 function WorldList({ worlds, run }: { worlds: AdminWorld[]; run: Run }) {
   const navigate = useNavigate();
   const [ending, setEnding] = useState<AdminWorld | null>(null);
+  const [removing, setRemoving] = useState<AdminWorld | null>(null);
   const [rowError, setRowError] = useState<{ worldId: string; text: string } | null>(null);
 
   const act = async (w: AdminWorld, call: () => Promise<void>) => {
@@ -133,9 +153,9 @@ function WorldList({ worlds, run }: { worlds: AdminWorld[]; run: Run }) {
   };
 
   return (
-    <Panel title="Worlds" className="admin__panel">
+    <Panel title="Worlds in progress" className="admin__panel">
       {worlds.length === 0 ? (
-        <p>No worlds yet. One starts the first time someone presses Play.</p>
+        <p>No worlds in progress. One starts the next time someone presses Play. Finished worlds are in the gallery.</p>
       ) : (
         <table className="admin__table">
           <thead>
@@ -160,6 +180,7 @@ function WorldList({ worlds, run }: { worlds: AdminWorld[]; run: Run }) {
                 onSave={(config) => act(w, () => backend.configureWorld(w.worldId, config))}
                 onClearLock={() => void act(w, () => backend.clearLock(w.worldId))}
                 onSkip={() => setEnding(w)}
+                onRemove={() => setRemoving(w)}
               />
             ))}
           </tbody>
@@ -194,6 +215,35 @@ function WorldList({ worlds, run }: { worlds: AdminWorld[]; run: Run }) {
           </p>
         )}
       </Dialog>
+      <Dialog
+        open={!!removing}
+        title="Remove this world from the game?"
+        onClose={() => setRemoving(null)}
+        actions={
+          <>
+            <Button variant="quiet" onClick={() => setRemoving(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                const w = removing!;
+                setRemoving(null);
+                void act(w, () => backend.removeWorld(w.worldId));
+              }}
+            >
+              Remove
+            </Button>
+          </>
+        }
+      >
+        {removing && (
+          <p>
+            {shortId(removing.worldId)} won’t be played, listed or shown in the gallery again. Its pages are kept, and it can be brought back with
+            SQL.
+          </p>
+        )}
+      </Dialog>
     </Panel>
   );
 }
@@ -204,12 +254,14 @@ function WorldRow({
   onSave,
   onClearLock,
   onSkip,
+  onRemove,
 }: {
   world: AdminWorld;
   error: string | null;
   onSave: (config: { turnSeconds: number; generationCount: number }) => Promise<boolean>;
   onClearLock: () => void;
   onSkip: () => void;
+  onRemove: () => void;
 }) {
   const [turnSeconds, setTurnSeconds] = useState(String(w.turnSeconds));
   const [generations, setGenerations] = useState(String(w.generationCount));
@@ -281,6 +333,10 @@ function WorldRow({
               Replay
             </ButtonLink>
           )}
+          {/* Refused while someone plays it: clear the lock first (036). */}
+          <Button size="sm" variant="quiet" onClick={onRemove} disabled={locked} title={locked ? 'Clear the lock first' : undefined}>
+            Delete
+          </Button>
         </td>
       </tr>
       {error && (
@@ -333,6 +389,112 @@ function Defaults({ settings, run }: { settings: Settings; run: Run }) {
     </Panel>
   );
 }
+
+/** Makes the demo world (10, decision 036): founders played, judge assigned. */
+function DemoWorld({ run }: { run: Run }) {
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<{ error: boolean; text: string } | null>(null);
+
+  const create = async () => {
+    setBusy(true);
+    let id = '';
+    const err = await run(async () => {
+      id = await backend.createDemoWorld();
+    });
+    setBusy(false);
+    setNote(err ? { error: true, text: err } : { error: false, text: `Demo world ${shortId(id)} is ready. The judge's next Play gets it.` });
+  };
+
+  return (
+    <Panel title="Demo world" className="admin__panel">
+      <p>Makes the demo world, plays its founder generations and assigns it to the judge.</p>
+      <Button onClick={() => void create()} disabled={busy}>
+        {busy ? 'Making it…' : 'Create demo world'}
+      </Button>
+      {note && (
+        <p className={note.error ? 'auth__error' : 'admin__note'} role={note.error ? 'alert' : 'status'}>
+          {note.text}
+        </p>
+      )}
+    </Panel>
+  );
+}
+
+/** Every locked generation score from finished worlds, highest first (decision 039). */
+function PlayerScores({ worlds }: { worlds: CompletedWorld[] }) {
+  const rows = useMemo(() => byTotal(scoreRows(worlds)), [worlds]);
+  return (
+    <Panel title="Player scores" className="admin__panel">
+      {rows.length === 0 ? (
+        <p>No finished world has player scores yet.</p>
+      ) : (
+        <>
+          <p className="admin__note">
+            {rows.length} {rows.length === 1 ? 'generation' : 'generations'} scored across{' '}
+            {new Set(rows.map((r) => r.worldId)).size} finished {worlds.length === 1 ? 'world' : 'worlds'}
+            {rows.length > SCORES ? `; the top ${SCORES} are shown` : ''}.
+          </p>
+          <div className="admin__scroll">
+            <ScoreTable rows={rows.slice(0, SCORES)} ranked />
+          </div>
+        </>
+      )}
+    </Panel>
+  );
+}
+
+/** The latest admin log rows (decision 036), newest first. */
+function RecentActions({ actions }: { actions: AdminAction[] }) {
+  return (
+    <Panel title="Recent admin actions" className="admin__panel">
+      {actions.length === 0 ? (
+        <p>Nothing yet.</p>
+      ) : (
+        <ul className="admin__log">
+          {actions.map((a) => (
+            <li key={a.id}>
+              <time dateTime={a.at}>{new Date(a.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</time>{' '}
+              <b>{a.admin}</b> {describe(a)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  );
+}
+
+/** One admin log row in words. */
+function describe(a: AdminAction): string {
+  const world = a.worldId ? shortId(a.worldId) : '';
+  const after = (a.after ?? {}) as Record<string, unknown>;
+  const before = (a.before ?? {}) as Record<string, unknown>;
+  switch (a.action) {
+    case 'forceAssign':
+      return `gave ${world} to ${String(a.after)}`;
+    case 'configureWorld':
+      return `set ${world} to ${String(after.generationCount)} generations of ${String(after.turnSeconds)} s`;
+    case 'clearLock':
+      return a.before ? `cleared ${String(a.before)}'s lock on ${world}` : `cleared the lock on ${world}`;
+    case 'markComplete':
+      return `ended ${world} after ${String(after.generationCount)} generations`;
+    case 'removeWorld':
+      return `removed ${world}`;
+    case 'createWorld':
+      return `made world ${world}`;
+    case 'createDemoWorld':
+      return `made the demo world ${world}`;
+    case 'setSettings': {
+      const changed = Object.keys(after).filter((k) => after[k] !== before[k]);
+      return changed.length ? `changed the new-world defaults (${changed.map((k) => SETTING[k] ?? k).join(', ')})` : 'saved the new-world defaults';
+    }
+  }
+}
+
+const SETTING: Record<string, string> = {
+  inheritRatio: 'inherit ratio',
+  defaultTurnSeconds: 'turn length',
+  defaultGenerationCount: 'generations',
+};
 
 function message(e: unknown): string {
   return e instanceof Error ? e.message : 'Something went wrong';

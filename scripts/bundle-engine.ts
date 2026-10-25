@@ -1,12 +1,12 @@
-// Bundles src/api/runTurn.ts (and the engine it imports) into one ES module the commit-turn Edge
-// Function can import. Deno can't resolve the engine's extensionless imports, and keeping a second
+// Bundles src/api/edge.ts (runTurn, the engine it imports, and the demo world) into one ES module
+// the commit-turn and seed-demo Edge Functions can import. Deno can't resolve the engine's extensionless imports, and keeping a second
 // copy of the rules is not an option (inheritance-backend), so the function gets this build.
 // Run by `npm run functions:deploy`; the output is gitignored.
 
 import { build } from 'esbuild';
 
 await build({
-  entryPoints: ['src/api/runTurn.ts'],
+  entryPoints: ['src/api/edge.ts'],
   outfile: 'supabase/functions/_shared/engine.js',
   bundle: true,
   format: 'esm',

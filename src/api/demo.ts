@@ -1,9 +1,10 @@
-import type { ActionEntry, Backend, ClaimedWorld, SeededWorld } from './Backend';
+import type { ActionEntry, Backend, SeededWorld } from './Backend';
 import demoWorld from './demo-world.json';
 
 // Plays the demo world's early generations (10 › Seeding) through the normal claim → commit path,
 // so the result is the same as teammates playing them. scripts/seed-demo.ts runs it against
-// Supabase; the offline build (VITE_OFFLINE=1) runs it against LocalBackend.
+// Supabase; the offline build (VITE_OFFLINE=1) and LocalBackend.createDemoWorld run it locally. The
+// seed-demo Edge Function plays the same founders server-side with `demoActions` (decision 036).
 
 export interface DemoAction {
   type: ActionEntry['type'];
@@ -29,17 +30,18 @@ export interface DemoAccounts {
   admin(): Promise<Backend>;
 }
 
-function toActions(world: ClaimedWorld, actions: DemoAction[]): ActionEntry[] {
+/** A founder generation's actions as log entries for generation `turn` of `worldId`. */
+export function demoActions(worldId: string, turn: number, actions: DemoAction[]): ActionEntry[] {
   return actions.map((a, seq) => ({
-    id: `demo-${world.turn}-${seq}`,
-    worldId: world.worldId,
+    id: `demo-${turn}-${seq}`,
+    worldId,
     actorId: '',
     type: a.type,
     ...(a.plot ? { plotId: a.plot } : {}),
     ...(a.targetEffectId ? { targetEffectId: a.targetEffectId } : {}),
     ...(a.eat ? { eat: true } : {}),
-    committedAt: { turn: world.turn, t: a.t },
-    dueAt: { turn: world.turn, t: a.t },
+    committedAt: { turn, t: a.t },
+    dueAt: { turn, t: a.t },
     seq,
   }));
 }
@@ -64,7 +66,7 @@ export async function seedDemo(
     }
     await player.commitTurn({
       worldId,
-      actions: toActions(world, gen.actions),
+      actions: demoActions(worldId, world.turn, gen.actions),
       journal: { text: gen.journal, drawing: null },
     });
   }

@@ -4,6 +4,8 @@ import type { Biome } from '../worldgen/types';
 import type { PresetName } from '../worldgen/presets';
 import type {
   ActionEntry,
+  AdminAction,
+  AdminActionKind,
   AdminWorld,
   ClaimedWorld,
   CompletedWorld,
@@ -102,6 +104,16 @@ export interface AdminWorldRow {
   forced_for: string | null;
   players: string[];
   created_at: string | null;
+}
+
+export interface AdminActionRow {
+  id: number | string;
+  at: string;
+  admin: string | null;
+  action: AdminActionKind;
+  world_id: string | null;
+  before: unknown;
+  after: unknown;
 }
 
 export interface SettingsRow {
@@ -206,6 +218,18 @@ export function toAdminWorld(row: AdminWorldRow): AdminWorld {
     forcedFor: row.forced_for,
     players: row.players,
     createdAt: row.created_at,
+  };
+}
+
+export function toAdminAction(row: AdminActionRow): AdminAction {
+  return {
+    id: String(row.id),
+    at: row.at,
+    admin: row.admin ?? 'unknown',
+    action: row.action,
+    worldId: row.world_id,
+    before: row.before,
+    after: row.after,
   };
 }
 

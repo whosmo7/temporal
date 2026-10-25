@@ -1,5 +1,6 @@
 import { createClient, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
 import type {
+  AdminAction,
   AdminWorld,
   Backend,
   ClaimedWorld,
@@ -13,11 +14,13 @@ import type {
 } from './Backend';
 import { getLastWorld, setLastWorld } from './lastWorld';
 import {
+  toAdminAction,
   toAdminWorld,
   toClaimedWorld,
   toCompletedWorld,
   toReplay,
   toSettings,
+  type AdminActionRow,
   type AdminWorldRow,
   type ClaimRow,
   type CompletedRow,
@@ -114,14 +117,7 @@ export class SupabaseBackend implements Backend {
   async commitTurn(input: CommitInput): Promise<TurnSummary> {
     const me = await this.userId();
     const { data, error } = await this.db.functions.invoke('commit-turn', { body: input });
-    if (error) {
-      // The function answers { error } with a 4xx; surface its message, not "non-2xx status".
-      if (error instanceof FunctionsHttpError) {
-        const body = (await error.context.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(body?.error ?? error.message);
-      }
-      throw error;
-    }
+    if (error) throw await functionError(error);
     setLastWorld(me, input.worldId);
     return (data as { summary: TurnSummary }).summary;
   }
@@ -198,4 +194,30 @@ export class SupabaseBackend implements Backend {
   async clearLock(worldId: string): Promise<void> {
     fail((await this.db.rpc('admin_clear_lock', { world: worldId })).error);
   }
+
+  async removeWorld(worldId: string): Promise<void> {
+    fail((await this.db.rpc('admin_remove_world', { world: worldId })).error);
+  }
+
+  /** The seed-demo Edge Function plays the founders server-side, so the admin stays signed in (036). */
+  async createDemoWorld(): Promise<string> {
+    const { data, error } = await this.db.functions.invoke('seed-demo', { body: {} });
+    if (error) throw await functionError(error);
+    return (data as { worldId: string }).worldId;
+  }
+
+  async listAdminActions(limit = 20): Promise<AdminAction[]> {
+    const { data, error } = await this.db.rpc('admin_recent_actions', { lim: limit });
+    fail(error);
+    return (data as AdminActionRow[]).map(toAdminAction);
+  }
+}
+
+/** An Edge Function answers { error } with a 4xx; surface its message, not "non-2xx status". */
+async function functionError(error: Error): Promise<Error> {
+  if (error instanceof FunctionsHttpError) {
+    const body = (await error.context.json().catch(() => null)) as { error?: string } | null;
+    return new Error(body?.error ?? error.message);
+  }
+  return error;
 }
