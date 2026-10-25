@@ -48,6 +48,8 @@ Order matters, and it must all run in one function:
    then to a new world. One row, `FOR UPDATE SKIP LOCKED`.
 5. Set `locked_by` and `lock_expires_at = now() + turn_seconds + journal allowance + grace`.
 
+Backing out to Home calls `release_world`, which clears the caller's own lock (decision 035).
+
 `SKIP LOCKED` plus a single-row update is what guarantees one player per world. Don't replace it with
 a read-then-write from the client.
 

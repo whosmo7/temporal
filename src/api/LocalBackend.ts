@@ -256,6 +256,17 @@ export class LocalBackend implements Backend {
     return new Date(world.lockExpiresAt).toISOString();
   }
 
+  async releaseWorld(worldId: string): Promise<void> {
+    const db = this.load();
+    const me = this.requireUser(db);
+    const world = db.worlds.find((w) => w.id === worldId);
+    if (!world || world.lockedBy !== me.id) return;
+    world.lockedBy = null;
+    world.lockedAt = null;
+    world.lockExpiresAt = null;
+    this.save(db);
+  }
+
   async commitTurn(input: CommitInput): Promise<TurnSummary> {
     const db = this.load();
     const me = this.requireUser(db);

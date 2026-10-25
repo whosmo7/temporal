@@ -320,3 +320,39 @@ describe('the weighted draw (decision 034)', () => {
     expect((await b.claimWorld()).worldId).toBe(far);
   });
 });
+
+describe('backing out to Home (decision 035)', () => {
+  it('gives the world back: the next Play draws again, and the day left behind is void', async () => {
+    const b = make();
+    await b.signUp('alma', 'pw');
+    rolls = [0.99, 0.1, 0.1]; // a new world
+    const left = await b.claimWorld();
+    await b.releaseWorld(left.worldId);
+    await expect(b.commitTurn({ worldId: left.worldId, actions: [], journal: journal('') })).rejects.toThrow('expired');
+    rolls = [0.99, 0.6, 0.6]; // a fresh draw (here: another new world), not a resume
+    expect((await b.claimWorld()).worldId).not.toBe(left.worldId);
+  });
+
+  it('a fresh draw may land on the same world again', async () => {
+    const b = make();
+    await b.signUp('alma', 'pw');
+    rolls = [0.99, 0.1, 0.1];
+    const left = await b.claimWorld();
+    await b.releaseWorld(left.worldId);
+    rolls = [0]; // inherit the world furthest along: the one just left
+    const again = await b.claimWorld();
+    expect(again.worldId).toBe(left.worldId);
+    expect(again.turn).toBe(1);
+  });
+
+  it("frees the world for others, and can't release someone else's", async () => {
+    const b = make();
+    await b.signUp('alma', 'pw');
+    rolls = [0.99, 0.1, 0.1];
+    const held = await b.claimWorld();
+    await b.signUp('bram', 'pw');
+    await b.releaseWorld(held.worldId); // bram doesn't hold it: nothing happens
+    rolls = [0, 0.99, 0.2, 0.2];
+    expect((await b.claimWorld()).worldId).not.toBe(held.worldId);
+  });
+});

@@ -37,6 +37,16 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
   // Actions are logged under the profile id (ActionEntry.actorId); commit-turn stamps the same.
   const userId = useSession((s) => s.user?.id ?? '');
   const navigate = useNavigate();
+  // Backing out to Home gives the world back, so the next Play is a fresh draw (decision 035). It
+  // waits for the release, or a quick Play could resume this world and then lose it. If the release
+  // fails, the lock runs out on its own.
+  const leave = useCallback(
+    async (worldId?: string) => {
+      if (worldId) await backend.releaseWorld(worldId).catch(() => {});
+      navigate('/');
+    },
+    [navigate],
+  );
 
   // One claim at a time (StrictMode runs the first effect twice; a double resend would fail).
   const running = useRef<Promise<void> | null>(null);
@@ -132,14 +142,14 @@ export function PlayFlow({ showFps }: { showFps: boolean }) {
         showFps={showFps}
         onLeave={() => {
           clearUnsaved();
-          navigate('/');
+          void leave(claimed.worldId);
         }}
       />
     );
   }
 
   return (
-    <Backdrop onHome={() => navigate('/')}>
+    <Backdrop onHome={() => void leave(phase.kind === 'inheriting' ? phase.claim.worldId : undefined)}>
       {phase.kind === 'loading' && <Panel>…</Panel>}
       {phase.kind === 'inheriting' && (
         <Inheriting

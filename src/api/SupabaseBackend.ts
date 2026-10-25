@@ -106,6 +106,11 @@ export class SupabaseBackend implements Backend {
     return (data as string | null) ?? null;
   }
 
+  async releaseWorld(worldId: string): Promise<void> {
+    const { error } = await this.db.rpc('release_world', { world: worldId });
+    fail(error);
+  }
+
   async commitTurn(input: CommitInput): Promise<TurnSummary> {
     const me = await this.userId();
     const { data, error } = await this.db.functions.invoke('commit-turn', { body: input });
