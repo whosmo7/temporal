@@ -95,7 +95,9 @@ export type CauseRule =
   | 'newTurn'
   | 'hunger'
   /** A sown tile nobody watered withers (decision 027). */
-  | 'wither';
+  | 'wither'
+  /** A crop still growing at day's end grows on overnight, faster (decision 028). */
+  | 'overnight';
 
 export interface ActionCause {
   kind: 'action';
@@ -154,6 +156,8 @@ export interface PlotState {
   builtBy: ActionCause | null;
   /** Orchards fruit once per generation. */
   harvestedTurn: number | null;
+  /** Field tiles: the generation the crop ripened in. Ripe all through a later one, it rots (decision 028). */
+  ripeSince?: number;
 }
 
 // ---- World ----

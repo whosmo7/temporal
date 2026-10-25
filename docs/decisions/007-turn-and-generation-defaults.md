@@ -2,6 +2,8 @@
 
 **Status:** decided 2026-10-24 by C (game design) · **Section:** `01` Q6
 
+> **Turn length replaced by [028](028-two-minute-days-crops-carry-over.md):** a day is now 2 minutes (120 s). The 6 generations stand.
+
 ## Context
 `turnSeconds` and `generationCount` are configurable per world. The game designer sets the defaults.
 

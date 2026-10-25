@@ -55,7 +55,7 @@ describe('cost summary', () => {
   });
 
   it('groups repeats and shows what a harvest this turn really gave', () => {
-    const ripe = CONFIG.cropRipenPct * CONFIG.turnSeconds + 1;
+    const ripe = CONFIG.cropRipenSeconds + 1;
     const { view } = play(fresh(), [
       { id: 'a', type: 'plantCrops', plotId: 'field-1:0,0', t: 0 },
       { id: 'a2', type: 'fillCan', t: 0 },

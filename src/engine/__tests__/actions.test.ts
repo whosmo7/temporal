@@ -27,7 +27,7 @@ describe('applyAction', () => {
     game.act('fillCan', { t: 8 });
     expect(game.state.resources.can).toBe(CONFIG.canCapacity);
     const r = game.act('water', { plotId: FIELD, t: 20 });
-    expect(r.entry?.dueAt).toEqual({ turn: 1, t: 20 + CONFIG.cropRipenPct * 600 });
+    expect(r.entry?.dueAt).toEqual({ turn: 1, t: 20 + CONFIG.cropRipenSeconds });
     expect(game.state.resources.can).toBe(CONFIG.canCapacity - 1);
     expect(game.state.plots[FIELD]?.stage).toBe('watered');
     expect(game.act('water', { plotId: FIELD, t: 21 }).error).toBe('Already watered');
@@ -61,10 +61,10 @@ describe('applyAction', () => {
     expect(game.state.plots['field-1:1,0']?.stage).toBe('empty');
     expect(game.act('plantCrops', { plotId: FIELD, t: 1 }).error).toBe('Already sown');
     sowAndWater(game, 'field-1:1,0', 10);
-    game.act('harvest', { plotId: FIELD, t: 150 });
+    game.act('harvest', { plotId: FIELD, t: 65 });
     expect(game.state.plots[FIELD]?.stage).toBe('empty');
     expect(game.state.plots['field-1:1,0']?.stage).toBe('watered');
-    expect(game.act('harvest', { plotId: 'field-1:1,0', t: 160 }).error).toBeUndefined();
+    expect(game.act('harvest', { plotId: 'field-1:1,0', t: 75 }).error).toBeUndefined();
     expect(game.state.resources.food).toBe(CONFIG.biomes.forest.food + 2 * CONFIG.cropYield);
   });
 
@@ -77,10 +77,10 @@ describe('applyAction', () => {
   it('crops can only be harvested once ripe', () => {
     const game = newGame().begin();
     sowAndWater(game, FIELD, 0);
-    expect(game.act('harvest', { plotId: FIELD, t: 100 }).error).toBe(
+    expect(game.act('harvest', { plotId: FIELD, t: 40 }).error).toBe(
       'Nothing to harvest here',
     );
-    const r = game.act('harvest', { plotId: FIELD, t: 150 });
+    const r = game.act('harvest', { plotId: FIELD, t: 65 });
     expect(r.error).toBeUndefined();
     expect(game.state.resources.food).toBe(CONFIG.biomes.forest.food + CONFIG.cropYield);
     expect(game.state.plots[FIELD]?.stage).toBe('empty');
@@ -107,8 +107,8 @@ describe('applyAction', () => {
   it('harvest and eat is refused when the player is not hungry', () => {
     const game = newGame().begin();
     sowAndWater(game, FIELD, 0);
-    expect(game.act('harvest', { plotId: FIELD, t: 150, eat: true }).error).toBe("You're not hungry");
-    expect(game.act('harvest', { plotId: FIELD, t: 150 }).error).toBeUndefined();
+    expect(game.act('harvest', { plotId: FIELD, t: 65, eat: true }).error).toBe("You're not hungry");
+    expect(game.act('harvest', { plotId: FIELD, t: 65 }).error).toBeUndefined();
   });
 
   it('a good harvest raises crop yield and is a cause', () => {
@@ -116,7 +116,7 @@ describe('applyAction', () => {
     game.state.events = [{ id: 'goodHarvest-1', kind: 'goodHarvest', turn: 1 }];
     game.begin();
     sowAndWater(game, FIELD, 0);
-    const r = game.act('harvest', { plotId: FIELD, t: 150 });
+    const r = game.act('harvest', { plotId: FIELD, t: 65 });
     const gain = Math.round(CONFIG.cropYield * CONFIG.goodHarvestMult);
     expect(game.state.resources.food).toBe(CONFIG.biomes.forest.food + gain);
     const food = r.transitions.find((t) => 'resource' in t.target && t.target.resource === 'food');
@@ -167,8 +167,8 @@ describe('applyAction', () => {
 
   it('a rotten tile has to be tended (cleared and tilled) before it can be sown again', () => {
     const game = newGame().begin();
-    sowAndWater(game, FIELD, 500); // ripens after the day ends, so it rots
-    game.end().begin();
+    sowAndWater(game, FIELD, 0); // ripe by midday, then left ripe through the whole of gen 2: it rots
+    game.end().begin().end().begin();
     expect(game.state.plots[FIELD]?.stage).toBe('rotten');
     expect(game.act('plantCrops', { plotId: FIELD, t: 0 }).error).toBe('Clear it first');
     expect(game.act('maintain', { plotId: FIELD, t: 1 }).error).toBeUndefined();

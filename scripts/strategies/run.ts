@@ -98,7 +98,7 @@ export function growTiles(tiles: PlotState[], start: number, ripen: number, eat 
 
 /** Back-to-back crop cycles on every tile of both fields. */
 export function cropCycles(state: WorldState, cycles: number, eat = false): PlannedAction[] {
-  const ripen = Math.ceil(state.turnSeconds * CONFIG.cropRipenPct);
+  const ripen = Math.ceil(CONFIG.cropRipenSeconds);
   const tiles = [...tilesOf(state, 'field-1'), ...tilesOf(state, 'field-2')];
   const { plantCrops: sow, water: pour, fillCan: fill } = CONFIG.actionSeconds;
   const cycle = ripen + tiles.length * (sow + pour + fill) + 1;

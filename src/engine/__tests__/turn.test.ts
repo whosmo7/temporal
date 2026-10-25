@@ -139,13 +139,40 @@ describe('beginTurn and endTurn', () => {
     });
   });
 
-  it('crops still in the ground at the end of the turn rot', () => {
+  it('a crop ripe at the end of the day it ripened is left for the next player', () => {
     const game = newGame().begin();
-    sowAndWater(game, 'field-1:0,0', 500); // ripens after the turn ends
+    sowAndWater(game, 'field-1:0,0', 0); // ripe a minute in
     game.end();
+    expect(game.state.plots['field-1:0,0']?.stage).toBe('ripe');
+    expect(game.summaries[0]?.cropsRotted).toBe(0);
+    game.begin();
+    expect(game.act('harvest', { plotId: 'field-1:0,0', t: 5 }).error).toBeUndefined();
+  });
+
+  it('a crop ripe all through a generation, start to finish, rots at its end', () => {
+    const game = newGame().begin();
+    sowAndWater(game, 'field-1:0,0', 0);
+    game.end().begin().end(); // gen 2 began with it ripe and never picked it
     expect(game.state.plots['field-1:0,0']?.stage).toBe('rotten');
-    expect(game.summaries[0]?.cropsRotted).toBe(1);
-    expect(game.state.pending[0]?.status).toBe('cancelled');
+    expect(game.summaries[1]?.cropsRotted).toBe(1);
+    const rot = game.transitions.find((t) => t.id.startsWith('end-2') && 'plot' in t.target && t.after === 'rotten');
+    expect(rot?.causes).toContainEqual({ kind: 'rule', rule: 'foodRot' });
+  });
+
+  it('a crop still growing at the end of the day grows on overnight, in half its time left', () => {
+    const game = newGame().begin();
+    const end = CONFIG.turnSeconds;
+    sowAndWater(game, 'field-1:0,0', end - 20); // 40 s short when the day ends
+    game.end();
+    expect(game.state.plots['field-1:0,0']?.stage).toBe('watered');
+    expect(game.summaries[0]?.cropsRotted).toBe(0);
+    const carried = game.state.pending.find((e) => e.kind === 'cropRipe' && e.status === 'pending');
+    expect(carried?.dueAt).toEqual({ turn: 2, t: 40 * CONFIG.overnightGrowth });
+    expect(carried?.sourceActorId).toBe('AL'); // still the watering's effect
+    game.begin();
+    expect(visibleView(game.state, 0).plots['field-1:0,0']?.stage).toBe('growing');
+    expect(game.act('harvest', { plotId: 'field-1:0,0', t: 19 }).error).toBe('Nothing to harvest here');
+    expect(game.act('harvest', { plotId: 'field-1:0,0', t: 20 }).error).toBeUndefined();
   });
 
   it('nights take food only', () => {
@@ -178,14 +205,14 @@ describe('beginTurn and endTurn', () => {
     game.begin();
     game.act('fillCan', { t: 0 });
     game.act('water', { plotId: 'field-1:0,0', t: 10 });
-    expect(game.act('harvest', { plotId: 'field-1:0,0', t: 10 + CONFIG.cropRipenPct * 600 }).error).toBeUndefined();
+    expect(game.act('harvest', { plotId: 'field-1:0,0', t: 10 + CONFIG.cropRipenSeconds }).error).toBeUndefined();
   });
 
   it('two tiles watered at different times ripen at different times', () => {
     const game = newGame().begin();
     sowAndWater(game, 'field-1:0,0', 0);
     sowAndWater(game, 'field-1:1,0', 60);
-    const ripe = CONFIG.cropRipenPct * 600;
+    const ripe = CONFIG.cropRipenSeconds;
     expect(game.act('harvest', { plotId: 'field-1:1,0', t: ripe }).error).toBe('Nothing to harvest here');
     expect(game.act('harvest', { plotId: 'field-1:0,0', t: ripe }).error).toBeUndefined();
     expect(game.act('harvest', { plotId: 'field-1:1,0', t: ripe + 60 }).error).toBeUndefined();

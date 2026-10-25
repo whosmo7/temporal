@@ -42,7 +42,7 @@ describe('replay cause sentences', () => {
   });
 
   it('adds up to the net change for every resource and generation', () => {
-    const ripe = CONFIG.cropRipenPct * CONFIG.turnSeconds + 1;
+    const ripe = CONFIG.cropRipenSeconds + 1;
     const { ctx } = world([
       [{ type: 'plantOrchard', plotId: 'orchard-1:0,0' }, { type: 'digWell', plotId: 'well' }],
       [{ type: 'plantCrops', plotId: 'field-1:0,0', t: 0 }, { type: 'fillCan', t: 0 }, { type: 'water', plotId: 'field-1:0,0', t: 0 }, { type: 'harvest', plotId: 'field-1:0,0', t: ripe }],
@@ -58,7 +58,7 @@ describe('replay cause sentences', () => {
   });
 
   it('words the generation’s own work, the store and the night plainly', () => {
-    const ripe = CONFIG.cropRipenPct * CONFIG.turnSeconds + 1;
+    const ripe = CONFIG.cropRipenSeconds + 1;
     const { ctx } = world([[{ type: 'plantCrops', plotId: 'field-1:0,0', t: 0 }, { type: 'fillCan', t: 0 }, { type: 'water', plotId: 'field-1:0,0', t: 0 }, { type: 'harvest', plotId: 'field-1:0,0', t: ripe }, { type: 'fishHunt', plotId: 'wild' }]], 'island');
     const food = explainGeneration(1, ctx).find((c) => c.resource === 'food')!;
     expect(food.lines.map((l) => sentence(food, l))).toEqual([

@@ -173,7 +173,7 @@ const water: Handler = (ctx) => {
 
   setResource(state, rec, 'can', state.resources.can - 1, [cause]);
   setStage(rec, plot, 'watered', [cause]);
-  const dueAt = { turn: state.turn, t: at.t + CONFIG.cropRipenPct * state.turnSeconds };
+  const dueAt = { turn: state.turn, t: at.t + CONFIG.cropRipenSeconds };
   schedule(state, {
     id: `${input.id}:cropRipe`,
     sourceActionId: input.id,

@@ -121,7 +121,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   return {
     t: 0,
-    turnSeconds: 600,
+    turnSeconds: CONFIG.turnSeconds,
     journalOpen: false,
     journalPage: null,
     nearby: null,
