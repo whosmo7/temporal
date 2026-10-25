@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSession } from '../../store/session';
 import { ButtonLink } from '../kit';
 import { IslandScene } from '../shell/IslandScene';
 import { CloudBank, DistantIslands } from '../shell/LandingScenery';
@@ -7,11 +8,13 @@ import { Logo } from '../shell/Logo';
 
 /**
  * The landing (`08`, app-shell brief): the wordmark, the floating island living through a
- * generation, one premise line, then Play and Gallery. Enter is Play.
+ * generation, one premise line, then Play and Gallery, and Scores once signed in (decision 033).
+ * Enter is Play.
  */
 export function LandingScreen() {
   const light = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const user = useSession((s) => s.user);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -40,6 +43,7 @@ export function LandingScreen() {
           Play
         </ButtonLink>
         <ButtonLink to="/gallery">Gallery</ButtonLink>
+        {user && <ButtonLink to="/scores">Scores</ButtonLink>}
         <ButtonLink to="/tutorial" variant="quiet">
           How to play
         </ButtonLink>

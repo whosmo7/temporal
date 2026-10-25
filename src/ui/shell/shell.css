@@ -669,13 +669,13 @@
   line-height: 1.4;
 }
 
-/* Competitive standings on the ending card (decision 033) */
+/* Scores (decision 033): the replay's ending card and the scores page share the table */
 .replay__standings {
   width: min(100%, 720px);
   text-align: left;
 }
 
-.replay__standings table {
+.score-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
@@ -683,33 +683,61 @@
   font-variant-numeric: tabular-nums;
 }
 
-.replay__standings th {
+.score-table th {
   font-weight: normal;
   opacity: 0.75;
   text-align: right;
   padding: 0 calc(var(--px) * 2) calc(var(--px) * 2);
 }
 
-.replay__standings td {
+.score-table td {
   text-align: right;
   padding: calc(var(--px) * 1) calc(var(--px) * 2);
 }
 
-.replay__standings th:nth-child(-n + 2),
-.replay__standings td:nth-child(-n + 2) {
+.score-table th:nth-child(-n + 3),
+.score-table__place,
+.score-table__name {
   text-align: left;
 }
 
-.replay__standings td:nth-child(2) {
+.score-table td.score-table__place,
+.score-table td.score-table__name {
+  text-align: left;
   white-space: nowrap;
 }
 
-.replay__when {
+.score-table__when {
   opacity: 0.6;
 }
 
-.replay__total {
+.score-table__total {
   font-weight: bold;
+}
+
+.score-table__you td {
+  color: var(--highlight);
+}
+
+.scores {
+  width: min(100%, 880px);
+  align-self: start;
+  display: grid;
+  gap: calc(var(--px) * 8);
+}
+
+.scores .gallery__title {
+  margin: 0;
+}
+
+.scores__note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.scores__panel p {
+  margin: 0 0 calc(var(--px) * 4);
 }
 
 /* Admin ------------------------------------------------------------------------------------------ */

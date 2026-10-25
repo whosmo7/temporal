@@ -39,7 +39,7 @@ The tone is quiet, plain and observational, like a field notebook or a parish re
 - **Describe, don't judge.** "The well water is green." Not "You neglected the well."
 - **No moral labels** on actions or outcomes: no "selfish", "noble", "sacrifice", "greed", "good choice".
   Every action should read as something a reasonable person might do.
-- **No score language:** no "win", "lose", "points", "achievement", "level up". The one exception is the replay's ending card, which ranks each generation's locked score under plain labels ([033](../../../docs/decisions/033-competitive-scoring.md)). The land level is shown by its
+- **No score language:** no "win", "lose", "points", "achievement", "level up". The one exception is the replay's ending card and the Scores page, which rank each generation's locked score under plain labels ([033](../../../docs/decisions/033-competitive-scoring.md)). The land level is shown by its
   **name** ("The land is Green"), never as "Level 3", and it's never announced as a reward.
 - **Address the player as "you", in the present tense,** briefly. One line where one line will do.
 - **Name things the way a farmer would**: field, orchard, reservoir, well, store. Never system terms

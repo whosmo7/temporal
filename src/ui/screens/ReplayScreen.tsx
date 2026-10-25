@@ -265,7 +265,7 @@ function EndingCard({
       )}
       {ranked.length > 0 && (
         <Panel title="What each one left with" className="replay__standings">
-          <table>
+          <table className="score-table">
             <thead>
               <tr>
                 <th scope="col" aria-label="Place" />
@@ -280,15 +280,15 @@ function EndingCard({
             <tbody>
               {ranked.map((s) => (
                 <tr key={s.turn}>
-                  <td className="replay__gen">{s.place}</td>
-                  <td>
-                    {s.name} <span className="replay__when">Gen {s.turn}</span>
+                  <td className="score-table__place">{s.place}</td>
+                  <td className="score-table__name">
+                    {s.name} <span className="score-table__when">Gen {s.turn}</span>
                   </td>
                   <td>{fmt(s.productive)}</td>
                   <td>{fmt(s.extraction)}</td>
                   <td>{s.corruption > 0 ? `−${fmt(s.corruption)}` : fmt(0)}</td>
                   <td>{fmt(s.exitBonus)}</td>
-                  <td className="replay__total">{fmt(s.total)}</td>
+                  <td className="score-table__total">{fmt(s.total)}</td>
                 </tr>
               ))}
             </tbody>
