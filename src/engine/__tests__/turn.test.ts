@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONFIG } from '../config';
-import { asActor, newGame } from '../__fixtures__/play';
+import { asActor, newGame, sowAndWater } from '../__fixtures__/play';
 import { explain } from '../replay';
 import { visibleView } from '../view';
 
@@ -121,10 +121,12 @@ describe('beginTurn and endTurn', () => {
 
   it('an upkeep shortfall weakens the next player, with a weakened cause', () => {
     const game = newGame().begin();
-    game.state.resources.food = 0;
+    game.state.resources.food = 6; // half the night's food
+    game.state.resources.water = 0; // nights take no water (decision 027)
     game.end();
     expect(game.summaries[0]?.upkeep.met).toBe(false);
     expect(game.state.weakened).toBe(0.5);
+    expect(game.state.resources.water).toBe(0);
 
     game.begin();
     const expected = Math.round(CONFIG.baseStamina * (1 - 0.5 * CONFIG.weakenFactor));
@@ -139,11 +141,54 @@ describe('beginTurn and endTurn', () => {
 
   it('crops still in the ground at the end of the turn rot', () => {
     const game = newGame().begin();
-    game.act('plantCrops', { plotId: 'field-1:0,0', t: 500 }); // ripens after the turn ends
+    sowAndWater(game, 'field-1:0,0', 500); // ripens after the turn ends
     game.end();
     expect(game.state.plots['field-1:0,0']?.stage).toBe('rotten');
     expect(game.summaries[0]?.cropsRotted).toBe(1);
     expect(game.state.pending[0]?.status).toBe('cancelled');
+  });
+
+  it('nights take food only', () => {
+    const game = newGame().begin();
+    const water = game.state.resources.water;
+    game.end();
+    expect(game.state.resources.water).toBe(water);
+    expect(game.summaries[0]?.upkeep.met).toBe(true);
+  });
+
+  it('an unwatered seed waits for the next player, and withers two generations after planting', () => {
+    const game = newGame();
+    asActor(game, 'AL', (g) => g.act('plantCrops', { plotId: 'field-1:0,0', t: 0 }));
+    expect(game.state.plots['field-1:0,0']?.stage).toBe('sown');
+    expect(game.summaries[0]?.cropsRotted).toBe(0);
+    game.turn(); // gen 2: still waiting
+    expect(game.state.plots['field-1:0,0']?.stage).toBe('sown');
+    game.begin(); // gen 3
+    expect(game.state.plots['field-1:0,0']?.stage).toBe('withered');
+    const why = explain(game.transitions, { turn: 3, plot: 'field-1:0,0' });
+    expect(why.lines.map((l) => l.cause)).toEqual([
+      { kind: 'rule', rule: 'wither' },
+      { kind: 'action', actionId: '1-0', actorId: 'AL', committedTurn: 1 },
+    ]);
+  });
+
+  it('watering a seed the last player sowed starts it then', () => {
+    const game = newGame();
+    asActor(game, 'AL', (g) => g.act('plantCrops', { plotId: 'field-1:0,0', t: 0 }));
+    game.begin();
+    game.act('fillCan', { t: 0 });
+    game.act('water', { plotId: 'field-1:0,0', t: 10 });
+    expect(game.act('harvest', { plotId: 'field-1:0,0', t: 10 + CONFIG.cropRipenPct * 600 }).error).toBeUndefined();
+  });
+
+  it('two tiles watered at different times ripen at different times', () => {
+    const game = newGame().begin();
+    sowAndWater(game, 'field-1:0,0', 0);
+    sowAndWater(game, 'field-1:1,0', 60);
+    const ripe = CONFIG.cropRipenPct * 600;
+    expect(game.act('harvest', { plotId: 'field-1:1,0', t: ripe }).error).toBe('Nothing to harvest here');
+    expect(game.act('harvest', { plotId: 'field-1:0,0', t: ripe }).error).toBeUndefined();
+    expect(game.act('harvest', { plotId: 'field-1:1,0', t: ripe + 60 }).error).toBeUndefined();
   });
 
   it('the summary only reports realised outcomes', () => {

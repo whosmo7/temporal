@@ -99,7 +99,7 @@ These visuals should be enough to inherit the world without reading anything. No
 - **Bottom:** toolbar: `1` hands, `2` seeds (with the seed count), `3` watering can (with its pours as pips), `4–8` the structure actions, with key hints and the held tool lit (`13`).
 - **Land:** a world-health bar with **no number** and the level's name, e.g. "Taking root" ([023](../decisions/023-world-health-and-level.md)). It's the only readout of how the world is doing.
 - **Generation badge:** "Generation 3 of 5" + world name/seed.
-- **Upkeep reminder:** a small "Needed by nightfall: 12🍎 10💧", always shown ([002](../decisions/002-upkeep-timing.md)).
+- ~~**Upkeep reminder:** "Needed by nightfall"~~, removed: nights take food only, and the HUD's water count shows the **watering can's pours** ("3/4") instead of stored water ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
 - **Hunger bar** next to stamina: it carries between generations and drops at each new one; Harvest and eat (Q, free) refills it, and at 0 the player walks slower ([016](../decisions/016-hunger.md)). Stamina no longer rises mid-turn.
 
 ## Day/night

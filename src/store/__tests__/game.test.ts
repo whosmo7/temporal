@@ -55,10 +55,15 @@ describe('play session store', () => {
     expect(store().act({ type: 'plantCrops', plotId: FIELD }).error).toBe('Not enough time left today');
   });
 
-  it('ticks the engine as time passes, so crops come up and ripen', () => {
+  it('ticks the engine as time passes, so watered crops come up and ripen', () => {
     store().act({ type: 'plantCrops', plotId: FIELD });
+    wait(SOW + 0.05);
+    store().act({ type: 'fillCan' });
+    wait(CONFIG.actionSeconds.fillCan + 0.05);
+    expect(store().view?.resources.can).toBe(CONFIG.canCapacity);
+    store().act({ type: 'water', plotId: FIELD });
     const ripe = CONFIG.cropRipenPct * 600;
-    wait(SOW + ripe / 2 + 1);
+    wait(CONFIG.actionSeconds.water + ripe / 2 + 1);
     expect(store().view?.plots[FIELD]?.stage).toBe('growing');
     wait(ripe);
     expect(store().view?.plots[FIELD]?.stage).toBe('ripe');
@@ -70,7 +75,8 @@ describe('play session store', () => {
     wait(SOW + 0.05);
     store().act({ type: 'plantCrops', plotId: 'field-1:1,0' });
     const r = store().finishTurn();
-    expect(r?.summary.cropsRotted).toBe(1);
+    expect(r?.summary.cropsRotted).toBe(0); // a dry seed waits for the next player (decision 027)
+    expect(store().world?.plots[FIELD]?.stage).toBe('sown');
     expect(store().log).toHaveLength(1);
     expect(store().work).toBeNull();
     expect(store().world?.turn).toBe(2);

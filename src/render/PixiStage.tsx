@@ -3,26 +3,30 @@ import { useEffect, useRef } from 'react';
 import type { TileMap } from '../worldgen';
 import { loadWorldAtlas } from './atlas';
 import { BACKGROUND } from './constants';
-import { createWorldView, type WorldLook, type WorldView } from './world-view';
+import { createWorldView, type ReplayMode, type WorldLook, type WorldView } from './world-view';
 
 interface Props {
   map: TileMap;
   /** Visual stages to show; changes are applied without rebuilding the world. */
   look?: WorldLook;
   onReady?: (view: WorldView | null) => void;
+  /** Read-only replay world (06). Read once, when the world is built. */
+  replay?: ReplayMode;
 }
 
 /**
  * Owns one Pixi Application for the lifetime of the component. Init is async in Pixi 8, so an
  * unmount that lands mid-init (StrictMode does this on purpose) destroys the app once init ends.
  */
-export function PixiStage({ map, look, onReady }: Props) {
+export function PixiStage({ map, look, onReady, replay }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<WorldView | null>(null);
   const latestLook = useRef(look);
   latestLook.current = look;
   const latestOnReady = useRef(onReady);
   latestOnReady.current = onReady;
+  const latestReplay = useRef(replay);
+  latestReplay.current = replay;
 
   useEffect(() => {
     const el = host.current!;
@@ -47,7 +51,9 @@ export function PixiStage({ map, look, onReady }: Props) {
           return;
         }
         el.appendChild(app.canvas);
-        view.current = createWorldView(app, map, latestLook.current, art);
+        // The replay's click handler goes through the ref, so a new callback needs no rebuild.
+        const mode = latestReplay.current && { onPlotClick: (...a: Parameters<NonNullable<ReplayMode['onPlotClick']>>) => latestReplay.current?.onPlotClick?.(...a) };
+        view.current = createWorldView(app, map, latestLook.current, art, mode);
         latestOnReady.current?.(view.current);
       });
 

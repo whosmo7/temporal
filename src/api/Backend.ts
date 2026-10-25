@@ -65,6 +65,8 @@ export interface Replay {
   name: string;
   seed: number;
   biome: Biome;
+  /** Worldgen preset, to rebuild the map. Absent means `default` (every claimed world so far). */
+  preset?: PresetName;
   snapshots: WorldState[]; // one per committed turn, in order
   actions: ActionEntry[];
   transitions: Transition[];

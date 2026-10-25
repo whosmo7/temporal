@@ -50,6 +50,8 @@ export interface GameStore {
   nearby: PlotId | null;
   /** At the graveyard: the stone E reads. */
   nearbyStone: Gravestone | null;
+  /** Facing a pond or the sea edge, where the can fills (decision 027). */
+  facingWater: boolean;
   /** Stone under the mouse, with its top-centre in canvas CSS px for the label. */
   hoveredStone: (Gravestone & { x: number; y: number }) | null;
 
@@ -80,7 +82,7 @@ export interface GameStore {
   setJournalOpen(open: boolean): void;
   /** Opens the journal, at `page`'s generation if given. */
   openJournal(page?: number): void;
-  setNearby(id: PlotId | null, stone?: Gravestone | null): void;
+  setNearby(id: PlotId | null, stone?: Gravestone | null, facingWater?: boolean): void;
   setHoveredStone(stone: GameStore['hoveredStone']): void;
   /** Starts playing `world` (already through `beginTurn`, whose transitions it takes) as `actor`, from 6 am. */
   loadTurn(world: WorldState, actor: string, begun?: Transition[]): void;
@@ -124,6 +126,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     journalPage: null,
     nearby: null,
     nearbyStone: null,
+    facingWater: false,
     hoveredStone: null,
     world: null,
     view: null,
@@ -154,9 +157,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
     setJournalOpen: (open) => set(open ? { journalOpen: true } : { journalOpen: false, journalPage: null }),
     openJournal: (page) => set({ journalOpen: true, journalPage: page ?? null, hoveredStone: null }),
-    setNearby: (id, stone = null) => {
+    setNearby: (id, stone = null, facingWater = false) => {
       const s = get();
-      if (s.nearby !== id || s.nearbyStone?.turn !== stone?.turn) set({ nearby: id, nearbyStone: stone });
+      if (s.nearby !== id || s.nearbyStone?.turn !== stone?.turn || s.facingWater !== facingWater) {
+        set({ nearby: id, nearbyStone: stone, facingWater });
+      }
     },
     setHoveredStone: (stone) => {
       const h = get().hoveredStone;

@@ -6,7 +6,7 @@
 ## Decisions (locked)
 
 - Resources: **Food, Water, Labour (= player stamina)**, plus **hunger** ([016](../decisions/016-hunger.md)) and **seeds** ([022](../decisions/022-seed-stock.md)).
-- Eight actions: Harvest, Plant Crops, **Water**, Repair Reservoir, Dig Well, Fish/Hunt, Maintain, Fast Track. Water replaces Plant Orchard ([021](../decisions/021-per-tile-farming-and-watering.md), [024](../decisions/024-emergent-orchards-and-flowers.md)); until the engine lands it, `plantOrchard` is still in `types.ts`.
+- Actions: Harvest, Plant Crops, **Water**, Repair Reservoir, Dig Well, Fish/Hunt, Maintain, Fast Track, plus the free `fillCan` at a source. Water will replace Plant Orchard ([021](../decisions/021-per-tile-farming-and-watering.md), [024](../decisions/024-emergent-orchards-and-flowers.md)); until trees come with level, Plant Orchard stays as a ninth action ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
 - Unlimited actions within a configurable turn length. Stamina and resources are the real limits.
 - End-of-turn **upkeep** (food + water). Missing it = **weakened start** for the successor.
 - **Decay** (food rots, water stagnates) + **infrastructure wear** (structures degrade unless maintained).
@@ -18,7 +18,7 @@
 
 Settled game-design questions (records in `docs/decisions/`):
 
-- **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. The HUD shows "Needed by nightfall", so players know where they stand before they write.
+- **Upkeep timing** ([002](../decisions/002-upkeep-timing.md)): the screen order stays freeze → journal → cost summary. ~~The HUD shows "Needed by nightfall"~~: the line is gone, and nights take **food only** ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
 - **Eating** ([003](../decisions/003-eating-via-harvest.md)): yes, as an option on **Harvest** ("Harvest and eat"). It's not a ninth action.
 - **Hunger** ([016](../decisions/016-hunger.md)): a meter the family inherits. It drops at each new generation; eating (free) refills it; empty, you walk slower.
 - **Rushed orchard** ([004](../decisions/004-fast-tracked-orchard-yield.md)): no long-term yield penalty. *No longer applies once orchards grow from the level ([024](../decisions/024-emergent-orchards-and-flowers.md)).*
@@ -49,7 +49,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 3. **Freeze.** The timer hits 0, the world freezes, and input locks.
 4. **Journal.** Write or draw your page. Earlier pages are read-only.
 5. **Cost summary.** Shows only what was **realised** this turn, including whether upkeep was met. Pending benefits are left out.
-6. **Upkeep check.** Food/water are deducted. A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
+6. **Upkeep check.** Food is deducted (water no longer, {D}). A shortfall marks the successor as weakened. (The engine computes this at freeze in `endTurn`. The cost summary is where the player sees it.)
 7. **Gravestone.** Your stone is placed in the graveyard. The turn is committed.
 8. **Between turns (engine).** Decay, wear, due effects, seeded events and wild stock regrowth are applied for the next generation.
 
@@ -58,7 +58,7 @@ Self-check for every balance change: *could a thoughtful player defend each opti
 | Resource | Source | Sink | Between-generation rule |
 |---|---|---|---|
 | **Food** | Harvest (crops, orchard), Fish/Hunt | Upkeep, eating (Harvest and eat) | Kept in the house's cabinet. **Doesn't rot for now** (`foodRotPct: 0`, [011](../decisions/011-cabinet-food-store-no-rot.md)) |
-| **Water** | Reservoir income, Well, starter stock | Upkeep, Plant Crops/Orchard, Fast Track | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
+| **Water** | Reservoir income, Well, starter stock | Plant Orchard, Fast Track (no longer upkeep, {D}). Crops are watered from the **can**, which fills free at a pond, the sea edge, the well or the reservoir | **Stagnates**: loses `waterStagnatePct` (20%), or 40% while the well is stagnant |
 | **Labour (stamina)** | Full pool at turn start (reduced if weakened) | Every action | Doesn't carry over |
 | **Seeds** | Founder stock `seedStart` (9); +1 per harvested field tile, +2 per tree harvest | Plant Crops (1 per tile); withered tiles lose theirs | **Carries over** in full ([022](../decisions/022-seed-stock.md)) |
 | **Hunger** | Eating (Harvest and eat, or Cook and eat at the oven), `hungerPerFoodEaten` (10) per food, up to `hungerMax` (100) | — | **Carries over**, and drops by `hungerDropPerGen` (30) at each new generation. At or below `hungerSlowAt` (0) the player walks slower ([016](../decisions/016-hunger.md)) |
@@ -281,10 +281,7 @@ the can, seeds and health (`13`, A). The keys are proposals for A, who adds them
 
 ```ts
   // Watering can (decision 021)
-  canCapacity: 3, // pours: one row of a 3×3 field per fill
-  canStartsFull: false, // empty every morning
-  waterSeconds: 1,
-  fillCanSeconds: 1,
+  // canCapacity 4, empty every morning, water 1 s, fillCan 1.5 s: built by 027, kept by the user (was proposed as 3)
 
   // Seeds (decision 022)
   seedStart: 9, // one full field
@@ -295,10 +292,11 @@ the can, seeds and health (`13`, A). The keys are proposals for A, who adds them
   // World health 0–100 (decision 023): each part is 0..1, weighted
   healthWeights: { crops: 0.25, water: 0.2, structures: 0.25, upkeep: 0.15, wild: 0.15 },
   // crops      = tended / (tended + rotten + withered) tiles; 0.5 with nothing planted
-  // water      = stored water / (2 × upkeepWater), at most 1
+  // water      = stored water / healthWaterReserve, at most 1 (nights take no water since 027)
   // structures = mean over reservoir and well of (1 − wear / wearBreakAt); cracked or not dug = 0
   // upkeep     = 1 − the last upkeep shortfall
   // wild       = wildStock / wildCap
+  healthWaterReserve: 20, // stored water that counts as a full reserve
   orchardYieldLowHealth: 50, // below this health a tree gives half
 
   // Level (decision 023): checked at each generation start, rises by at most 1, never falls

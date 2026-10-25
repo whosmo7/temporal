@@ -94,3 +94,10 @@ export function asActor(game: Game, actor: string, actions: (game: Game) => void
     g.act = original;
   });
 }
+
+/** Sows a field tile and waters it straight away, filling the can at a pond first (decision 027). */
+export function sowAndWater(game: Game, plotId: string, t = 0): void {
+  game.act('plantCrops', { plotId, t });
+  if (game.state.resources.can < 1) game.act('fillCan', { t });
+  game.act('water', { plotId, t });
+}

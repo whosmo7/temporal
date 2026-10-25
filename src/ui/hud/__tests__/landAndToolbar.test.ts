@@ -30,11 +30,15 @@ describe('the land (13, decision 023)', () => {
 });
 
 describe('the toolbar (13)', () => {
-  it('reads seeds and the can only once the engine provides them', () => {
+  it('reads the can from its resource (027) and seeds once the engine has them', () => {
     expect(toolbarOf({ resources: { food: 3 } })).toEqual({ seeds: null, can: null });
-    expect(toolbarOf({ resources: { seeds: 9 }, can: { pours: 2, capacity: 3 } })).toEqual({
+    expect(toolbarOf({ resources: { can: 2 } }, 4)).toEqual({
+      seeds: null,
+      can: { pours: 2, capacity: 4 },
+    });
+    expect(toolbarOf({ resources: { seeds: 9, can: 0 } }, 4)).toEqual({
       seeds: 9,
-      can: { pours: 2, capacity: 3 },
+      can: { pours: 0, capacity: 4 },
     });
   });
 

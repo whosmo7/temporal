@@ -58,12 +58,15 @@ describe('cost summary', () => {
     const ripe = CONFIG.cropRipenPct * CONFIG.turnSeconds + 1;
     const { view } = play(fresh(), [
       { id: 'a', type: 'plantCrops', plotId: 'field-1:0,0', t: 0 },
+      { id: 'a2', type: 'fillCan', t: 0 },
+      { id: 'a3', type: 'water', plotId: 'field-1:0,0', t: 0 },
       { id: 'b', type: 'harvest', plotId: 'field-1:0,0', t: ripe },
       { id: 'c', type: 'fishHunt', plotId: 'wild', t: ripe + 1 },
       { id: 'd', type: 'fishHunt', plotId: 'wild', t: ripe + 2 },
     ]);
     const byLabel = Object.fromEntries(view.rows.map((r) => [r.label, r]));
     expect(byLabel['Crops sown']).toMatchObject({ count: 1, stamina: spent(CONFIG.plantCropsCost), food: 0 });
+    expect(byLabel['Crops watered']).toMatchObject({ count: 1, food: 0 });
     expect(byLabel['Harvest']).toMatchObject({ count: 1, food: CONFIG.cropYield });
     expect(byLabel['Hunt']).toMatchObject({ count: 2, stamina: spent(2 * CONFIG.fishHuntCost), food: 2 * CONFIG.fishHuntYield });
   });

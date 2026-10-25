@@ -4,7 +4,7 @@ import type { ActionOption } from './actionOptions';
 import { HOTBAR, hotbarLabel } from './copy';
 
 /**
- * The eight actions along the bottom (04 › HUD), keys 1–8. Slots that can be used at the plot
+ * The actions along the bottom (04 › HUD), keys 1–9. Slots that can be used at the plot
  * you're standing by are lit; the rest are dimmed but still pressable (the engine says why not).
  */
 export function Hotbar({ biome, options }: { biome: Biome; options: ActionOption[] }) {
@@ -49,5 +49,8 @@ export function Hotbar({ biome, options }: { biome: Biome; options: ActionOption
 }
 
 function iconFor(type: ActionType, biome: Biome): PixelIconName {
-  return type === 'fishHunt' ? `ui/icon-fishHunt-${biome}` : `ui/icon-${type}`;
+  if (type === 'fishHunt') return `ui/icon-fishHunt-${biome}`;
+  // No watering-can icon in the UI atlas yet: the water drop stands in.
+  if (type === 'water' || type === 'fillCan') return 'ui/icon-water';
+  return `ui/icon-${type}`;
 }

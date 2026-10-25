@@ -141,8 +141,6 @@ function rowLabel(
   actor: string,
   nameOf: (id: string) => string,
 ): string {
-  // `water` joins ActionType with A's 13 contract PR; until then it can't appear in a log.
-  if ((action.type as string) === 'water') return 'Watered';
   switch (action.type) {
     case 'plantOrchard':
       return 'Orchard';
@@ -158,6 +156,10 @@ function rowLabel(
       return biome === 'island' ? 'Fishing' : 'Hunt';
     case 'maintain':
       return 'Tending';
+    case 'water':
+      return 'Crops watered';
+    case 'fillCan':
+      return 'Can filled';
     case 'fastTrack': {
       const effect = after.pending.find((e) => e.id === action.targetEffectId);
       const kind = (effect?.kind ?? action.targetEffectId?.split(':').pop()) as EffectKind | undefined;

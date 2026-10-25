@@ -1,8 +1,9 @@
 // What the toolbar shows (13): which tool is held, the seed count and how full the can is.
-// The held tool lives in B's store; the seed count and the can come from the engine's view once
-// A adds them (`seeds` resource, `can` state). Until then `toolbarOf` returns nulls and the
-// toolbar shows the tools without counts.
+// The held tool lives in B's store. The can's pours are the `can` resource (decision 027), out of
+// `canCapacity`; the seed count joins once A adds a `seeds` resource (022). Until then `seeds` is
+// null and the toolbar shows no count.
 
+import { CONFIG } from '../../engine';
 import type { Tool } from './copy';
 
 export interface CanFill {
@@ -15,16 +16,14 @@ export interface ToolbarData {
   can: CanFill | null;
 }
 
-/** Reads the seed count and the can from a view, if the engine provides them yet. */
-export function toolbarOf(view: object | null | undefined): ToolbarData {
-  if (!view) return { seeds: null, can: null };
-  const v = view as { resources?: Record<string, unknown>; can?: unknown };
-  const seeds = typeof v.resources?.seeds === 'number' ? v.resources.seeds : null;
-  const c = v.can as { pours?: unknown; capacity?: unknown } | undefined;
-  const can =
-    c && typeof c.pours === 'number' && typeof c.capacity === 'number'
-      ? { pours: c.pours, capacity: c.capacity }
-      : null;
+/** Reads the seed count and the can's pours from a view's resources, if the engine has them. */
+export function toolbarOf(
+  view: { resources?: object } | null | undefined,
+  capacity: number = CONFIG.canCapacity,
+): ToolbarData {
+  const r = (view?.resources ?? {}) as Record<string, unknown>;
+  const seeds = typeof r.seeds === 'number' ? r.seeds : null;
+  const can = typeof r.can === 'number' ? { pours: r.can, capacity } : null;
   return { seeds, can };
 }
 

@@ -50,7 +50,8 @@ Row labels (cost-only, past tense, no outcomes):
 |---|---|
 | `plantOrchard` | Orchard |
 | `plantCrops` | Crops sown (×N = tiles sown) |
-| `water` (`13`) | Watered (×N = tiles watered) |
+| `water` | Crops watered (×N = tiles watered) |
+| `fillCan` | Can filled |
 | `harvest` | Harvest / Harvest, eaten |
 | `repairReservoir` | Reservoir wall |
 | `digWell` | Well |

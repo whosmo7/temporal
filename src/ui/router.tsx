@@ -24,7 +24,7 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
     ]
   : [];
 
-// Full-screen dev tools (B): the worldgen debug page and the sprite sheet. Also dev builds only.
+// Full-screen dev tools (B): the worldgen debug page, the sprite sheet and the replay world bench. Also dev builds only.
 const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
   ? [
       {
@@ -34,6 +34,10 @@ const devFullscreenRoutes: RouteObject[] = import.meta.env.DEV
       {
         path: '/dev/sprites',
         lazy: () => import('./dev/SpriteSheet').then((m) => ({ Component: m.SpriteSheet })),
+      },
+      {
+        path: '/dev/replay',
+        lazy: () => import('./dev/ReplayBench').then((m) => ({ Component: m.ReplayBench })),
       },
     ]
   : [];

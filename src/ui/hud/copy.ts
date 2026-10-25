@@ -7,6 +7,7 @@ import type { ActionType, Biome, PlotKind } from '../../engine';
 export const HOTBAR: readonly ActionType[] = [
   'harvest',
   'plantCrops',
+  'water',
   'plantOrchard',
   'repairReservoir',
   'digWell',
@@ -29,6 +30,8 @@ const HOTBAR_LABEL: Record<ActionType, string> = {
   fishHunt: 'Hunt',
   maintain: 'Tend',
   fastTrack: 'Hurry',
+  water: 'Water',
+  fillCan: 'Fill',
 };
 
 /** The interact prompt's words (without the cost, which the prompt adds). */
@@ -47,9 +50,14 @@ export function promptLabel(type: ActionType, kind: PlotKind, biome: Biome, eat 
     case 'fishHunt':
       return biome === 'island' ? 'Fish' : 'Hunt';
     case 'maintain':
+      if (kind === 'field') return 'Clear and till'; // a rotten or withered tile (decision 027)
       return kind === 'well' ? 'Clear the well' : kind === 'reservoir' ? 'Shore up the wall' : 'Prune the tree';
     case 'fastTrack':
       return 'Hurry this along';
+    case 'water':
+      return 'Water';
+    case 'fillCan':
+      return 'Fill the can';
   }
 }
 
@@ -85,13 +93,13 @@ export function stageName(kind: PlotKind, stage: string | undefined, biome: Biom
 
 const STAGE_NAME: Partial<Record<PlotKind, Record<string, string>>> = {
   field: {
-    empty: 'Bare earth',
-    sown: 'Sown',
-    watered: 'Watered', // 13
+    empty: 'Tilled earth',
+    sown: 'Sown, dry',
+    watered: 'Watered',
     growing: 'Coming up',
     ripe: 'Ripe',
     rotten: 'Rotten',
-    withered: 'Withered', // 13
+    withered: 'Withered',
   },
   orchard: {
     empty: 'Bare ground',
@@ -125,17 +133,12 @@ export const TOOL_TIP: Record<Tool, string> = {
   can: 'Fill it at the well, the reservoir, a pond or the sea.',
 };
 
-/** Prompts and error reasons for watering, seeds and the oven (13; docs/content/flavour-text.md). */
+/**
+ * Words for the parts of 13 that aren't built yet: seeds and the oven (docs/content/flavour-text.md).
+ * Watering and the can's words come from the engine and `promptLabel` (decision 027).
+ */
 export const FARM_TEXT = {
-  water: 'Water',
-  fillCan: 'Fill the can',
   cook: 'Cook and eat',
   noSeeds: 'No seeds left',
-  canEmpty: 'The can is empty',
-  nothingToWater: 'Nothing to water',
-  alreadyWatered: 'Already watered',
-  canFull: 'The can is full',
-  wellGreen: "The water's gone green",
-  notHungry: "You're not hungry",
   storeEmpty: 'The store is empty',
 } as const;

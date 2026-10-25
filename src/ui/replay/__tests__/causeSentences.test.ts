@@ -28,6 +28,7 @@ function world(turns: (Pick<ActionInput, 'type' | 'plotId' | 'eat'> & { t?: numb
   return { ctx: { actions: log, transitions, nameOf: (n: number) => NAMES[n - 1]!, biome } };
 }
 
+// Crops are sown, then watered from the can (decision 027).
 describe('replay cause sentences', () => {
   it('names the planter and their generation when the orchard is picked later', () => {
     const { ctx } = world([
@@ -44,7 +45,7 @@ describe('replay cause sentences', () => {
     const ripe = CONFIG.cropRipenPct * CONFIG.turnSeconds + 1;
     const { ctx } = world([
       [{ type: 'plantOrchard', plotId: 'orchard-1:0,0' }, { type: 'digWell', plotId: 'well' }],
-      [{ type: 'plantCrops', plotId: 'field-1:0,0', t: 0 }, { type: 'harvest', plotId: 'field-1:0,0', t: ripe }],
+      [{ type: 'plantCrops', plotId: 'field-1:0,0', t: 0 }, { type: 'fillCan', t: 0 }, { type: 'water', plotId: 'field-1:0,0', t: 0 }, { type: 'harvest', plotId: 'field-1:0,0', t: ripe }],
       [{ type: 'harvest', plotId: 'orchard-1:0,0', eat: true }, { type: 'fishHunt', plotId: 'wild' }],
       [{ type: 'repairReservoir', plotId: 'reservoir' }],
       [],
@@ -58,7 +59,7 @@ describe('replay cause sentences', () => {
 
   it('words the generation’s own work, the store and the night plainly', () => {
     const ripe = CONFIG.cropRipenPct * CONFIG.turnSeconds + 1;
-    const { ctx } = world([[{ type: 'plantCrops', plotId: 'field-1:0,0', t: 0 }, { type: 'harvest', plotId: 'field-1:0,0', t: ripe }, { type: 'fishHunt', plotId: 'wild' }]], 'island');
+    const { ctx } = world([[{ type: 'plantCrops', plotId: 'field-1:0,0', t: 0 }, { type: 'fillCan', t: 0 }, { type: 'water', plotId: 'field-1:0,0', t: 0 }, { type: 'harvest', plotId: 'field-1:0,0', t: ripe }, { type: 'fishHunt', plotId: 'wild' }]], 'island');
     const food = explainGeneration(1, ctx).find((c) => c.resource === 'food')!;
     expect(food.lines.map((l) => sentence(food, l))).toEqual([
       `Food +${CONFIG.cropYield} — the crops AL sowed and picked.`,

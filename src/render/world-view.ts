@@ -1,6 +1,6 @@
 import { Application, ColorMatrixFilter, Container, Graphics, Rectangle, RenderTexture, Sprite, Texture, TextureSource } from 'pixi.js';
 import type { Gravestone } from '../api/Backend';
-import { CONFIG, TILED_KINDS, tileId, tileOf, type ActionType } from '../engine';
+import { CONFIG, TILED_KINDS, tileId, tileOf, type ActionType, type VisibleWorld } from '../engine';
 import { isTimeUp, useGameStore } from '../store/game';
 import { BASE_OPTIONS, buildCollision, FOUNDER_STAGE, type House, type Plot, type PlotId, type TileMap } from '../worldgen';
 import { cameraOffset, pickZoom } from './camera';
@@ -9,7 +9,7 @@ import { gameHour, lightAt } from './daylight';
 import { createFx } from './fx';
 import { layoutStones, nearestStone, type StoneSpot } from './graveyard';
 import { KeyboardInput } from './input';
-import { interactTarget } from './interact';
+import { facingWater, interactTarget } from './interact';
 import { stepWalker, type CollisionGrid, type Walker } from './movement';
 import { P, paintAtlas, paintPlot, VARIANTS } from './placeholder-art';
 
@@ -56,11 +56,31 @@ export interface WorldView {
   raiseStone(stone: Gravestone): Promise<void>;
   /** A pop or splash where an action landed. */
   actionFx(type: ActionType, plotId: PlotId | undefined): void;
+  /** Replay (06): these plots and tiles glow, as the ones that changed this generation. */
+  setHighlights(ids: PlotId[]): void;
   /** The next generation wakes up: player back at the spawn, camera back on them. */
   newTurn(): void;
   /** Frames per second, for the perf readout. */
   fps(): number;
   destroy(): void;
+}
+
+/** Read-only replay mode (06): no player, no keyboard, no clock; the whole map in view at midday. */
+export interface ReplayMode {
+  /** A plot or field/orchard tile was clicked, at this point on the canvas (CSS px). */
+  onPlotClick?: (id: PlotId, at: { x: number; y: number }) => void;
+}
+
+/** The look `visibleView()` describes: every plot and tile's stage and the world flags. */
+export function lookOf(map: TileMap, v: VisibleWorld): WorldLook {
+  const base = founderLook(map);
+  return {
+    plots: Object.fromEntries(map.plots.flatMap((p) => lookIds(p).map((id) => [id, v.plots[id]?.stage ?? base.plots[id]!]))),
+    store: v.store,
+    weakened: v.weakened,
+    drought: v.drought,
+    hungry: v.hungry,
+  };
 }
 
 /** Founder looks: every plot (and field and orchard tile) at its gen-1 stage, store half full, no flags. */
@@ -104,6 +124,8 @@ export function createWorldView(
   initialLook: WorldLook = founderLook(map),
   /** Frames from C's atlas (`loadWorldAtlas`); any name it lacks uses the painted placeholder. */
   art: Record<string, Texture> = {},
+  /** Set for the replay viewer: a still, read-only world. */
+  replay?: ReplayMode,
 ): WorldView {
   const atlas = buildAtlas(art);
   const frame = (name: string) => atlas.get(name) ?? atlas.get('missing')!;
@@ -118,7 +140,9 @@ export function createWorldView(
   // The faced tile's outline sits on the ground; the work bar over the player's head.
   const marker = new Graphics();
   const progress = new Graphics();
-  world.addChild(groundSprite, flat, marker, sorted, progress, fx.layer, dim);
+  // Replay: changed plots glow over everything in the world.
+  const glow = new Graphics();
+  world.addChild(groundSprite, flat, marker, sorted, progress, glow, fx.layer, dim);
   const lightTexture = Texture.from(paintLightHole());
   lightTexture.source.scaleMode = 'linear'; // a smooth gradient, the one non-pixel-art texture
   const night = new Sprite(lightTexture);
@@ -161,21 +185,24 @@ export function createWorldView(
   };
   // Field and orchard tiles (decision 019): a field tile is its cell of the 3×3 field frame (edge
   // cells for edge tiles, so any size keeps its border); a tree is drawn on its own tile.
+  // Cells cut from the atlas share its source, which the asset loader owns: they're released
+  // without it (`atlasCells`), while painted tiles own theirs (`plotTextures`).
+  const atlasCells = new Map<string, Texture>();
   const tileTexture = (p: Plot, x: number, y: number, stage: string) => {
-    const key = `${p.kind}/${stage}@${p.kind === 'field' ? `${edge(x, p.w)},${edge(y, p.h)}` : 'tree'}`;
-    let tex = plotTextures.get(key);
-    if (tex) return tex;
-    const whole = p.kind === 'field' ? art[`field/${stage}`] : undefined;
     const tree = p.kind === 'orchard' ? art[`orchard/tree-${stage}`] : undefined;
+    if (tree) return tree;
+    const key = `${p.kind}/${stage}@${p.kind === 'field' ? `${edge(x, p.w)},${edge(y, p.h)}` : 'tree'}`;
+    const cached = atlasCells.get(key) ?? plotTextures.get(key);
+    if (cached) return cached;
+    const whole = p.kind === 'field' ? art[`field/${stage}`] : undefined;
     if (whole) {
       const f = whole.frame;
       const cell = new Rectangle(f.x + edge(x, p.w) * TILE, f.y + edge(y, p.h) * TILE, TILE, TILE);
-      tex = new Texture({ source: whole.source, frame: cell });
-    } else if (tree) {
-      tex = tree;
-    } else {
-      tex = Texture.from(paintPlot(p.kind, stage, 1, 1, map.biome));
+      const tex = new Texture({ source: whole.source, frame: cell });
+      atlasCells.set(key, tex);
+      return tex;
     }
+    const tex = Texture.from(paintPlot(p.kind, stage, 1, 1, map.biome));
     plotTextures.set(key, tex);
     return tex;
   };
@@ -270,7 +297,7 @@ export function createWorldView(
       sprite.cursor = 'pointer';
       sprite.on('pointerover', () => (hovered = spot));
       sprite.on('pointerout', () => hovered === spot && (hovered = null));
-      sprite.on('pointertap', () => !input.paused && store().openJournal(spot.stone.turn));
+      if (!replay) sprite.on('pointertap', () => !input?.paused && store().openJournal(spot.stone.turn));
       stoneLayer.addChild(sprite);
       stoneSprites.set(spot.stone.turn, sprite);
     }
@@ -325,6 +352,7 @@ export function createWorldView(
 
   const player = new Sprite(frame('player/walk-down-0'));
   player.anchor.set(0.5, 1);
+  player.visible = !replay;
   sorted.addChild(player);
 
   let groundTexture: RenderTexture | null = null;
@@ -342,7 +370,12 @@ export function createWorldView(
       const plot = map.plots.find((p) => p.id === id)!;
       sprite.texture = plotTexture(plot, look.plots[id] ?? defaultStage(plot));
     }
-    for (const [id, t] of tileSprites) t.sprite.texture = tileTexture(t.plot, t.x, t.y, look.plots[id] ?? defaultStage(t.plot));
+    for (const [id, t] of tileSprites) {
+      const stage = look.plots[id] ?? defaultStage(t.plot);
+      const borrowed = t.plot.kind === 'field' && !art[`field/${stage}`] ? STAGE_LOOK[stage] : undefined;
+      t.sprite.texture = tileTexture(t.plot, t.x, t.y, borrowed?.frame ?? stage);
+      t.sprite.tint = borrowed?.tint ?? 0xffffff;
+    }
     if (cabinet) cabinet.texture = frame(`store/${look.store}`);
     fx.setMotes(look.weakened);
     // One swarm per plot with anything rotten in it.
@@ -360,13 +393,61 @@ export function createWorldView(
   let accumulator = 0;
   // 0 = outside, 1 = inside with the roof lifted; eased between the two.
   let insideT = house && isInside(house, walker) ? 1 : 0;
-  const input = new KeyboardInput();
+  const input = replay ? null : new KeyboardInput();
 
   let externallyPaused = false;
   let frozenT = 0;
 
+  // Replay: what glows, and clicks on the map turned into the plot or tile under them.
+  let highlighted: PlotId[] = [];
+  let glowT = 0;
+  const plotAt = (x: number, y: number): PlotId | null => {
+    for (const p of map.plots) {
+      if (x < p.x || y < p.y || x >= p.x + p.w || y >= p.y + p.h) continue;
+      return TILED_KINDS.has(p.kind) ? tileId(p.id, x - p.x, y - p.y) : p.id;
+    }
+    return null;
+  };
+  if (replay) {
+    app.stage.eventMode = 'static';
+    app.stage.hitArea = app.screen;
+    app.stage.on('pointertap', (e) => {
+      const at = world.toLocal(e.global);
+      const id = plotAt(Math.floor(at.x / TILE), Math.floor(at.y / TILE));
+      if (id) replay.onPlotClick?.(id, { x: e.global.x, y: e.global.y });
+    });
+    app.stage.on('pointermove', (e) => {
+      const at = world.toLocal(e.global);
+      app.canvas.style.cursor = plotAt(Math.floor(at.x / TILE), Math.floor(at.y / TILE)) ? 'pointer' : 'default';
+    });
+  }
+
+  /** The replay's still world: the whole map framed, midday light, changed plots pulsing. */
+  const updateReplay = (dt: number) => {
+    const dpr = app.renderer.resolution;
+    const view = { w: app.screen.width, h: app.screen.height };
+    const zoom = pickZoom(view.w, view.h, dpr, { x: map.width, y: map.height });
+    const focus = { x: (map.width * TILE) / 2, y: (map.height * TILE) / 2 };
+    const offset = cameraOffset(focus, view, { w: map.width * TILE, h: map.height * TILE }, zoom, dpr);
+    world.scale.set(zoom);
+    world.position.set(offset.x, offset.y);
+    fx.update(dt, focus);
+    colour.reset();
+    if (look.weakened) {
+      colour.saturate(-0.5, true);
+      colour.tint(0xf0e0c0, true);
+    }
+    if (look.drought) colour.tint(0xffe6cc, true);
+    night.visible = false;
+    frozen.alpha = 0;
+    glowT += dt;
+    glow.alpha = 0.55 + 0.35 * Math.sin(glowT * 3);
+  };
+
   const update = () => {
     const dt = Math.min(app.ticker.deltaMS / 1000, 0.25);
+    if (replay) return updateReplay(dt);
+    if (!input) return;
     // The game loop owns the clock. It stands still while the journal is open (decision 012).
     const store = useGameStore.getState();
     store.advance(dt);
@@ -388,7 +469,11 @@ export function createWorldView(
     player.position.set(Math.round(walker.x * TILE), Math.round(walker.y * TILE));
     player.zIndex = walker.y * TILE;
     const near = timeUp ? null : interactTarget(map, walker);
-    store.setNearby(near, near === 'graveyard' && graveyard ? (nearestStone(graveyard, spots, walker)?.stone ?? null) : null);
+    store.setNearby(
+      near,
+      near === 'graveyard' && graveyard ? (nearestStone(graveyard, spots, walker)?.stone ?? null) : null,
+      !timeUp && facingWater(map, walker),
+    );
 
     // Outline the tile an action would go to (or is going to), so you can see which one you face.
     const target = store.work?.request.plotId ?? (timeUp || externallyPaused ? null : near);
@@ -469,6 +554,14 @@ export function createWorldView(
     },
     setStones,
     raiseStone,
+    setHighlights: (ids) => {
+      highlighted = ids;
+      glow.clear();
+      for (const id of highlighted) {
+        const r = rectOf(id);
+        if (r) glow.rect(r.x * TILE + 0.5, r.y * TILE + 0.5, r.w * TILE - 1, r.h * TILE - 1).fill({ color: P.cloud, alpha: 0.3 }).stroke({ width: 1, color: P.cloud });
+      }
+    },
     actionFx: (type, plotId) => {
       const r = plotId ? rectOf(plotId) : null;
       const at = r ? { x: (r.x + r.w / 2) * TILE, y: (r.y + r.h / 2) * TILE } : { x: walker.x * TILE, y: (walker.y - 1) * TILE };
@@ -484,7 +577,8 @@ export function createWorldView(
     fps: () => app.ticker.FPS,
     destroy: () => {
       app.ticker.remove(update);
-      input.destroy();
+      input?.destroy();
+      if (replay) app.stage.removeAllListeners();
       finishCeremony();
       store().setNearby(null);
       store().setHoveredStone(null);
@@ -495,6 +589,7 @@ export function createWorldView(
       colour.destroy();
       groundTexture?.destroy(true);
       for (const t of plotTextures.values()) t.destroy(true);
+      for (const t of atlasCells.values()) t.destroy(false);
       atlas.destroyAll();
     },
   };
@@ -503,7 +598,16 @@ export function createWorldView(
 const store = () => useGameStore.getState();
 
 /** Actions that put water in the ground get a splash; the rest a pop. */
-const SPLASH_ACTIONS = new Set<ActionType>(['plantCrops', 'plantOrchard', 'digWell', 'repairReservoir']);
+const SPLASH_ACTIONS = new Set<ActionType>(['plantCrops', 'plantOrchard', 'digWell', 'repairReservoir', 'water', 'fillCan']);
+
+/**
+ * Field stages with no frame of their own yet (decision 027) borrow one and a tint: a watered tile
+ * is sown soil gone dark, a withered one is rotten stalks gone grey.
+ */
+const STAGE_LOOK: Record<string, { frame: string; tint: number }> = {
+  watered: { frame: 'sown', tint: 0x9a8a80 },
+  withered: { frame: 'rotten', tint: 0xb8b0a8 },
+};
 
 interface Dust {
   g: Graphics;

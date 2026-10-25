@@ -28,6 +28,9 @@ watering ([021](../decisions/021-per-tile-farming-and-watering.md)), seeds ([022
 | `maintain` (reservoir) | Tend | Shore up the wall | Fill the small cracks before they spread. |
 | `maintain` (orchard) | Tend | Prune the tree | Cut back the dead wood. |
 | `fastTrack` | Hurry | Hurry this along · {cost} | Push someone's work along now, at twice the effort. |
+| `water` | Water | Water | One pour from the can. Only now does it start to grow. |
+| `fillCan` (at a pond, the sea edge, the well, the reservoir) | — | Fill the can | It never costs the stored water. |
+| `maintain` (a rotten or withered tile) | Tend | Clear and till | Dig out what's spoiled, so you can sow again. |
 
 ## Tools and things you use (`13`)
 
@@ -36,6 +39,9 @@ watering ([021](../decisions/021-per-tile-farming-and-watering.md)), seeds ([022
 | Hands (slot 1) | Hands | (the plot's own action, e.g. Harvest) | Pick, pull and carry. |
 | Seeds (slot 2) | Seeds · {n} | Sow crops · 1 seed | Seed for the fields. |
 | Watering can (slot 3) | Can | Water | Fill it at the well, the reservoir, a pond or the sea. |
+
+For now the hotbar has **Water** on slot 3 and "Fill the can" is the prompt at a source ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
+The held-tool toolbar above (`src/ui/hud/Toolbar.tsx`) replaces slots 1–3 once B adds held-tool state.
 | Fill the can, at a source | — | Fill the can | — |
 | Oven ([025](../decisions/025-oven-cooks-stored-food.md)) | — | Cook and eat | Cook something from the store. |
 
@@ -50,8 +56,8 @@ Plot name, then the name of each visual stage from `visibleView()`.
 
 | Kind | Plot name | Stages |
 |---|---|---|
-| `field` | Field | `empty` Bare earth · `sown` Sown · `watered` Watered · `growing` Coming up · `ripe` Ripe · `rotten` Rotten · `withered` Withered |
-| `orchard` | Orchard (one tree per tile; trees come up with the land's level, `13`) | `empty` Bare ground · `sapling` Sapling · `young` Young tree · `fruiting` Fruiting · `worn` Untended tree · `dead` Dead tree |
+| `field` | Field (per tile) | `empty` Tilled earth · `sown` Sown, dry · `watered` Watered · `growing` Coming up · `ripe` Ripe · `rotten` Rotten · `withered` Withered |
+| `orchard` | Orchard (one tree per tile; trees will come up with the land's level, `13`) | `empty` Bare ground · `sapling` Sapling · `young` Young tree · `fruiting` Fruiting · `worn` Untended tree · `dead` Dead tree |
 | `reservoir` | Reservoir | `cracked` Cracked · `low` Low · `full` Full |
 | `well` | Well | `none` Soft ground · `clear` Clear water · `stagnant` Green water |
 | `wild` (Forest) | Tree line | `many` Tracks everywhere · `few` A few tracks · `none` Quiet |
@@ -81,20 +87,21 @@ Say what's missing, in a few words.
 | Tend something already tended this turn | Already seen to today |
 | Hurry with nothing pending | Nothing to hurry |
 | Harvest and eat when not hungry ([016](../decisions/016-hunger.md)) | You're not hungry |
-| Sow with no seeds left (`13`) | No seeds left |
+| Sow with no seeds left (`13`, once seeds exist) | No seeds left |
+| Sow on a rotten or withered tile ([027](../decisions/027-watering-can-tilling-food-only-nights.md)) | Clear it first |
 | Water with an empty can | The can is empty |
-| Water a tile that isn't sown | Nothing to water |
 | Water a tile that's already watered | Already watered |
-| Fill a can that's full | The can is full |
-| Fill the can at a green well | The water's gone green |
-| Cook and eat when not hungry | You're not hungry |
+| Water what isn't sown | Nothing to water here |
+| Fill a full can | The can is full |
+| Fill where there's no water (an undug well) | There's no water here |
+| Cook and eat when not hungry (`13`, once the oven works) | You're not hungry |
 | Cook and eat with an empty store | The store is empty |
 
 ## HUD and other short lines
 
 | Where | Text |
 |---|---|
-| HUD upkeep reminder (decision 002) | Needed by nightfall: 12🍎 10💧 |
+| ~~HUD upkeep reminder (decision 002)~~ | removed ([027](../decisions/027-watering-can-tilling-food-only-nights.md)); the water count shows the can: "3/4" |
 | HUD generation badge | Generation {n} of {m} |
 | HUD hunger bar ([016](../decisions/016-hunger.md)) | (a bowl icon and a bar, no words; screen readers hear "Hunger") |
 | HUD land: health bar ([023](../decisions/023-world-health-and-level.md)) | (a sprout icon and a bar, **no number**; screen readers hear "The land") |

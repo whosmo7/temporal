@@ -147,16 +147,32 @@ const harvest: Handler = (ctx) => {
   return at;
 };
 
+// Sow, then water, then it grows (decision 027). Sowing alone schedules nothing: a sown tile
+// waits, across generations if need be, until someone waters it or it withers.
 const plantCrops: Handler = (ctx) => {
-  const { state, rec, cause, plot, input, at } = ctx;
+  const { state, rec, cause, plot, at } = ctx;
   if (!plot || plot.kind !== 'field') return 'Crops can only go in a field';
-  if (plot.stage !== 'empty' && plot.stage !== 'rotten') return 'Already sown';
+  if (plot.stage === 'rotten' || plot.stage === 'withered') return 'Clear it first';
+  if (plot.stage !== 'empty') return 'Already sown';
   const blocked = cannotAfford(state, CONFIG.plantCropsCost, CONFIG.plantCropsWater);
   if (blocked) return blocked;
 
   pay(ctx, CONFIG.plantCropsCost, CONFIG.plantCropsWater);
   setStage(rec, plot, 'sown', [cause]);
   plot.builtBy = cause;
+  return at;
+};
+
+/** One pour from the can on a sown tile starts its ripening clock. */
+const water: Handler = (ctx) => {
+  const { state, rec, cause, plot, input, at } = ctx;
+  if (!plot || plot.kind !== 'field') return 'Nothing to water here';
+  if (plot.stage === 'watered' || plot.stage === 'growing') return 'Already watered';
+  if (plot.stage !== 'sown') return 'Nothing to water here';
+  if (state.resources.can < 1) return 'The can is empty';
+
+  setResource(state, rec, 'can', state.resources.can - 1, [cause]);
+  setStage(rec, plot, 'watered', [cause]);
   const dueAt = { turn: state.turn, t: at.t + CONFIG.cropRipenPct * state.turnSeconds };
   schedule(state, {
     id: `${input.id}:cropRipe`,
@@ -170,6 +186,22 @@ const plantCrops: Handler = (ctx) => {
     status: 'pending',
   });
   return dueAt;
+};
+
+/**
+ * Fills the can to the brim at a dug well or the reservoir (`plotId`), or at a pond or the sea
+ * edge (no `plotId`: the engine has no map, so the client checks the player is at the water).
+ * It never takes stored water.
+ */
+const fillCan: Handler = (ctx) => {
+  const { state, rec, cause, plot, at } = ctx;
+  if (plot) {
+    const source = plot.kind === 'reservoir' || (plot.kind === 'well' && plot.stage !== 'none');
+    if (!source) return "There's no water here";
+  }
+  if (state.resources.can >= CONFIG.canCapacity) return 'The can is full';
+  setResource(state, rec, 'can', CONFIG.canCapacity, [cause]);
+  return at;
 };
 
 const plantOrchard: Handler = (ctx) => {
@@ -259,6 +291,15 @@ const fishHunt: Handler = (ctx) => {
 
 const maintain: Handler = (ctx) => {
   const { state, rec, cause, plot, at } = ctx;
+  // Tending a rotten or withered tile clears it and tills the soil for sowing (decision 027).
+  if (plot?.kind === 'field' && (plot.stage === 'rotten' || plot.stage === 'withered')) {
+    const blocked = cannotAfford(state, CONFIG.maintainCost);
+    if (blocked) return blocked;
+    pay(ctx, CONFIG.maintainCost);
+    setStage(rec, plot, 'empty', [cause]);
+    plot.builtBy = null;
+    return at;
+  }
   if (!plot || !isBuilt(plot)) return 'Nothing to maintain here';
   if (plot.lastMaintainedTurn === state.turn) return 'Already maintained this turn';
   const blocked = cannotAfford(state, CONFIG.maintainCost);
@@ -294,6 +335,8 @@ const HANDLERS: Record<ActionInput['type'], Handler> = {
   fishHunt,
   maintain,
   fastTrack,
+  water,
+  fillCan,
 };
 
 function withoutShare(cause: Cause): Cause {

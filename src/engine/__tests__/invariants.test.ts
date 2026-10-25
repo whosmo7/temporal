@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { newGame, type Game } from '../__fixtures__/play';
+import { newGame, sowAndWater, type Game } from '../__fixtures__/play';
 import { createRng } from '../rng';
 import { replay } from '../replay';
 import type { ActionInput, PlotId } from '../types';
@@ -14,6 +14,8 @@ const TYPES: ActionInput['type'][] = [
   'fishHunt',
   'maintain',
   'fastTrack',
+  'water',
+  'fillCan',
 ];
 // Fields and orchards are acted on per tile (decision 019).
 const PLOTS: PlotId[] = ['field-1:0,0', 'field-1:2,2', 'field-2:1,1', 'orchard-1:0,0', 'orchard-1:1,1', 'reservoir', 'well', 'wild'];
@@ -106,7 +108,7 @@ describe('engine invariants', () => {
     const game = newGame();
     game.begin();
     game.act('plantOrchard', { plotId: 'orchard-1:0,0' });
-    game.act('plantCrops', { plotId: 'field-1:0,0', t: 0 });
+    sowAndWater(game, 'field-1:0,0', 0);
     const view = visibleView(game.state, 100);
     const text = JSON.stringify(view);
     expect(text).not.toContain('dueAt');

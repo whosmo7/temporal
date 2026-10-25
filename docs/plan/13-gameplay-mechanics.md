@@ -30,7 +30,7 @@ This section doesn't change stamina: it stays in the game, costs nothing, and is
   number) and the **land's name** for its level: Bare, Taking root, Green, Blooming, Abundant. Health goes up and down. **Level only rises.** This replaces the locked "no score" rule.
 - **Orchards and flowers are emergent** ([024](../decisions/024-emergent-orchards-and-flowers.md)). There's no Plant
   Orchard action. Trees appear and fruit, and flowers spread, as the world levels up.
-- **Still eight actions:** Water replaces Plant Orchard ([021](../decisions/021-per-tile-farming-and-watering.md),
+- **Eight actions in the end:** Water replaces Plant Orchard once trees come with level; until then Plant Orchard stays as a ninth, and filling the can is a free logged `fillCan` ([027](../decisions/027-watering-can-tilling-food-only-nights.md)) ([021](../decisions/021-per-tile-farming-and-watering.md),
   [024](../decisions/024-emergent-orchards-and-flowers.md)).
 - **The oven cooks stored food** so you can eat from the cabinet ([025](../decisions/025-oven-cooks-stored-food.md)).
 - **What the world shows during play** ([026](../decisions/026-lift-no-explanation-rule.md)): the old blanket rule is
@@ -80,8 +80,8 @@ empty ─plant→ sown ─water→ watered/growing ─(ripen time)→ ripe ─ha
 
 ### Watering can
 
-- Capacity **3** pours (first pass, `01` › Section 13 values). It starts every turn **empty**.
-- Sources: dug well (not a stagnant one, `[PLACEHOLDER]`), reservoir (`[OPEN]` even when cracked?), ponds, sea edge.
+- Capacity **4** pours (027; kept by the user on 2026-10-25). It starts every turn empty ([027](../decisions/027-watering-can-tilling-food-only-nights.md)).
+- Sources: a dug well (clear or stagnant), the reservoir (cracked or not), ponds, the sea edge ([027](../decisions/027-watering-can-tilling-food-only-nights.md)). The HUD's water count shows the can's pours.
 - The toolbar shows the fill level. The can's sprite shows full or empty.
 
 ### Seeds
@@ -148,14 +148,14 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 **Engine (A)**
 
 - [ ] **[A]** `plantCrops` (already per tile): costs 1 seed, leaves the tile `sown` with no ripening effect scheduled
-- [ ] **[A]** `water` action: needs a pour and a `sown` tile; schedules that tile's ripening effect
-- [ ] **[A]** Can fill as a non-logged interaction with a source check; the can resets at turn start
+- [x] **[A]** `water` action: needs a pour and a `sown` tile; schedules that tile's ripening effect *(built by B, [027](../decisions/027-watering-can-tilling-food-only-nights.md))*
+- [x] **[A]** Can fill as a non-logged interaction with a source check; the can resets at turn start *(built by B as a free **logged** `fillCan`, so the server re-run sees the pours; [027](../decisions/027-watering-can-tilling-food-only-nights.md))*
 - [ ] **[A]** Harvest returns seeds; tree harvest scaled by health; add `water` to `actionSeconds`
-- [ ] **[A]** Unwatered `sown` tiles carry over; `beginTurn` withers them 2 generations after planting
+- [x] **[A]** Unwatered `sown` tiles carry over; `beginTurn` withers them 2 generations after planting *(built by B, [027](../decisions/027-watering-can-tilling-food-only-nights.md); tending clears a withered or rotten tile)*
 - [ ] **[A]** Remove `plantOrchard`; the four tree tiles' stages follow level
 - [ ] **[A]** Health recompute with causes, and the level-up rule (never down)
 - [ ] **[A]** Oven eat from store (refills hunger)
-- [ ] **[A]** Fast Track on a watered tile and on the other pending effects
+- [x] **[A]** Fast Track on a watered tile and on the other pending effects *(works unchanged: watering schedules the tile's ripening)*
 - [ ] **[A]** Vitest: plant without water never ripens; water starts the clock; can empties; wither at +2 gens; seeds conserved; health causes; level never drops; still deterministic
 - [ ] **[A]** `scripts/simulate.ts` strategies updated for tiles, can trips and seeds
 
@@ -163,8 +163,8 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 
 - [ ] **[B]** Worldgen: mark water-source tiles (pond edge, sea edge, well, reservoir) for can filling
 - [ ] **[B]** Worldgen: flower spawn spots
-- [ ] **[B]** Render the new tile stages (sown, watered dark soil, withered) next to the existing ones
-- [ ] **[B]** Held-tool state in the store, number-key switching, "Fill can" at sources
+- [x] **[B]** Render the new tile stages (sown, watered dark soil, withered) next to the existing ones *(borrowed frames with a tint until the atlas has their own; [027](../decisions/027-watering-can-tilling-food-only-nights.md))*
+- [ ] **[B]** Held-tool state in the store, number-key switching, "Fill can" at sources *("Fill the can" at ponds, the sea edge, the well and the reservoir is done, [027](../decisions/027-watering-can-tilling-food-only-nights.md); held tool not yet)*
 - [ ] **[B]** Watering FX (splash on the tile) and the can's full/empty sprite in hand
 - [ ] **[B]** Trees and flowers appear and grow with level; flowers spread
 - [ ] **[B]** Oven interaction prompt in the house
@@ -208,8 +208,7 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 1. **Demo moment** without a planted orchard (deferred by the user). Candidates: a health legacy reveal in the replay, or
    keep one plantable orchard.
 2. With stamina free (019), time and can trips are the only limits. Is that enough pressure, or does stamina come back?
-3. Can a cracked reservoir fill the can? A stagnant well? (It starts empty: settled.)
-4. Do trees still wear, or does health replace wear for them? What does level 4+ add?
-5. Do flowers feed health, or are they visual only?
-6. Oven: an eat interaction on the store, or a ninth action `cook`?
-7. What to do with spare time once stamina runs out (sleep to end the day, shorter turns)? Left open after a playtest.
+3. Do trees still wear, or does health replace wear for them? What does level 4+ add?
+4. Do flowers feed health, or are they visual only?
+5. Oven: an eat interaction on the store, or a ninth action `cook`?
+6. What to do with spare time once stamina runs out (sleep to end the day, shorter turns)? Left open after a playtest.

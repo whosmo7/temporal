@@ -38,7 +38,7 @@ export interface ExplainContext {
   biome: Biome;
 }
 
-const LABEL: Record<ResourceKey, string> = { food: 'Food', water: 'Water', stamina: 'Stamina', hunger: 'Hunger' };
+const LABEL: Record<ResourceKey, string> = { food: 'Food', water: 'Water', stamina: 'Stamina', hunger: 'Hunger', can: 'Watering can' };
 
 /**
  * What changed `resources` in generation `turn`, and why. Amounts add up to `net`. Causes that
@@ -171,6 +171,8 @@ const MADE: Record<ActionEntry['type'], (a: ActionEntry) => [string, string]> = 
   harvest: () => ['the harvest', 'brought in'],
   fishHunt: () => ['the catch', 'brought in'],
   fastTrack: (a) => [`the ${HURRIED[a.targetEffectId?.split(':').pop() ?? ''] ?? 'work'}`, 'hurried'],
+  water: () => ['the crops', 'watered'],
+  fillCan: () => ['the can', 'filled'],
 };
 
 const HURRIED: Record<string, string> = {
@@ -193,4 +195,5 @@ const RULE: Record<CauseRule, string> = {
   income: 'the reservoir',
   newTurn: 'a night’s rest',
   hunger: 'hunger',
+  wither: 'seeds left dry',
 };

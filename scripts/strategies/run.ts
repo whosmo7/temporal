@@ -76,21 +76,31 @@ export function tilesOf(state: WorldState, plot: string): PlotState[] {
 }
 
 /**
- * Back-to-back crop cycles on every tile of both fields: sow each tile in turn (each sowing takes
- * its time), harvest each once ripe, replant.
+ * Sows, waters and harvests `tiles` once: each tile is sown, then watered from the can (filled at
+ * a pond whenever it runs dry), then harvested once ripe (decision 027). Starts at `start`.
  */
+export function growTiles(tiles: PlotState[], start: number, ripen: number, eat = false): PlannedAction[] {
+  const { plantCrops: sow, water: pour, fillCan: fill } = CONFIG.actionSeconds;
+  const out: PlannedAction[] = [];
+  let t = start;
+  tiles.forEach((tile, i) => {
+    if (i % CONFIG.canCapacity === 0) {
+      out.push({ type: 'fillCan', t });
+      t += fill;
+    }
+    out.push({ type: 'plantCrops', plotId: tile.id, t });
+    out.push({ type: 'water', plotId: tile.id, t: t + sow });
+    out.push({ type: 'harvest', plotId: tile.id, t: t + sow + ripen, eat });
+    t += sow + pour;
+  });
+  return out;
+}
+
+/** Back-to-back crop cycles on every tile of both fields. */
 export function cropCycles(state: WorldState, cycles: number, eat = false): PlannedAction[] {
   const ripen = Math.ceil(state.turnSeconds * CONFIG.cropRipenPct);
   const tiles = [...tilesOf(state, 'field-1'), ...tilesOf(state, 'field-2')];
-  const sow = CONFIG.actionSeconds.plantCrops;
-  const out: PlannedAction[] = [];
-  for (let c = 0; c < cycles; c++) {
-    const start = c * (ripen + tiles.length * sow + 1);
-    tiles.forEach((tile, i) => {
-      const t = start + i * sow;
-      out.push({ type: 'plantCrops', plotId: tile.id, t });
-      out.push({ type: 'harvest', plotId: tile.id, t: t + ripen, eat });
-    });
-  }
-  return out;
+  const { plantCrops: sow, water: pour, fillCan: fill } = CONFIG.actionSeconds;
+  const cycle = ripen + tiles.length * (sow + pour + fill) + 1;
+  return Array.from({ length: cycles }, (_, c) => growTiles(tiles, c * cycle, ripen, eat)).flat();
 }
