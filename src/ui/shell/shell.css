@@ -669,6 +669,49 @@
   line-height: 1.4;
 }
 
+/* Competitive standings on the ending card (decision 033) */
+.replay__standings {
+  width: min(100%, 720px);
+  text-align: left;
+}
+
+.replay__standings table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.replay__standings th {
+  font-weight: normal;
+  opacity: 0.75;
+  text-align: right;
+  padding: 0 calc(var(--px) * 2) calc(var(--px) * 2);
+}
+
+.replay__standings td {
+  text-align: right;
+  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+}
+
+.replay__standings th:nth-child(-n + 2),
+.replay__standings td:nth-child(-n + 2) {
+  text-align: left;
+}
+
+.replay__standings td:nth-child(2) {
+  white-space: nowrap;
+}
+
+.replay__when {
+  opacity: 0.6;
+}
+
+.replay__total {
+  font-weight: bold;
+}
+
 /* Admin ------------------------------------------------------------------------------------------ */
 
 .admin {

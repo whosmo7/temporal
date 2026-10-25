@@ -23,6 +23,8 @@ export interface Strategy {
   name: string;
   /** What to try this generation, given the state the player inherits. */
   plan(state: WorldState): PlannedAction[];
+  /** What to try in the last moments of the day, given the state then (e.g. keeping food, 033). */
+  dusk?(state: WorldState): PlannedAction[];
 }
 
 export interface GenRow {
@@ -42,6 +44,11 @@ export interface RunOptions {
 }
 
 export function runStrategy(strategy: Strategy, opts: RunOptions): GenRow[] {
+  return runLineup(Array.from({ length: opts.gens }, () => strategy), opts);
+}
+
+/** Like runStrategy, but generation i is played by `lineup[i]`: different players in one world. */
+export function runLineup(lineup: Strategy[], opts: RunOptions): GenRow[] {
   let state =
     opts.from ??
     createWorld(opts.seed, { worldId: 'sim', biome: opts.biome, generationCount: opts.gens }).state;
@@ -50,19 +57,23 @@ export function runStrategy(strategy: Strategy, opts: RunOptions): GenRow[] {
 
   while (state.turn <= last) {
     const gen = state.turn;
+    const strategy = lineup[rows.length]!;
     state = beginTurn(state).state;
     const start = { ...state.resources };
-    strategy
-      .plan(state)
-      .sort((a, b) => a.t - b.t)
-      .forEach((action, seq) => {
-        const result = applyAction(
-          state,
-          { ...action, id: `${gen}-${seq}`, actorId: `${strategy.name}-${gen}`, seq },
-          action.t,
-        );
-        if (!result.error) state = result.state;
-      });
+    let seq = 0;
+    const play = (actions: PlannedAction[]) =>
+      actions
+        .sort((a, b) => a.t - b.t)
+        .forEach((action) => {
+          const result = applyAction(
+            state,
+            { ...action, id: `${gen}-${seq}`, actorId: `${strategy.name}-${gen}`, seq: seq++ },
+            action.t,
+          );
+          if (!result.error) state = result.state;
+        });
+    play(strategy.plan(state));
+    if (strategy.dusk) play(strategy.dusk(state));
     const ended = endTurn(state);
     state = ended.state;
     rows.push({ gen, start, summary: ended.summary, end: state });

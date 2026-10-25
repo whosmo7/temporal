@@ -2,7 +2,14 @@
 // at the end of each one, what changed, and each plot's story. Pure, so it's tested without Pixi.
 
 import type { Gravestone, Replay } from '../../api';
-import { createWorld, visibleView, type ActionType, type PlotId, type VisibleWorld } from '../../engine';
+import {
+  createWorld,
+  visibleView,
+  type ActionType,
+  type GenerationScore,
+  type PlotId,
+  type VisibleWorld,
+} from '../../engine';
 import { generateMap, type TileMap } from '../../worldgen';
 
 /** The replay's map: worldgen from the world's seed, biome and preset. */
@@ -70,4 +77,24 @@ export function plotHistory(replay: Replay, plotId: PlotId): PlotGeneration[] {
       .map((a) => ({ actor: playerOf(replay, turn), type: a.type }));
     return { turn, stage: viewAt(replay, turn).plots[plotId]?.stage ?? '', acts };
   });
+}
+
+export interface Standing extends GenerationScore {
+  name: string;
+  /** 1 for the highest total; generations with the same total share a place. */
+  place: number;
+}
+
+/**
+ * Each generation's locked score (decision 033), highest first, named by who played it. Scores were
+ * locked as each generation ended, so they come from the last snapshot. Empty for worlds finished
+ * before scoring existed.
+ */
+export function standings(replay: Replay): Standing[] {
+  const scores = replay.snapshots.at(-1)?.scores ?? [];
+  const sorted = scores
+    .map((s) => ({ ...s, name: playerOf(replay, s.turn), place: 0 }))
+    .sort((a, b) => b.total - a.total || a.turn - b.turn);
+  sorted.forEach((s, i) => (s.place = i > 0 && s.total === sorted[i - 1]!.total ? sorted[i - 1]!.place : i + 1));
+  return sorted;
 }

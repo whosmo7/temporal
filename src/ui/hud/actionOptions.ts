@@ -91,10 +91,18 @@ export function waterEdgeOptions(view: VisibleWorld, check: Check): ActionOption
   return [{ key: 'E', request, label: promptLabel('fillCan', 'well', view.biome), cost: costOf('fillCan'), error: check(request) }];
 }
 
-/** At the oven in the house: a meal from the store (decision 029). Greyed out when the store is empty. */
+/**
+ * At the oven in the house: a meal from the store (decision 029), or food kept for yourself (033).
+ * Both are greyed out when the store is empty.
+ */
 export function ovenOptions(view: VisibleWorld, check: Check): ActionOption[] {
-  const request: ActionRequest = { type: 'eat' };
-  return [{ key: 'E', request, label: promptLabel('eat', 'field', view.biome), cost: costOf('eat'), error: check(request) }];
+  const meal: ActionRequest = { type: 'eat' };
+  const keep: ActionRequest = { type: 'take' };
+  return [
+    { key: 'E', request: meal, label: promptLabel('eat', 'field', view.biome), cost: costOf('eat'), error: check(meal) },
+    // Never the default (decision 033)
+    { key: 'T', request: keep, label: promptLabel('take', 'field', view.biome), cost: costOf('take'), error: check(keep) },
+  ];
 }
 
 /** What an action costs up front (Fast Track's price comes from its effect). */
@@ -118,6 +126,7 @@ export function costOf(type: ActionType): { stamina: number; water: number } {
     case 'water':
     case 'fillCan':
     case 'eat':
+    case 'take':
       return { stamina: 0, water: 0 };
   }
 }

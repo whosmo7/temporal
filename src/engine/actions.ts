@@ -137,6 +137,7 @@ const harvest: Handler = (ctx) => {
   }
   // Shares only add up when the whole yield was stored.
   addFood(ctx, stored, stored === amount ? causes : causes.map(withoutShare));
+  state.tally.productiveFood += amount;
 
   if (plot.kind === 'field') {
     setStage(rec, plot, 'empty', [cause]);
@@ -300,6 +301,18 @@ const fishHunt: Handler = (ctx) => {
   pay(ctx, CONFIG.fishHuntCost);
   addFood(ctx, CONFIG.fishHuntYield, [cause]);
   setWorld(state, rec, 'wildStock', state.wildStock - 1, [cause]);
+  // A catch that leaves the wild spot below its floor is overhunting (decision 033).
+  if (state.wildStock < CONFIG.score.wildFloor) state.tally.overhuntFood += CONFIG.fishHuntYield;
+  else state.tally.productiveFood += CONFIG.fishHuntYield;
+  return at;
+};
+
+/** Keeps food from the store for yourself (decision 033): it leaves the world for good. */
+const take: Handler = (ctx) => {
+  const { state, rec, cause, at } = ctx;
+  if (state.resources.food < CONFIG.takeFood) return 'The store is empty';
+  setResource(state, rec, 'food', state.resources.food - CONFIG.takeFood, [cause]);
+  state.tally.foodTaken += CONFIG.takeFood;
   return at;
 };
 
@@ -352,6 +365,7 @@ const HANDLERS: Record<ActionInput['type'], Handler> = {
   water,
   fillCan,
   eat,
+  take,
 };
 
 function withoutShare(cause: Cause): Cause {

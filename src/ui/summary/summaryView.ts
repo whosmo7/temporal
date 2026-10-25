@@ -162,6 +162,8 @@ function rowLabel(
       return 'Can filled';
     case 'eat':
       return 'Meal';
+    case 'take':
+      return 'Kept for yourself';
     case 'fastTrack': {
       const effect = after.pending.find((e) => e.id === action.targetEffectId);
       const kind = (effect?.kind ?? action.targetEffectId?.split(':').pop()) as EffectKind | undefined;

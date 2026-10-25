@@ -12,7 +12,7 @@ import {
   type Transition,
   type WorldState,
 } from '../../../engine';
-import { changedPlots, playerOf, plotHistory, stonesAt, viewAt } from '../replayData';
+import { changedPlots, playerOf, plotHistory, standings, stonesAt, viewAt } from '../replayData';
 
 const NAMES = ['AL', 'MO', 'KE'];
 type Act = Pick<ActionInput, 'type' | 'plotId' | 'targetEffectId'> & { t?: number };
@@ -63,6 +63,22 @@ describe('replay data', () => {
       [{ type: 'fastTrack', targetEffectId: '1-3:orchardMature', t: 2 }],
       [{ type: 'maintain', plotId: TILE, t: 1 }],
     ]);
+
+  it('standings rank each generation’s locked score, highest first, by who played it', () => {
+    const r = world();
+    const rows = standings(r);
+    expect(rows.map((s) => s.turn).sort()).toEqual([1, 2, 3]);
+    expect(rows[0]!.place).toBe(1);
+    for (let i = 1; i < rows.length; i++) expect(rows[i]!.total).toBeLessThanOrEqual(rows[i - 1]!.total);
+    expect(rows.find((s) => s.turn === 2)?.name).toBe('MO');
+    expect(rows.find((s) => s.turn === 1)).toEqual({ ...r.snapshots.at(-1)!.scores![0], name: 'AL', place: rows.find((s) => s.turn === 1)!.place });
+  });
+
+  it('a world finished before scoring has no standings', () => {
+    const r = world();
+    for (const s of r.snapshots) delete s.scores;
+    expect(standings(r)).toEqual([]);
+  });
 
   it('generation 0 is the founder world', () => {
     const r = world();

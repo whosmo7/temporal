@@ -37,6 +37,7 @@ const ACT: Record<ActionType, (biome: Biome) => string> = {
   fishHunt: (biome) => (biome === 'island' ? 'fished there' : 'hunted there'),
   fillCan: () => 'filled the can there',
   eat: () => 'ate there',
+  take: () => 'kept food there',
 };
 
 /** "AL sowed it, watered it and picked it", or null when nobody touched it that generation. */

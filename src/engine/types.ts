@@ -39,7 +39,9 @@ export type ActionType =
   /** Fill the can at a well, the reservoir (`plotId`) or a pond or the sea edge (no `plotId`). Free. */
   | 'fillCan'
   /** Eat one food from the store at the oven: refills hunger (decision 029). Free, and allowed when full. */
-  | 'eat';
+  | 'eat'
+  /** Keep food from the store for yourself at the oven: it leaves the world and counts toward your score (decision 033). */
+  | 'take';
 
 /** One entry in the append-only action log. Never mutated once written. */
 export interface ActionEntry {
@@ -102,7 +104,9 @@ export type CauseRule =
   /** A sown tile nobody watered withers (decision 027). */
   | 'wither'
   /** A crop still growing at day's end grows on overnight, faster (decision 028). */
-  | 'overnight';
+  | 'overnight'
+  /** A generation's score, locked when it ends (decision 033). */
+  | 'assessed';
 
 export interface ActionCause {
   kind: 'action';
@@ -119,7 +123,7 @@ export type Cause = { share?: number } & (
 export type TransitionTarget =
   | { resource: ResourceKey }
   | { plot: PlotId; field: string }
-  | { world: 'wildStock' | 'weakened' }
+  | { world: 'wildStock' | 'weakened' | 'score' }
   | { effect: string; field: 'status' };
 
 /** One recorded state change. Append-only; always has at least one cause. */
@@ -185,6 +189,24 @@ export interface WorldState {
   events: SeededEvent[];
   /** Realised totals for the current turn, for the cost summary. Reset by beginTurn. */
   tally: TurnTally;
+  /**
+   * One locked score per finished generation, in order (decision 033). Append-only: endTurn adds
+   * its own and never changes an earlier one. Absent in states saved before scoring.
+   */
+  scores?: GenerationScore[];
+}
+
+/** A generation's score, worked out from the world it handed over (decision 033). Shown in the replay only. */
+export interface GenerationScore {
+  turn: number;
+  productive: number;
+  extraction: number;
+  corruption: number;
+  /** The world's condition 0..100 after that generation's upkeep. */
+  condition: number;
+  exitBonus: number;
+  /** productive + extraction − corruption + exitBonus. */
+  total: number;
 }
 
 export interface TurnTally {
@@ -194,6 +216,12 @@ export interface TurnTally {
   waterGained: number;
   /** Food eaten straight from a harvest (decision 003). */
   foodEaten: number;
+  /** Food harvested from fields and trees, or caught while the wild spot stays above `score.wildFloor` (033). */
+  productiveFood: number;
+  /** Food caught that took the wild spot below `score.wildFloor` (033). */
+  overhuntFood: number;
+  /** Food kept for yourself with `take` (033). */
+  foodTaken: number;
 }
 
 /** Output of every reducer. */

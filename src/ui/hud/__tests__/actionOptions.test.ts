@@ -37,14 +37,14 @@ describe('plot options', () => {
     expect(keys(tick(watered, 200).state, FIELD, 'field', 200)).toEqual(['E Harvest']);
   });
 
-  it('the oven offers a meal on E, free, and says when the store is empty', () => {
+  it('the oven offers a meal on E and keeping food on T, free, and says when the store is empty', () => {
     const s = fresh();
     const oven = (state: WorldState) =>
       ovenOptions(visibleView(state, 0), checker(state)).map((o) => `${o.key} ${o.label}${o.error ? ` (${o.error})` : ''}`);
-    expect(oven(s)).toEqual(['E Cook and eat']);
+    expect(oven(s)).toEqual(['E Cook and eat', 'T Keep some for yourself']);
     expect(ovenOptions(visibleView(s, 0), checker(s))[0]?.cost).toEqual({ stamina: 0, water: 0 });
     s.resources.food = 0;
-    expect(oven(s)).toEqual(['E Cook and eat (The store is empty)']);
+    expect(oven(s)).toEqual(['E Cook and eat (The store is empty)', 'T Keep some for yourself (The store is empty)']);
   });
 
   it('a full can is not offered a fill; a rotten tile offers clearing', () => {

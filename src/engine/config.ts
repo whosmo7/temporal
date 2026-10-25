@@ -62,6 +62,7 @@ export const CONFIG = {
     water: 1,
     fillCan: 1.5,
     eat: 0.5,
+    take: 1,
   },
 
   // Decay and wear
@@ -83,6 +84,25 @@ export const CONFIG = {
   goodHarvestMult: 1.5,
   stormWear: 1,
   stormChance: 0.5,
+
+  // Competitive scoring (decision 033). generationScore = productive + extraction − corruption +
+  // exitBonus, locked at the end of each generation from the world it hands over.
+  takeFood: 1, // food one `take` moves from the store to the player
+  score: {
+    productivePerFood: 1, // per food harvested, or caught while the wild spot stays healthy
+    takePerFood: 2, // per food kept for yourself (replaces its productive credit, never adds to it)
+    overhuntPerFood: 1, // per food caught that takes the wild spot below wildFloor
+    wildFloor: 4, // catching below this stock counts as overhunting
+    corruptionLinear: 0.5, // per selfish unit (food taken or overhunted)
+    corruptionQuadratic: 0.01, // per selfish unit squared: a little pays, a lot doesn't
+    exitBonusPerCondition: 1, // per point of world condition (0..100) handed over
+    // World condition: the parts and their weights
+    foodReserveNights: 2, // stored food counts up to this many nights' upkeep, no more
+    waterReserveCap: 20, // stored water counts up to this, no more
+    growingTree: 0.6, // a sapling or young tree, as a share of a fruiting one
+    weakenedPenalty: 0.5, // condition × (1 − this × shortfall)
+    weights: { food: 0.25, water: 0.1, infrastructure: 0.2, orchards: 0.15, fields: 0.1, wild: 0.2 },
+  },
 
   // Biomes: founder starter state
   biomes: {

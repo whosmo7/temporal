@@ -174,6 +174,7 @@ const MADE: Record<ActionEntry['type'], (a: ActionEntry) => [string, string]> = 
   water: () => ['the crops', 'watered'],
   fillCan: () => ['the can', 'filled'],
   eat: () => ['the meal', 'ate'],
+  take: () => ['the food', 'kept'],
 };
 
 const HURRIED: Record<string, string> = {
@@ -198,4 +199,5 @@ const RULE: Record<CauseRule, string> = {
   hunger: 'hunger',
   wither: 'seeds left dry',
   overnight: 'crops growing on overnight',
+  assessed: 'the world they left',
 };
