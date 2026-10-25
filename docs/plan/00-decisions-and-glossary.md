@@ -54,7 +54,7 @@ Everything the team has decided so far, so nobody re-argues it at hour 30.
 | Delayed-effect visibility | **Partly hidden**: you can see something is growing or decaying, but not the exact numbers |
 | Random events | **Seeded** (deterministic from the world seed) |
 | Event set | **Drought**, **good harvest**, **storm** (Island only, 50%) ([005](../decisions/005-seeded-events.md)) |
-| Drought | **Exactly one per world**, lasting `min(5, ceil(gens / 10))` consecutive generations, starting at a random gen ≥ 2 ([008](../decisions/008-drought-length-and-timing.md)) |
+| Drought | **Off for now** (`droughts: false`, [030](../decisions/030-droughts-off.md)). When on: **exactly one per world**, lasting `min(5, ceil(gens / 10))` consecutive generations, starting at a random gen ≥ 2 ([008](../decisions/008-drought-length-and-timing.md)) |
 | Wild spot | **Forest = hunt, Island = fish**, same numbers ([006](../decisions/006-wild-spot-per-biome.md)) |
 | Borrowing | **None** |
 | Scoring | **No score.** The replay is the ending. |

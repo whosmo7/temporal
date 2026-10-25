@@ -95,7 +95,7 @@ stage only.
 - Pure function of `(seed, biome, opts)` → `TileMap` (`03` shape). Uses the engine PRNG and its own seeded noise.
 - Guarantee every plot is reachable from spawn. Re-roll placement with the next PRNG draw if not, and
   never loop forever (cap the attempts, then fail loudly in tests).
-- At least one drought in the seeded event list.
+- At least one drought in the seeded event list, while `CONFIG.droughts` is on (it's off for now, decision 030).
 
 ## Required tests (Vitest)
 

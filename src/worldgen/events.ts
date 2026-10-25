@@ -23,6 +23,8 @@ export interface EventConfig {
   /** Drought length = ceil(generationCount × this), capped at droughtMaxLength. */
   droughtLengthFraction: number;
   droughtMaxLength: number;
+  /** `false` seeds no drought (decision 030). The draws are the same, so the other events don't move. */
+  droughts?: boolean;
   /** Chance of one storm per world, on biomes where `storm` is true. */
   stormChance: number;
   stormBiomes: Record<Biome, boolean>;
@@ -30,7 +32,7 @@ export interface EventConfig {
 
 /**
  * The world's full event list, fixed at creation from the seed (decisions 005, 008):
- * - **Drought:** exactly one, `min(droughtMaxLength, ceil(gens × fraction))` consecutive
+ * - **Drought:** exactly one (none when `droughts` is false, decision 030), `min(droughtMaxLength, ceil(gens × fraction))` consecutive
  *   generations, starting at a random gen ≥ 2 and ending by the last (gen 1 only in a 1-gen world).
  * - **Good harvest:** one, in a random generation outside the drought (none if there isn't one).
  * - **Storm:** biome-gated, `stormChance` of one, in a random generation outside the drought.
@@ -51,7 +53,8 @@ export function generateEvents(seed: number, biome: Biome, cfg: EventConfig): Se
   const start = rng.int(firstStart, gens - length + 2);
   const droughtTurns = Array.from({ length }, (_, i) => start + i);
   const spellId = `drought-${start}`;
-  const events: SeededEvent[] = droughtTurns.map((turn) => ({ id: `drought-${turn}`, kind: 'drought', turn, spellId }));
+  const events: SeededEvent[] =
+    cfg.droughts === false ? [] : droughtTurns.map((turn) => ({ id: `drought-${turn}`, kind: 'drought', turn, spellId }));
 
   const clear = Array.from({ length: gens }, (_, i) => i + 1).filter((t) => !droughtTurns.includes(t));
   if (clear.length > 0) {
