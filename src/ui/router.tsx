@@ -21,6 +21,10 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
         path: 'dev/journal',
         lazy: () => import('./dev/JournalScreen').then((m) => ({ Component: m.JournalScreen })),
       },
+      {
+        path: 'dev/replay-screen',
+        lazy: () => import('./dev/ReplayScreenBench').then((m) => ({ Component: m.ReplayScreenBench })),
+      },
     ]
   : [];
 

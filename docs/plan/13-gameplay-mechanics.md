@@ -187,11 +187,11 @@ Order: A lands the contract PR first (`types.ts`, new config keys, `visibleView`
 - [ ] **[C]** `08` Tutorial scene (now: plant, water, fill the can, harvest)
 - [ ] **[B]** `08` Error states: no network (claim and commit failed are done)
 - [ ] **[B]** `06` Replay viewer, the world and its data: `ReplayWorld` (read-only snapshot render), `changedPlots` (per tile), `plotHistory` and plot clicks, health and level per generation (split in `06` › Replay viewer: who builds what)
-- [ ] **[C]** `06` Replay viewer, the screen around it: layout, timeline and stepping, auto-play, plot history popover, causes panel, copy (same split)
+- [x] **[C]** `06` Replay viewer, the screen around it: layout, timeline and stepping, auto-play, plot history popover, causes panel, copy (same split)
 - [ ] **[C]** `10` Decide the new demo moment (the planted orchard is gone; see Open questions)
 - [ ] **[C]** `10` Pick the demo seed, generation count and turn length
 - [ ] **[C]** `10` Write the founder journal pages
-- [ ] **[C]** `06` (Stretch) Legacy view per player
+- [x] **[C]** `06` (Stretch) Legacy view per player
 - [ ] **[B]** `06` (Stretch) Animate drawing strokes in the journal panel
 
 ## Acceptance

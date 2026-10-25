@@ -92,17 +92,17 @@ Names come from the journal page author of each generation, as in `causeSentence
 
 **Replay viewer: C (the screen around it)**
 
-- [ ] **[C]** Generation layout in `ReplayScreen`: `ReplayWorld` on the left; the journal page and "What actually changed" on the right; the timeline underneath. It replaces the dusk-sky stand-in
-- [ ] **[C]** Timeline: one dot per generation with its player's name, the current one marked, click to jump; previous/next buttons beside it (the arrow keys already step)
-- [ ] **[C]** Auto-play: play/pause and a pace, stepping on its own, stopping at the ending card
-- [ ] **[C]** Plot history popover: opened by `onPlotClick`, anchored at the click, listing `plotHistory` generation by generation ("Gen 1 · AL sowed it · Sown"); Esc and clicking away close it
-- [ ] **[C]** Causes panel: make `earlier` lines (the reveal, "← planted by AL in Gen 1") stand out; add the health and level line once B exports it
-- [ ] **[C]** Copy for the popover, timeline and health lines in `docs/content/replay-causes.md`
+- [x] **[C]** Generation layout in `ReplayScreen`: `ReplayWorld` on the left; the journal page and "What actually changed" on the right; the timeline underneath. It replaces the dusk-sky stand-in *(`GenerationView` in `ReplayScreen.tsx`; the world keeps its Pixi stage between generations. Dev bench of the whole screen on B's scripted world: `#/dev/replay-screen`.)*
+- [x] **[C]** Timeline: one dot per generation with its player's name, the current one marked, click to jump; previous/next buttons beside it (the arrow keys already step) *(`src/ui/screens/replay/Timeline.tsx`; names cut to 8 characters, full name on hover ([028](../decisions/028-replay-viewer-pacing-and-legacy.md)))*
+- [x] **[C]** Auto-play: play/pause and a pace, stepping on its own, stopping at the ending card *(off until Play; Slow/Steady/Quick = 12/8/4 s; waits while a plot's history is open ([028](../decisions/028-replay-viewer-pacing-and-legacy.md)))*
+- [x] **[C]** Plot history popover: opened by `onPlotClick`, anchored at the click, listing `plotHistory` generation by generation ("Gen 1 · AL sowed it · Sown"); Esc and clicking away close it *(`PlotPopover.tsx`; up to the generation on screen; titled "Field tile 4", "Tree 2", "Reservoir")*
+- [x] **[C]** Causes panel: make `earlier` lines (the reveal, "← planted by AL in Gen 1") stand out; add the health and level line once B exports it *(earlier lines get a ← , a peach tint and a left rule; titled "What actually changed". The health and level line waits on B's task above; its wording is ready in `replay-causes.md`.)*
+- [x] **[C]** Copy for the popover, timeline and health lines in `docs/content/replay-causes.md`
 - [x] **[C]** Title card + ending card *(`ReplayScreen`: title card ("An island · 6 generations", "Everyone who lived here is gone.", Begin) → each generation → ending card (the dusk island with a stone per generation, "6 generations lived here.", the names in order, Watch again / Gallery). Arrow keys step through. Worlds have no names yet, so the title uses the biome. Until B's layout lands, each generation shows the journal page and the cause lines on a dusk sky.)*
 - [x] **[C]** Gallery grid + thumbnails (render the snapshot to a small texture or a stored image, shown as a small floating island, see `docs/art/art-direction.md`) *(`IslandThumb` in `src/ui/gallery/` draws the world's map from the world atlas on a 2D canvas: the area inside the boundary is the island's top, plots at their stage in the last snapshot, a stone per player, a cliff underneath. `CompletedWorld` gained optional `preset` and `finalState` for it (`07`); without them it draws the founder stages on the default preset.)*
 - [x] **[C]** Route `/#/world/:id/replay` and `/#/gallery` *(Both public ([017](../decisions/017-public-gallery.md)). `GalleryScreen` lists completed worlds newest first as text cards, with empty and error states; each card shows its world as a floating island. `ReplayScreen` loads `getReplay`; see the title and ending card task.)*
 - [x] **[C]** Admin "skip to replay" hook (`08`) *(Skip to replay in the admin world list asks to confirm, calls `markComplete` (the world ends with the generations played so far, its lock cleared) and opens its replay. Completed worlds get a Replay link instead.)*
-- [ ] **[C]** (Stretch) Legacy view per player
+- [x] **[C]** (Stretch) Legacy view per player *(on the ending card, "After they left" ([028](../decisions/028-replay-viewer-pacing-and-legacy.md)); `legacyOf()` in `src/ui/screens/replay/words.ts`)*
 - [ ] **[B]** (Stretch) Animate drawing strokes in the journal panel
 
 ## Acceptance
@@ -115,5 +115,5 @@ Names come from the journal page author of each generation, as in `causeSentence
 
 1. Should the replay show the **start** or the **end** of each generation, or both (before/after slider)?
 2. Should the final player watch the replay straight away, or be sent to the gallery?
-3. Is the legacy view in scope?
+3. ~~Is the legacy view in scope?~~ Yes, on the ending card ([028](../decisions/028-replay-viewer-pacing-and-legacy.md)).
 4. Should incomplete worlds also be viewable (spectate-in-progress), or only completed ones?

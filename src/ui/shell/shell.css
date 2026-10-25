@@ -397,12 +397,42 @@
   opacity: 0.7;
 }
 
-.replay__panels {
+/* A generation: the world on the left, the page and the causes on the right, the timeline under. */
+.replay--generation {
+  width: min(100%, 1280px);
+  gap: calc(var(--px) * 4);
+}
+
+.replay__stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
   gap: calc(var(--px) * 6);
   width: 100%;
+  height: min(64vh, 620px);
   text-align: left;
+}
+
+.replay__world {
+  position: relative;
+  min-height: 0;
+  background: var(--ink);
+  box-shadow: inset 0 0 0 var(--px) var(--panel-edge);
+}
+
+.replay__side {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: calc(var(--px) * 4);
+  min-height: 0;
+}
+
+.replay__side > * {
+  min-height: 0;
+  overflow: auto;
+}
+
+.replay__page {
+  max-height: 34vh;
 }
 
 .replay__text {
@@ -446,6 +476,135 @@
 /* A line crediting an earlier generation: the reveal. */
 .replay__line--earlier {
   color: var(--peach);
+  background: color-mix(in srgb, var(--peach) 14%, transparent);
+  box-shadow: calc(var(--px) * -1) 0 0 var(--peach);
+}
+
+.replay__mark {
+  color: var(--peach);
+}
+
+/* Timeline: prev · one dot per generation · next · Play and the pace. */
+.replay__timeline {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 4);
+  width: 100%;
+  padding: calc(var(--px) * 3) calc(var(--px) * 4);
+  background: var(--ink);
+  box-shadow: inset 0 0 0 var(--px) var(--panel-edge);
+}
+
+.replay__dots {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: calc(var(--px) * 2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.replay__dot {
+  display: grid;
+  justify-items: center;
+  gap: var(--px);
+  min-width: 56px;
+  padding: var(--px) calc(var(--px) * 2);
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.replay__pip {
+  width: calc(var(--px) * 3);
+  height: calc(var(--px) * 3);
+  box-shadow: inset 0 0 0 var(--px) var(--muted);
+}
+
+.replay__dot--past .replay__pip {
+  background: var(--muted);
+}
+
+.replay__dot--on {
+  color: var(--paper);
+}
+
+.replay__dot--on .replay__pip {
+  background: var(--peach);
+  box-shadow: 0 0 0 var(--px) var(--paper);
+}
+
+.replay__dot:hover,
+.replay__dot:focus-visible {
+  color: var(--paper);
+  outline: none;
+}
+
+.replay__play {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 3);
+}
+
+.replay__paces {
+  display: flex;
+  gap: var(--px);
+}
+
+/* A plot's history, opened by clicking it in the world. */
+.replay__popover {
+  position: absolute;
+  z-index: 3;
+  padding: calc(var(--px) * 3) calc(var(--px) * 4);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow:
+    inset 0 0 0 var(--px) var(--panel-edge),
+    inset 0 0 0 calc(var(--px) * 2) var(--highlight);
+  text-align: left;
+}
+
+.replay__popover h3 {
+  margin: 0 0 calc(var(--px) * 2);
+  font-size: var(--text-md);
+  font-weight: normal;
+}
+
+.replay__popover ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.replay__history {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.replay__history--now {
+  color: var(--paper);
+}
+
+/* The ending card's legacy view: what each player's work did after they left. */
+.replay__legacy {
+  width: min(100%, 640px);
+  text-align: left;
+}
+
+.replay__legacy ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--px) * 2);
+  font-size: var(--text-sm);
+  line-height: 1.4;
 }
 
 /* Admin ------------------------------------------------------------------------------------------ */
